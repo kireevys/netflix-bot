@@ -12,6 +12,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 logger = logging.getLogger(__name__)
 
+
 class CommandReceiveView(View):
     def post(self, request, bot_token):
         if bot_token != settings.BOT_TOKEN:

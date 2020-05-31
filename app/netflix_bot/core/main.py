@@ -1,9 +1,10 @@
 import logging
 
 from django.conf import settings
-from telegram.ext import Updater
 from telegram.ext import CommandHandler
 from telegram.ext import MessageHandler, Filters
+from telegram.ext import Updater
+
 from .commands import start
 
 logger = logging.getLogger(__name__)

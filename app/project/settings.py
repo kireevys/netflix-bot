@@ -89,9 +89,9 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
-    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",},
-    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",},
-    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
 
@@ -109,9 +109,8 @@ USE_L10N = True
 USE_TZ = True
 
 
-
 BOT_TOKEN = os.getenv("TOKEN")
-SITE_DOMAIN = os.environ.setdefault('DOMAIN', '127.0.0.1:88') # "it_garage.fun"
+SITE_DOMAIN = os.environ.setdefault("DOMAIN", "127.0.0.1:88")  # "it_garage.fun"
 
 
 # Static files (CSS, JavaScript, Images)
@@ -167,19 +166,10 @@ LOGGING = {
             "class": "logging.FileHandler",
             "filename": LOG_FILE,
             "formatter": LOG_FORMATTER_FILE,
-        }
+        },
     },
     "loggers": {
-        "django": {
-            "handlers": handlers,
-            "level": LOG_LEVEL,
-            "propagate": True,
-        },
-        "project": {
-            "handlers": handlers,
-            "level": LOG_LEVEL,
-            "propagate": True,
-        }
+        "django": {"handlers": handlers, "level": LOG_LEVEL, "propagate": True},
+        "project": {"handlers": handlers, "level": LOG_LEVEL, "propagate": True},
     },
 }
-

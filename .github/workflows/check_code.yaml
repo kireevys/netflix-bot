@@ -27,9 +27,7 @@ jobs:
         # Устанавливаем зависимости
         run: pip install -r app/requirements.txt
       - name: lint
-        run: |
-          cd app
-          flake8 --exclude=migrations --max-line-length=120 --count app
+        run: flake8 --exclude=migrations --max-line-length=120 --count app
 
 
   run_tests:

@@ -1,7 +1,8 @@
+import sys
+
 from django.apps import AppConfig
 
 from netflix_bot.core.main import run
-import sys
 
 
 class ProjectConfig(AppConfig):
