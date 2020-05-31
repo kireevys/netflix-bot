@@ -50,12 +50,12 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "project.urls"
+ROOT_URLCONF = "app.project.urls"
 
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [os.path.join(BASE_DIR, "templates")],
+        "DIRS": [os.path.join(BASE_DIR, "../../templates")],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -77,7 +77,7 @@ WSGI_APPLICATION = "project.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
+        "NAME": os.path.join(BASE_DIR, "../../db.sqlite3"),
     }
 }
 
@@ -122,7 +122,7 @@ STATIC_URL = "/static/"
 
 # Logging
 LOG_INTO_FILE = os.environ.setdefault("LOG_INTO_FILE", "0") == "1"
-LOG_FILE = os.environ.setdefault("LOG_FILE", "subscribers.log")
+LOG_FILE = os.environ.setdefault("LOG_FILE", "netflix.log")
 LOG_LEVEL = os.environ.setdefault("LOG_LEVEL", "DEBUG")
 LOG_FORMATTER_CONSOLE = os.environ.setdefault("LOG_FORMATTER_CONSOLE", "json")
 LOG_FORMATTER_FILE = os.environ.setdefault("LOG_FORMATTER_FILE", "json")
