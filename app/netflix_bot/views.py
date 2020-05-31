@@ -10,11 +10,7 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 
-from .core.main import run
-
 logger = logging.getLogger(__name__)
-
-run()
 
 class CommandReceiveView(View):
     def post(self, request, bot_token):
