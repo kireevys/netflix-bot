@@ -1,12 +1,12 @@
 import logging
 
 from django.conf import settings
-from telegram.ext import CommandHandler
+from telegram.ext import CommandHandler, CallbackQueryHandler
 from telegram.ext import MessageHandler, Filters
 from telegram.ext import Updater
 
 from .commands import start
-from .messages import echo, upload_video
+from .messages import get_film_list, upload_video, button
 
 logger = logging.getLogger(__name__)
 
@@ -18,9 +18,11 @@ def up_bot():
     start_handler = CommandHandler("start", start)
     dispatcher.add_handler(start_handler)
 
-    echo_handler = MessageHandler(Filters.text("film") & (~Filters.command), echo)
+    echo_handler = MessageHandler(Filters.text("Покажи фильмы") & (~Filters.command), get_film_list)
     upload_handler = MessageHandler(Filters.video & (~Filters.command), upload_video)
+
     dispatcher.add_handler(echo_handler)
     dispatcher.add_handler(upload_handler)
+    dispatcher.add_handler(CallbackQueryHandler(button))
 
     updater.start_polling(poll_interval=0.2)
