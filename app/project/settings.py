@@ -50,7 +50,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "app.project.urls"
+ROOT_URLCONF = "project.urls"
 
 TEMPLATES = [
     {
@@ -77,7 +77,7 @@ WSGI_APPLICATION = "project.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": os.path.join(BASE_DIR, "../../db.sqlite3"),
+        "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
     }
 }
 
@@ -162,7 +162,7 @@ LOGGING = {
             "formatter": LOG_FORMATTER_CONSOLE,
         },
         "file": {
-            "level": LOG_LEVEL,
+            "level": "INFO",
             "class": "logging.FileHandler",
             "filename": LOG_FILE,
             "formatter": LOG_FORMATTER_FILE,
@@ -171,5 +171,6 @@ LOGGING = {
     "loggers": {
         "django": {"handlers": handlers, "level": LOG_LEVEL, "propagate": True},
         "project": {"handlers": handlers, "level": LOG_LEVEL, "propagate": True},
+        "telegram": {"handlers": handlers, "level": LOG_LEVEL, "propagate": True},
     },
 }
