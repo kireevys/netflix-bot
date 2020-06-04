@@ -1,39 +1,45 @@
+import json
 import logging
-import re
 
+from django.db import IntegrityError
+from django.db.models import Min
+from telegram import InlineKeyboardButton
 from telegram import Update, InlineKeyboardMarkup
 from telegram.ext import CallbackContext
-from telegram import InlineKeyboardButton
-
 
 # https://github.com/python-telegram-bot/python-telegram-bot/wiki/InlineKeyboard-Example
+from .managers import SeriesManager, GridKeyboard
 from .. import models
-import json
 
 logger = logging.getLogger(__name__)
-video_type = models.Video.VideoType
 
 
-def parser(caption: str) -> dict:
-    """
-    Caption example:
-        Неортодоксальная / Unorthodox
-        1 Сезон / 4 Серия
-        SUB
-    :param caption:
-    :return:
-    """
-    title, series, lang = caption.split("\n")
-    season, episode = re.findall(r"(\d+)", series)
-
-    return {"title": title, "season": season, "episode": episode, "lang": lang}
-
-
-def button(update: Update, context: CallbackContext):
+def callbacks(update: Update, context: CallbackContext):
     data = json.loads(update.callback_query.data)
-    file_id = models.Series.objects.get(pk=data.get("id")).file_id
+    if data.get("type") == "series":
+        series = models.Series.objects.get(pk=data.get("id"))
+        seasons = (
+            models.Episode.objects.filter(series=series)
+            .values("season")
+            .annotate(pk=Min("pk"))
+        )
+        buttons = []
+        for nu, season in enumerate(seasons, start=1):
+            title, pk = season.values()
+            callback = json.dumps({"id": pk, "type": "episode"})
+            button = InlineKeyboardButton(
+                text=f"{title}", callback_data=callback
+            )
+            buttons.append([button])
 
-    context.bot.send_video(chat_id=update.effective_chat.id, video=file_id)
+        keyboard = GridKeyboard(buttons)
+        context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=f"{series.title}",
+            reply_markup=keyboard,
+        )
+
+        # context.bot.send_video(chat_id=update.effective_chat.id, video=file_id)
 
 
 def get_film_list(update: Update, context: CallbackContext):
@@ -41,13 +47,12 @@ def get_film_list(update: Update, context: CallbackContext):
 
     buttons = []
     for nu, series in enumerate(all_videos, start=1):
-        callback = json.dumps({"id": series.pk})
-        button = InlineKeyboardButton(
-            text=f"{nu:>3}: {series.video.title}", callback_data=callback
-        )
+        title, pk = series.title, series.pk
+        callback = json.dumps({"id": pk, "type": "series"})
+        button = InlineKeyboardButton(text=f"{nu:>3}: {title}", callback_data=callback)
         buttons.append(button)
 
-    keyboard = InlineKeyboardMarkup([buttons])
+    keyboard = InlineKeyboardMarkup.from_column(buttons)
     context.bot.send_message(
         chat_id=update.effective_chat.id,
         text="Вот что у меня есть",
@@ -57,15 +62,20 @@ def get_film_list(update: Update, context: CallbackContext):
 
 def upload_video(update: Update, context: CallbackContext):
     logging.info(str(update))
-    if update.effective_chat.id == -1001392439062:
-        attrs = parser(caption=update.channel_post.caption)
-        video = models.Video.add(
-            file_id=update.channel_post.video.file_id,
-            message_id=update.effective_message.message_id,
-            **attrs,
-        )
+    if update.channel_post.chat.username == "testkino01":
 
-        logger.info(str(video))
+        manager = SeriesManager.parse_caption(caption=update.channel_post.caption)
+        try:
+            episode = manager.write(
+                update.channel_post.video.file_id, update.effective_message.message_id
+            )
+        except IntegrityError:
+            context.bot.send_message(
+                chat_id=update.effective_chat.id, text=f"Episode exists"
+            )
+            return
+
+        logger.info(str(episode))
         context.bot.send_message(
-            chat_id=update.effective_chat.id, text=f"Added:\n{video}"
+            chat_id=update.effective_chat.id, text=f"Added:\n{episode}"
         )

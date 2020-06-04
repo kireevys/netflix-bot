@@ -4,10 +4,10 @@ from telegram import ReplyKeyboardMarkup, KeyboardButton
 
 
 def start(update: Update, context: CallbackContext):
-    keyboard = ReplyKeyboardMarkup([[KeyboardButton("Покажи фильмы")]])
+    keyboard = ReplyKeyboardMarkup([[KeyboardButton("Покажи сериалы")]])
 
     context.bot.send_message(
         chat_id=update.effective_chat.id,
-        text="I'm a bot, please talk to me!",
+        text="Привет. Я покажу тебе сериалы, только прикажи)",
         reply_markup=keyboard,
     )

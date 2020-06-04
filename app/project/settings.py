@@ -172,5 +172,6 @@ LOGGING = {
         "django": {"handlers": handlers, "level": LOG_LEVEL, "propagate": True},
         "project": {"handlers": handlers, "level": LOG_LEVEL, "propagate": True},
         "telegram": {"handlers": handlers, "level": LOG_LEVEL, "propagate": True},
+        "netflix_bot": {"handlers": handlers, "level": LOG_LEVEL, "propagate": True},
     },
 }
