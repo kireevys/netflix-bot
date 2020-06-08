@@ -2,11 +2,13 @@ import json
 import re
 
 from telegram import Message
-from telegram import Update, InlineKeyboardButton
+from telegram import Update
 from telegram.ext import CallbackContext
 
 from netflix_bot import models
-from netflix_bot.telegram_bot.ui import GridKeyboard
+
+# from netflix_bot.telegram_bot.messages import get_episode_list
+from netflix_bot.telegram_bot.ui import SeasonButton, PaginationKeyboard, EpisodeButton
 
 
 class SeriesManager(dict):
@@ -67,7 +69,8 @@ class CallbackManager:
     @callback_type
     def series(self) -> Message:
         series = models.Series.objects.get(pk=self.callback_data.get("id"))
-        keyboard = get_seasons_list(series)
+        buttons = [SeasonButton(season) for season in series.get_seasons()]
+        keyboard = PaginationKeyboard.from_grid(buttons)
 
         return self.context.bot.send_message(
             chat_id=self.chat_id, text=f"Сезоны {series.title}", reply_markup=keyboard,
@@ -77,11 +80,17 @@ class CallbackManager:
     def season(self) -> Message:
         series, season_no, lang = (
             self.callback_data.get("series"),
-            self.callback_data.get("no"),
+            self.callback_data.get("id"),
             self.callback_data.get("lang"),
         )
-        keyboard = get_episode_list(series, season_no, lang)
+        episodes = models.Episode.objects.filter(
+            series=series, season=season_no, lang=lang
+        ).order_by("episode")
+
+        buttons = [EpisodeButton(episode) for episode in episodes]
+        keyboard = PaginationKeyboard.from_grid(buttons)
         series = models.Series.objects.get(pk=series)
+
         return self.context.bot.send_message(
             chat_id=self.chat_id,
             text=f"Список серий {series.title}\n s{season_no}",
@@ -95,39 +104,3 @@ class CallbackManager:
 
     def send_reaction_on_callback(self) -> Message:
         return self.handler(self)
-
-
-def get_seasons_list(series: models.Series):
-    seasons = series.get_seasons()
-
-    buttons = []
-    for nu, season in enumerate(seasons, start=1):
-        season_no = season.get("season")
-        lang = season.get("lang")
-        callback = json.dumps(
-            {"no": season_no, "series": series.pk, "lang": lang, "type": "season"}
-        )
-        button = InlineKeyboardButton(
-            text=f"{season_no:<3} {lang}", callback_data=callback
-        )
-        buttons.append([button])
-
-    keyboard = GridKeyboard(buttons)
-    return keyboard
-
-
-def get_episode_list(series: models.Series, season: int, lang: str) -> GridKeyboard:
-    episodes = models.Episode.objects.filter(
-        series=series, season=season, lang=lang
-    ).order_by("episode")
-
-    buttons = []
-    for nu, episode in enumerate(episodes, start=1):
-        callback = json.dumps({"id": episode.id, "type": "episode"})
-        button = InlineKeyboardButton(
-            text=f"{episode.episode:<3} {lang}", callback_data=callback
-        )
-        buttons.append([button])
-
-    keyboard = GridKeyboard(buttons)
-    return keyboard
