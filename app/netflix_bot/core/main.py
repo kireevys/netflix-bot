@@ -1,18 +1,10 @@
 import logging
 
 from django.conf import settings
-from telegram.error import (
-    TelegramError,
-    Unauthorized,
-    BadRequest,
-    TimedOut,
-    ChatMigrated,
-    NetworkError,
-)
+from telegram.error import TelegramError
 from telegram.ext import CommandHandler, CallbackQueryHandler
 from telegram.ext import MessageHandler, Filters
 from telegram.ext import Updater
-import traceback
 
 from .commands import start
 from .messages import get_film_list, upload_video, callbacks

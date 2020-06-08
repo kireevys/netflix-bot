@@ -1,22 +1,23 @@
 import re
 from math import ceil
 
+from telegram import InlineKeyboardMarkup
+
 from .. import models
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 
 class GridKeyboard(InlineKeyboardMarkup):
     @classmethod
-    def from_grid(cls, grid_buttons, l=3, **kwargs):
-        h = ceil(len(grid_buttons) / l)
+    def from_grid(cls, grid_buttons, length=3, **kwargs):
+        h = ceil(len(grid_buttons) / length)
 
         grid = []
         start = 0
 
         for i in range(h):
-            stop = l * (i + 1)
+            stop = length * (i + 1)
             grid.append(grid_buttons[start:stop])
-            start += l
+            start += length
 
         return cls(grid, **kwargs)
 

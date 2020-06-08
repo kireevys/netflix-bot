@@ -105,7 +105,7 @@ def upload_video(update: Update, context: CallbackContext):
             )
         except IntegrityError:
             context.bot.send_message(
-                chat_id=update.effective_chat.id, text=f"Episode exists"
+                chat_id=update.effective_chat.id, text="Episode exists"
             )
             return
 
