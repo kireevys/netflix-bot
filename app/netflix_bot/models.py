@@ -1,6 +1,7 @@
 # Create your models here.
 
 from django.db import models
+from django.db.models import Min
 
 
 class User(models.Model):
@@ -45,6 +46,13 @@ class Series(models.Model):
 
     def get_count(self, lang=Episode.Langs.RUS) -> int:
         return Episode.objects.filter(series=self, lang=lang).count()
+
+    def get_seasons(self):
+        return (
+            Episode.objects.filter(series=self)
+            .values("season", "lang")
+            .annotate(mn=Min("pk"))
+        )
 
     def __str__(self):
         return f"{self.pk} {self.title}"
