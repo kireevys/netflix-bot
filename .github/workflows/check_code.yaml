@@ -1,0 +1,60 @@
+name: Check code
+# Запуск при любом push евенте в любой ветке, за исключением релизных тэгов.
+# Они будт тестироваться перед сборкой
+on:
+  push:
+    tags:
+      - '!refs/tags/*'
+    branches:
+      - '*'
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: [3.7, 3.8]
+
+    steps:
+      # Чекаутим код
+      - uses: actions/checkout@master
+      # Устанавливаем python нужной версии
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install requirements
+        # Устанавливаем зависимости
+        run: pip install -r app/requirements.txt
+      - name: lint
+        run: flake8 --exclude=migrations --max-line-length=120 --count app
+
+
+  run_tests:
+
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: [3.7, 3.8]
+
+
+    steps:
+      # Чекаутим код
+      - uses: actions/checkout@master
+      # Устанавливаем python нужной версии
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install requirements
+        # Устанавливаем зависимости
+        run: pip install -r app/requirements.txt
+      - name: Run tests
+        run: |
+          cd app
+          coverage run manage.py test
+      - name: Tests report
+        run: |
+          cd app
+          coverage report

@@ -89,12 +89,13 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+tst.py
 
-# Spyder project settings
+# Spyder netflix_bot settings
 .spyderproject
 .spyproject
 
-# Rope project settings
+# Rope netflix_bot settings
 .ropeproject
 
 # mkdocs documentation
