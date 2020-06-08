@@ -8,7 +8,7 @@ from telegram.ext import CallbackContext
 
 # https://github.com/python-telegram-bot/python-telegram-bot/wiki/InlineKeyboard-Example
 from .managers import SeriesManager, GridKeyboard
-from .. import models
+from netflix_bot import models
 
 logger = logging.getLogger(__name__)
 

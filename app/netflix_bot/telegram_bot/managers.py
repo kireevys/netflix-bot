@@ -3,7 +3,7 @@ from math import ceil
 
 from telegram import InlineKeyboardMarkup
 
-from .. import models
+from netflix_bot import models
 
 
 class GridKeyboard(InlineKeyboardMarkup):
