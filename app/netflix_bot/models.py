@@ -36,6 +36,13 @@ class Episode(models.Model):
         return f"{self.series.title} {self.season}/{self.episode} {self.lang}"
 
 
+class Season:
+    def __init__(self, series_pk: int, season: int, lang: str):
+        self.series = series_pk
+        self.id = season
+        self.lang = lang
+
+
 class Series(models.Model):
 
     title = models.TextField(unique=True)
@@ -48,11 +55,15 @@ class Series(models.Model):
         return Episode.objects.filter(series=self, lang=lang).count()
 
     def get_seasons(self):
-        return (
+        qs = (
             Episode.objects.filter(series=self)
             .values("season", "lang")
             .annotate(mn=Min("pk"))
         )
+        return [
+            Season(self.pk, episode.get("season"), episode.get("lang"))
+            for episode in qs
+        ]
 
     def __str__(self):
         return f"{self.pk} {self.title}"
