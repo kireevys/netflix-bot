@@ -49,7 +49,7 @@ def up_bot() -> Dispatcher:
 
     dispatcher.add_error_handler(error_callback)
 
-    if settings.DEBUG:
+    if not settings.DEBUG:
         logger.info('START POOLING')
         updater.start_polling(poll_interval=0.2)
         return dispatcher
