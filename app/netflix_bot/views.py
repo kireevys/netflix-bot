@@ -18,7 +18,10 @@ class CommandReceiveView(View):
         return JsonResponse({}, status=403)
 
     def post(self, request, bot_token):
+        logger.info(request)
+        logger.info(bot_token)
         if bot_token != settings.BOT_TOKEN:
+            logger.error('HAS NOT BOT TOKEN')
             return HttpResponseForbidden("Invalid token")
 
         raw = request.body.decode("utf-8")
