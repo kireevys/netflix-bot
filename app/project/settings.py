@@ -15,7 +15,6 @@ import os
 # Build paths inside the netflix_bot like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
@@ -25,8 +24,7 @@ SECRET_KEY = "4tttb$@d4c0ik*302z+mtq=obd)@xhyrla09kesztwg2w&3gu*"
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['it-garage.fun']
 
 # Application definition
 
@@ -70,7 +68,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "project.wsgi.application"
 
-
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
@@ -80,7 +77,6 @@ DATABASES = {
         "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
@@ -93,7 +89,6 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
@@ -108,16 +103,13 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 BOT_TOKEN = os.getenv("TOKEN")
 SITE_DOMAIN = os.environ.setdefault("DOMAIN", "127.0.0.1:88")  # "it_garage.fun"
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = "/static/"
-
 
 # Logging
 LOG_INTO_FILE = os.environ.setdefault("LOG_INTO_FILE", "0") == "1"
