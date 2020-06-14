@@ -55,4 +55,10 @@ def up_bot():
         return
 
     logger.info('START WEBHOOKS')
-    updater.start_webhook(settings.SITE_DOMAIN, port=settings.BOT_PORT)
+
+    updater.start_webhook(listen='0.0.0.0',
+                          port=settings.BOT_PORT,
+                          url_path=f"bot/{settings.BOT_TOKEN}",
+                          key=settings.KEY_PATH,
+                          cert=settings.CERT_PATH,
+                          webhook_url=f'https://{settings.SITE_DOMAIN}:{settings.BOT_PORT}/bot/{settings.BOT_TOKEN}')

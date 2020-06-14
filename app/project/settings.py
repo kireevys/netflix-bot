@@ -108,7 +108,9 @@ USE_L10N = True
 
 USE_TZ = True
 
-BOT_PORT = os.getenv("BOT_PORT", 5001)
+KEY_PATH = os.getenv("KEY_PATH")
+CERT_PATH = os.getenv("CERT_PATH")
+BOT_PORT = os.getenv("BOT_PORT", 8443)
 BOT_TOKEN = os.getenv("TOKEN")
 SITE_DOMAIN = os.environ.setdefault("DOMAIN", "127.0.0.1:88")  # "it_garage.fun"
 
