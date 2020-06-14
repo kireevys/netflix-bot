@@ -1,4 +1,5 @@
 # Create your views here.
+import json
 import logging
 
 from django.conf import settings
@@ -9,8 +10,14 @@ from django.http import (
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
+from telegram import Update
 
 logger = logging.getLogger(__name__)
+
+if not settings.DEBUG:
+    from netflix_bot.telegram_bot.main import up_bot
+
+    bot = up_bot()
 
 
 class CommandReceiveView(View):
@@ -26,6 +33,8 @@ class CommandReceiveView(View):
 
         raw = request.body.decode("utf-8")
         logger.info(raw)
+        update: Update = Update.de_json(json.loads(raw), bot.bot)
+        bot.process_update(update)
 
         return JsonResponse({}, status=200)
 

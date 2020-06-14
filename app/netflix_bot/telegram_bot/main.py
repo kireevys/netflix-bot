@@ -2,7 +2,7 @@ import logging
 
 from django.conf import settings
 from telegram.error import TelegramError
-from telegram.ext import CommandHandler, CallbackQueryHandler
+from telegram.ext import CommandHandler, CallbackQueryHandler, Dispatcher
 from telegram.ext import MessageHandler, Filters
 from telegram.ext import Updater
 
@@ -31,9 +31,9 @@ def error_callback(update, context):
         logger.error(e)
 
 
-def up_bot():
+def up_bot() -> Dispatcher:
     updater = Updater(token=settings.BOT_TOKEN, use_context=True)
-    dispatcher = updater.dispatcher
+    dispatcher: Dispatcher = updater.dispatcher
 
     start_handler = CommandHandler("start", start)
     dispatcher.add_handler(start_handler)
@@ -52,7 +52,7 @@ def up_bot():
     if settings.DEBUG:
         logger.info('START POOLING')
         updater.start_polling(poll_interval=0.2)
-        return
+        return dispatcher
 
     logger.info('START WEBHOOKS')
 
@@ -64,3 +64,5 @@ def up_bot():
                                    cert=settings.CERT_PATH,
                                    webhook_url=url)
     logger.warning(str(result))
+
+    return dispatcher
