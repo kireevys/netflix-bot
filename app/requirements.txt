@@ -1,6 +1,8 @@
 Django==3.0.6
 python-telegram-bot
 
+gunicorn>=20.0.4
+
 python-json-logger>=0.1.11
 coverage>=5.1
 flake8>=3.8.2
