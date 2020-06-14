@@ -55,4 +55,4 @@ def up_bot():
         return
 
     logger.info('START WEBHOOKS')
-    updater.start_webhook(settings.SITE_DOMAIN, port=5000)
+    updater.start_webhook(settings.SITE_DOMAIN, port=settings.BOT_PORT)
