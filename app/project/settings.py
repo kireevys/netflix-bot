@@ -27,7 +27,7 @@ SECRET_KEY = os.environ.setdefault(
 )
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("DEBUG", False)
+DEBUG = bool(int(os.getenv("DEBUG", False)))
 
 ALLOWED_HOSTS = ["it-garage.fun"]
 
