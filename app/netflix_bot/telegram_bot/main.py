@@ -56,10 +56,11 @@ def up_bot():
 
     logger.info('START WEBHOOKS')
 
+    url = f'https://{settings.SITE_DOMAIN}:{settings.BOT_PORT}/bot/{settings.BOT_TOKEN}'
     result = updater.start_webhook(listen='0.0.0.0',
                                    port=settings.BOT_PORT,
                                    url_path=f"bot/{settings.BOT_TOKEN}",
                                    key=settings.KEY_PATH,
                                    cert=settings.CERT_PATH,
-                                   webhook_url=f'https://{settings.SITE_DOMAIN}:{settings.BOT_PORT}/bot/')
+                                   webhook_url=url)
     logger.warning(str(result))
