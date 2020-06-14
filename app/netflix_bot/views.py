@@ -34,6 +34,7 @@ class CommandReceiveView(View):
         raw = request.body.decode("utf-8")
         logger.info(raw)
         update: Update = Update.de_json(json.loads(raw), bot.bot)
+        logger.info(update)
         bot.process_update(update)
 
         return JsonResponse({}, status=200)
