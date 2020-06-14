@@ -1,14 +1,13 @@
 # Create your views here.
 import logging
 
-from django.views import View
-
 from django.conf import settings
 from django.http import (
     HttpResponseForbidden,
     JsonResponse,
 )
 from django.utils.decorators import method_decorator
+from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 
 logger = logging.getLogger(__name__)
@@ -16,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 class CommandReceiveView(View):
     def get(self, request):
-        pass
+        return JsonResponse({}, status=403)
 
     def post(self, request, bot_token):
         if bot_token != settings.BOT_TOKEN:

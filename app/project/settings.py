@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -30,6 +31,9 @@ SECRET_KEY = os.environ.setdefault(
 DEBUG = bool(int(os.getenv("DEBUG", False)))
 
 ALLOWED_HOSTS = ["it-garage.fun"]
+
+if DEBUG:
+    ALLOWED_HOSTS.append("*")
 
 # Application definition
 
