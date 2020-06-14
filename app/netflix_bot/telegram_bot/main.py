@@ -61,4 +61,4 @@ def up_bot():
                           url_path=f"bot/{settings.BOT_TOKEN}",
                           key=settings.KEY_PATH,
                           cert=settings.CERT_PATH,
-                          webhook_url=f'https://{settings.SITE_DOMAIN}:{settings.BOT_PORT}/bot/{settings.BOT_TOKEN}')
+                          webhook_url=f'https://{settings.SITE_DOMAIN}:{settings.BOT_PORT}/bot')
