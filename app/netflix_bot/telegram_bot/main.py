@@ -50,7 +50,9 @@ def up_bot():
     dispatcher.add_error_handler(error_callback)
 
     if settings.DEBUG:
+        logger.info('START POOLING')
         updater.start_polling(poll_interval=0.2)
         return
 
+    logger.info('START WEBHOOKS')
     updater.start_webhook(settings.SITE_DOMAIN)
