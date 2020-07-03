@@ -1,5 +1,7 @@
 import json
 import re
+import string
+import random
 
 from telegram import Message
 from telegram import Update
@@ -32,6 +34,19 @@ class SeriesManager(dict):
         self.episode = episode
         self.lang = lang
         super().__init__(title=title, season=season, episode=episode, lang=lang)
+
+    def _fake_write(self, file_id, message_id):
+        series, _ = models.Series.objects.get_or_create(
+            title=f"{self.title}_{random.choice(string.ascii_letters)}{random.randint(1, 9)}")
+        episode = models.Episode.objects.create(
+            series=series,
+            season=random.randint(1, 10),
+            episode=random.randint(1, 10),
+            lang=self.lang,
+            file_id=file_id,
+            message_id=message_id,
+        )
+        return episode
 
     def write(self, file_id, message_id):
         series, _ = models.Series.objects.get_or_create(title=self.title)
@@ -72,7 +87,8 @@ class CallbackManager:
         buttons = [SeasonButton(season) for season in series.get_seasons()]
         keyboard = PaginationKeyboard.from_grid(buttons)
 
-        return self.context.bot.send_message(
+        return self.context.bot.edit_message_text(
+            message_id=self.update.effective_message.message_id,
             chat_id=self.chat_id, text=f"Сезоны {series.title}", reply_markup=keyboard,
         )
 
@@ -91,7 +107,8 @@ class CallbackManager:
         keyboard = PaginationKeyboard.from_grid(buttons)
         series = models.Series.objects.get(pk=series)
 
-        return self.context.bot.send_message(
+        return self.context.bot.edit_message_text(
+            message_id=self.update.effective_message.message_id,
             chat_id=self.chat_id,
             text=f"Список серий {series.title}\n s{season_no}",
             reply_markup=keyboard,

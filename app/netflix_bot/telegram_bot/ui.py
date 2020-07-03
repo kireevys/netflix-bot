@@ -9,10 +9,9 @@ from netflix_bot.models import Series, Episode, Season
 
 
 class GridKeyboard(InlineKeyboardMarkup):
+
     @classmethod
-    def from_grid(
-        cls, grid_buttons: Collection[InlineKeyboardButton], length=3, **kwargs
-    ):
+    def _get_grid(cls, grid_buttons: Collection[InlineKeyboardButton], length=3):
         h = ceil(len(grid_buttons) / length)
 
         grid = []
@@ -23,6 +22,11 @@ class GridKeyboard(InlineKeyboardMarkup):
             grid.append(grid_buttons[start:stop])
             start += length
 
+    @classmethod
+    def from_grid(
+            cls, grid_buttons: Collection[InlineKeyboardButton], length=3, **kwargs
+    ):
+        grid = cls._get_grid(grid_buttons, length)
         return cls(grid, **kwargs)
 
 
@@ -82,6 +86,14 @@ class SeasonButton(AbsButton):
         return f"{self.season.id:<3}: {self.season.lang}"
 
 
+class NavigateButton(AbsButton):
+    callback_type = 'navigate'
+
+    def __init__(self, side, **kwargs):
+        self.navigate = side
+        super().__init__(**kwargs)
+
+
 class EpisodeButton(AbsButton):
     callback_type = "episode"
 
@@ -100,8 +112,5 @@ class PaginationKeyboard(GridKeyboard):
     def __init__(self, inline_keyboard, **kwargs):
         super().__init__(inline_keyboard, **kwargs)
 
-    def next(self):
-        pass
-
-    def previous(self):
-        pass
+    def _get_grid(cls, grid_buttons: Collection[InlineKeyboardButton], length=3):
+        return super()._get_grid(grid_buttons, length)

@@ -49,18 +49,7 @@ def up_bot() -> Dispatcher:
 
     dispatcher.add_error_handler(error_callback)
 
-    if not settings.DEBUG:
-        logger.info('START POOLING')
-        updater.start_polling(poll_interval=0.2)
-    else:
-        logger.info('START WEBHOOKS')
-
-        url = f'https://{settings.SITE_DOMAIN}:{settings.BOT_PORT}/bot/{settings.BOT_TOKEN}'
-        updater.start_webhook(listen='0.0.0.0',
-                              port=settings.BOT_PORT,
-                              url_path=f"bot/{settings.BOT_TOKEN}",
-                              key=settings.KEY_PATH,
-                              cert=settings.CERT_PATH,
-                              webhook_url=url)
+    logger.info('START POOLING')
+    updater.start_polling(poll_interval=0.2)
 
     return dispatcher
