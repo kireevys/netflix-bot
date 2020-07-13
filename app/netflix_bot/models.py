@@ -2,12 +2,23 @@
 
 from django.db import models
 from django.db.models import Min
+from telegram import user as t_user
 
 
 class User(models.Model):
     user_id = models.IntegerField(unique=True)
-    chat_id = models.IntegerField(unique=True)
+    user_name = models.TextField()
+    first_name = models.TextField()
     add_date = models.DateTimeField(auto_now_add=True)
+
+    @classmethod
+    def get_or_create(cls, user: t_user.User):
+        return User.objects.get_or_create(
+            user_id=user.id, user_name=user.username, first_name=user.first_name
+        )
+
+    def __str__(self):
+        return f"{self.pk} - {self.user_id} - {self.user_name}"
 
     class Meta:
         db_table = "users"
@@ -44,7 +55,6 @@ class Season:
 
 
 class Series(models.Model):
-
     title = models.TextField(unique=True)
     desc = models.TextField(null=True)
 

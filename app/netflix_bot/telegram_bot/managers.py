@@ -1,16 +1,19 @@
 import json
+import random
 import re
 import string
-import random
 
 from telegram import Message
 from telegram import Update
 from telegram.ext import CallbackContext
 
 from netflix_bot import models
-
 # from netflix_bot.telegram_bot.messages import get_episode_list
-from netflix_bot.telegram_bot.ui import SeasonButton, PaginationKeyboard, EpisodeButton
+from netflix_bot.telegram_bot.ui import (
+    SeasonButton,
+    EpisodeButton,
+    GridKeyboard,
+)
 
 
 class SeriesManager(dict):
@@ -37,7 +40,8 @@ class SeriesManager(dict):
 
     def _fake_write(self, file_id, message_id):
         series, _ = models.Series.objects.get_or_create(
-            title=f"{self.title}_{random.choice(string.ascii_letters)}{random.randint(1, 9)}")
+            title=f"{self.title}_{random.choice(string.ascii_letters)}{random.randint(1, 9)}"
+        )
         episode = models.Episode.objects.create(
             series=series,
             season=random.randint(1, 10),
@@ -85,11 +89,13 @@ class CallbackManager:
     def series(self) -> Message:
         series = models.Series.objects.get(pk=self.callback_data.get("id"))
         buttons = [SeasonButton(season) for season in series.get_seasons()]
-        keyboard = PaginationKeyboard.from_grid(buttons)
+        keyboard = GridKeyboard.from_grid(buttons)
 
         return self.context.bot.edit_message_text(
             message_id=self.update.effective_message.message_id,
-            chat_id=self.chat_id, text=f"Сезоны {series.title}", reply_markup=keyboard,
+            chat_id=self.chat_id,
+            text=f"Сезоны {series.title}",
+            reply_markup=keyboard,
         )
 
     @callback_type
@@ -104,7 +110,7 @@ class CallbackManager:
         ).order_by("episode")
 
         buttons = [EpisodeButton(episode) for episode in episodes]
-        keyboard = PaginationKeyboard.from_grid(buttons)
+        keyboard = GridKeyboard.from_grid(buttons)
         series = models.Series.objects.get(pk=series)
 
         return self.context.bot.edit_message_text(

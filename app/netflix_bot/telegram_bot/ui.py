@@ -9,7 +9,6 @@ from netflix_bot.models import Series, Episode, Season
 
 
 class GridKeyboard(InlineKeyboardMarkup):
-
     @classmethod
     def _get_grid(cls, grid_buttons: Collection[InlineKeyboardButton], length=3):
         h = ceil(len(grid_buttons) / length)
@@ -22,9 +21,11 @@ class GridKeyboard(InlineKeyboardMarkup):
             grid.append(grid_buttons[start:stop])
             start += length
 
+        return grid
+
     @classmethod
     def from_grid(
-            cls, grid_buttons: Collection[InlineKeyboardButton], length=3, **kwargs
+        cls, grid_buttons: Collection[InlineKeyboardButton], length=3, **kwargs
     ):
         grid = cls._get_grid(grid_buttons, length)
         return cls(grid, **kwargs)
@@ -49,6 +50,9 @@ class AbsButton(InlineKeyboardButton):
     @abstractmethod
     def get_text(self) -> str:
         pass
+
+    def __str__(self):
+        return f"{self.callback_type}: {self.get_text()}: {self.get_callback()}"
 
 
 class SeriesButton(AbsButton):
@@ -87,7 +91,7 @@ class SeasonButton(AbsButton):
 
 
 class NavigateButton(AbsButton):
-    callback_type = 'navigate'
+    callback_type = "navigate"
 
     def __init__(self, side, **kwargs):
         self.navigate = side
@@ -105,12 +109,4 @@ class EpisodeButton(AbsButton):
         return json.dumps({"id": self.episode.id, "type": self.callback_type})
 
     def get_text(self) -> str:
-        return f'{self.episode.episode}'
-
-
-class PaginationKeyboard(GridKeyboard):
-    def __init__(self, inline_keyboard, **kwargs):
-        super().__init__(inline_keyboard, **kwargs)
-
-    def _get_grid(cls, grid_buttons: Collection[InlineKeyboardButton], length=3):
-        return super()._get_grid(grid_buttons, length)
+        return f"{self.episode.episode}"
