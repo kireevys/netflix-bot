@@ -30,7 +30,7 @@ SECRET_KEY = os.environ.setdefault(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool(int(os.getenv("DEBUG", False)))
 
-ALLOWED_HOSTS = ["it-garage.fun"]
+ALLOWED_HOSTS = ["it-garage.fun", "194.67.104.62"]
 
 if DEBUG:
     ALLOWED_HOSTS.append("*")
