@@ -7,8 +7,8 @@ from telegram import user as t_user
 
 class User(models.Model):
     user_id = models.IntegerField(unique=True)
-    user_name = models.TextField()
-    first_name = models.TextField()
+    user_name = models.TextField(null=True)
+    first_name = models.TextField(null=True)
     add_date = models.DateTimeField(auto_now_add=True)
 
     @classmethod
