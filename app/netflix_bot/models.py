@@ -32,7 +32,7 @@ class Episode(models.Model):
 
     series = models.ForeignKey("Series", on_delete=models.CASCADE)
 
-    file_id = models.TextField(unique=True)
+    file_id = models.TextField(unique=False)
     message_id = models.IntegerField(unique=True)
 
     episode = models.IntegerField()
