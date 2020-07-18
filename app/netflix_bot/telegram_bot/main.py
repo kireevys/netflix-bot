@@ -34,6 +34,9 @@ def error_callback(update, context):
 
 
 def up_bot() -> Dispatcher:
+    if not settings.BOT_TOKEN:
+        raise EnvironmentError('Empty bot token')
+
     updater = Updater(token=settings.BOT_TOKEN, use_context=True)
     dispatcher: Dispatcher = updater.dispatcher
 
