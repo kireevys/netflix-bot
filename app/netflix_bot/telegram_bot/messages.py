@@ -17,7 +17,7 @@ def callbacks(update: Update, context: CallbackContext):
 
 def upload_video(update: Update, context: CallbackContext):
     logging.info(str(update))
-    if update.channel_post.chat.username == "testkino01":
+    if update.channel_post.chat.id == -1001392439062:
 
         manager = SeriesManager.parse_caption(caption=update.channel_post.caption)
         try:
