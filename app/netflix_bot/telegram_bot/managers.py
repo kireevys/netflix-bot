@@ -1,14 +1,22 @@
 import json
+import random
 import re
-
+import string
+from django.core.paginator import Paginator
 from telegram import Message
 from telegram import Update
+from telegram.bot import Bot
 from telegram.ext import CallbackContext
 
 from netflix_bot import models
 
 # from netflix_bot.telegram_bot.messages import get_episode_list
-from netflix_bot.telegram_bot.ui import SeasonButton, PaginationKeyboard, EpisodeButton
+from netflix_bot.telegram_bot.handlers import get_factory
+from netflix_bot.telegram_bot.ui import (
+    SeasonButton,
+    EpisodeButton,
+    GridKeyboard,
+)
 
 
 class SeriesManager(dict):
@@ -32,6 +40,20 @@ class SeriesManager(dict):
         self.episode = episode
         self.lang = lang
         super().__init__(title=title, season=season, episode=episode, lang=lang)
+
+    def _fake_write(self, file_id, message_id):
+        series, _ = models.Series.objects.get_or_create(
+            title=f"{self.title}_{random.choice(string.ascii_letters)}{random.randint(1, 9)}"
+        )
+        episode = models.Episode.objects.create(
+            series=series,
+            season=random.randint(1, 10),
+            episode=random.randint(1, 10),
+            lang=self.lang,
+            file_id=file_id,
+            message_id=message_id,
+        )
+        return episode
 
     def write(self, file_id, message_id):
         series, _ = models.Series.objects.get_or_create(title=self.title)
@@ -62,18 +84,23 @@ class CallbackManager:
         self.callback_data = json.loads(update.callback_query.data)
         self.type = self.callback_data.get("type")
         self.context = context
-        self.bot = context.bot
-        self.handler = _call_types.get(self.type)
+        self.bot: Bot = context.bot
         self.chat_id = self.update.effective_chat.id
 
     @callback_type
     def series(self) -> Message:
         series = models.Series.objects.get(pk=self.callback_data.get("id"))
         buttons = [SeasonButton(season) for season in series.get_seasons()]
-        keyboard = PaginationKeyboard.from_grid(buttons)
 
-        return self.context.bot.send_message(
-            chat_id=self.chat_id, text=f"Сезоны {series.title}", reply_markup=keyboard,
+        pagination_buttons = Paginator(buttons, 5)
+
+        keyboard = GridKeyboard.from_grid(pagination_buttons.page(1))
+
+        return self.bot.edit_message_text(
+            message_id=self.update.effective_message.message_id,
+            chat_id=self.chat_id,
+            text=f"Сезоны {series.title}",
+            reply_markup=keyboard,
         )
 
     @callback_type
@@ -88,10 +115,11 @@ class CallbackManager:
         ).order_by("episode")
 
         buttons = [EpisodeButton(episode) for episode in episodes]
-        keyboard = PaginationKeyboard.from_grid(buttons)
+        keyboard = GridKeyboard.from_grid(buttons)
         series = models.Series.objects.get(pk=series)
 
-        return self.context.bot.send_message(
+        return self.context.bot.edit_message_text(
+            message_id=self.update.effective_message.message_id,
             chat_id=self.chat_id,
             text=f"Список серий {series.title}\n s{season_no}",
             reply_markup=keyboard,
@@ -102,5 +130,20 @@ class CallbackManager:
         file_id = models.Episode.objects.get(id=self.callback_data.get("id")).file_id
         return self.bot.send_video(chat_id=self.chat_id, video=file_id)
 
+    @callback_type
+    def navigate(self):
+        page = self.callback_data.get("current")
+        factory = get_factory()
+
+        keyboard = factory.page_from_column(page)
+
+        return self.bot.edit_message_text(
+            message_id=self.update.effective_message.message_id,
+            chat_id=self.chat_id,
+            text=f"Страница {page}",
+            reply_markup=keyboard,
+        )
+
     def send_reaction_on_callback(self) -> Message:
-        return self.handler(self)
+        handler = _call_types.get(self.type)
+        return handler(self)
