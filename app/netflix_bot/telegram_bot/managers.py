@@ -1,11 +1,20 @@
 import json
+import logging
 import random
 import re
 import string
+
+from django.conf import settings
 from django.core.paginator import Paginator
-from telegram import Message
+from telegram import (
+    Message,
+    ChatMember,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+)
 from telegram import Update
 from telegram.bot import Bot
+from telegram.error import BadRequest
 from telegram.ext import CallbackContext
 
 from netflix_bot import models
@@ -17,6 +26,8 @@ from netflix_bot.telegram_bot.ui import (
     EpisodeButton,
     GridKeyboard,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class SeriesManager(dict):
@@ -78,6 +89,15 @@ def callback_type(fn):
     _call_types.update({fn.__name__: fn})
 
 
+def send_need_subscribe(chat_id, bot: Bot):
+    invite_button = InlineKeyboardButton("Подпишись!", url=settings.CHAT_INVITE_LINK)
+    return bot.send_message(
+        chat_id,
+        "Просмотр недоступен без подписки на основной канал(((",
+        reply_markup=InlineKeyboardMarkup([[invite_button]]),
+    )
+
+
 class CallbackManager:
     def __init__(self, update: Update, context: CallbackContext):
         self.update = update
@@ -125,8 +145,27 @@ class CallbackManager:
             reply_markup=keyboard,
         )
 
+    def _is_subscribed(self):
+        try:
+            chat_member: ChatMember = self.bot.get_chat_member(
+                settings.MAIN_CHANNEL_ID, self.update.effective_user.id
+            )
+        except BadRequest:
+            logger.warning(f"user {self.update.effective_user} is not subscribed")
+            return False
+
+        status = chat_member.status
+        if status in ("restricted", "left", "kicked"):
+            logger.warning(f"user {self.update.effective_user} is {status}")
+            return False
+
+        return True
+
     @callback_type
     def episode(self) -> Message:
+        if not self._is_subscribed():
+            return send_need_subscribe(self.chat_id, self.bot)
+
         file_id = models.Episode.objects.get(id=self.callback_data.get("id")).file_id
         return self.bot.send_video(chat_id=self.chat_id, video=file_id)
 

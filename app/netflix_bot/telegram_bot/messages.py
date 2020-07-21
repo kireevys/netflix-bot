@@ -1,5 +1,6 @@
 import logging
 
+from django.conf import settings
 from django.db import IntegrityError
 from telegram import Update
 from telegram.ext import CallbackContext
@@ -17,7 +18,7 @@ def callbacks(update: Update, context: CallbackContext):
 
 def upload_video(update: Update, context: CallbackContext):
     logging.info(str(update))
-    if update.channel_post.chat.id == -1001392439062:
+    if update.channel_post.chat.id == settings.UPLOADER_ID:
 
         manager = SeriesManager.parse_caption(caption=update.channel_post.caption)
         try:

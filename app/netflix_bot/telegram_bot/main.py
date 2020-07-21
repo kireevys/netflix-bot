@@ -1,4 +1,5 @@
 import logging
+import traceback
 
 from django.conf import settings
 from telegram.error import TelegramError
@@ -9,7 +10,6 @@ from telegram.ext import Updater
 from .commands import start
 from .handlers import get_film_list
 from .messages import upload_video, callbacks
-import traceback
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +35,7 @@ def error_callback(update, context):
 
 def up_bot() -> Dispatcher:
     if not settings.BOT_TOKEN:
-        raise EnvironmentError('Empty bot token')
+        raise EnvironmentError("Empty bot token")
 
     updater = Updater(token=settings.BOT_TOKEN, use_context=True)
     dispatcher: Dispatcher = updater.dispatcher

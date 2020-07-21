@@ -116,6 +116,14 @@ KEY_PATH = os.getenv("KEY_PATH")
 CERT_PATH = os.getenv("CERT_PATH")
 BOT_PORT = os.getenv("BOT_PORT", 8443)
 BOT_TOKEN = os.getenv("TOKEN")
+
+UPLOADER_ID = -1001392439062
+UPLOADER_INVITE = "https://t.me/joinchat/AAAAAEr4GjWrNeNVda-3MA"
+
+MAIN_CHANNEL_ID = -1001257773621
+# MAIN_CHANNEL_ID = UPLOADER_ID
+CHAT_INVITE_LINK = "https://t.me/joinchat/AAAAAEr4GjXNB1THirwNfw"
+
 SITE_DOMAIN = os.environ.setdefault("DOMAIN", "127.0.0.1:88")  # "it_garage.fun"
 
 # Static files (CSS, JavaScript, Images)
@@ -177,5 +185,6 @@ LOGGING = {
         "project": {"handlers": handlers, "level": LOG_LEVEL, "propagate": True},
         "telegram": {"handlers": handlers, "level": LOG_LEVEL, "propagate": True},
         "netflix_bot": {"handlers": handlers, "level": LOG_LEVEL, "propagate": True},
+        "telegram_bot": {"handlers": handlers, "level": LOG_LEVEL, "propagate": True},
     },
 }
