@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
-from datetime import datetime
 
 from dotenv import load_dotenv
 
@@ -133,16 +132,9 @@ SITE_DOMAIN = os.environ.setdefault("DOMAIN", "127.0.0.1:88")  # "it_garage.fun"
 STATIC_URL = "/static/"
 
 
-def create_now_dir():
-    dir_name = f"logs/{datetime.now():%d-%m-%Y}"
-    if not os.path.isdir(dir_name):
-        os.makedirs(dir_name)
-
-
-create_now_dir()
 # Logging
 LOG_INTO_FILE = os.environ.setdefault("LOG_INTO_FILE", "0") == "1"
-LOG_FILE = os.environ.setdefault("LOG_FILE", f"{datetime.now():%d-%m-%Y}/netflix.log")
+LOG_FILE = os.environ.setdefault("LOG_FILE", "netflix.log")
 LOG_LEVEL = os.environ.setdefault("LOG_LEVEL", "DEBUG")
 LOG_FORMATTER_CONSOLE = os.environ.setdefault("LOG_FORMATTER_CONSOLE", "json")
 LOG_FORMATTER_FILE = os.environ.setdefault("LOG_FORMATTER_FILE", "json")
