@@ -16,6 +16,8 @@ def start(update: Update, context: CallbackContext):
     if created:
         logger.info(f'new user {user} created')
 
+    logger.info(f'{user} say /start')
+
     context.bot.send_message(
         chat_id=update.effective_chat.id,
         text=f"Привет, {user.user_name}. Я покажу тебе сериалы, только прикажи)",

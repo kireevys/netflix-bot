@@ -1,8 +1,12 @@
+import logging
+
 from telegram import Update
 from telegram.ext import CallbackContext
 
 from netflix_bot import models
 from netflix_bot.telegram_bot.ui import SeriesButton, PaginationKeyboardFactory
+
+logger = logging.getLogger(__name__)
 
 
 def get_factory(per_page: int = 5):
@@ -16,6 +20,8 @@ def get_factory(per_page: int = 5):
 
 def get_film_list(update: Update, context: CallbackContext):
     factory = get_factory()
+
+    logger.info(f"{update.effective_user} request f-list")
 
     context.bot.send_message(
         chat_id=update.effective_chat.id,
