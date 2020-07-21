@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_factory(per_page: int = 5):
-    all_videos = models.Series.objects.all()
+    all_videos = models.Series.objects.all().order_by('title')
 
     buttons = [SeriesButton(series) for series in all_videos]
 
