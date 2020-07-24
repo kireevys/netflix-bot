@@ -14,9 +14,9 @@ def start(update: Update, context: CallbackContext):
     user, created = User.get_or_create(update.effective_user)
 
     if created:
-        logger.info(f'new user {user} created')
+        logger.info(f"new user {user} created")
 
-    logger.info(f'{user} say /start')
+    logger.info(f"{user} say /start")
 
     context.bot.send_message(
         chat_id=update.effective_chat.id,

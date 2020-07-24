@@ -25,6 +25,7 @@ from netflix_bot.telegram_bot.ui import (
     SeasonButton,
     EpisodeButton,
     GridKeyboard,
+    FilmList, BackButton,
 )
 
 logger = logging.getLogger(__name__)
@@ -108,6 +109,19 @@ class CallbackManager:
         self.chat_id = self.update.effective_chat.id
 
     @callback_type
+    def film_list(self):
+        factory = get_factory()
+
+        logger.info(f"{self.update.effective_user} request f-list")
+
+        self.bot.edit_message_text(
+            message_id=self.update.effective_message.message_id,
+            chat_id=self.chat_id,
+            text="Вот что у меня есть",
+            reply_markup=factory.page_from_column(1),
+        )
+
+    @callback_type
     def series(self) -> Message:
         series = models.Series.objects.get(pk=self.callback_data.get("id"))
         buttons = [SeasonButton(season) for season in series.get_seasons()]
@@ -115,6 +129,7 @@ class CallbackManager:
         pagination_buttons = Paginator(buttons, 5)
 
         keyboard = GridKeyboard.from_grid(pagination_buttons.page(1))
+        keyboard.inline_keyboard.append([FilmList(1)])
 
         return self.bot.edit_message_text(
             message_id=self.update.effective_message.message_id,
@@ -138,6 +153,8 @@ class CallbackManager:
         keyboard = GridKeyboard.from_grid(buttons)
         series = models.Series.objects.get(pk=series)
 
+        keyboard.inline_keyboard.append([BackButton(series)])
+
         return self.context.bot.edit_message_text(
             message_id=self.update.effective_message.message_id,
             chat_id=self.chat_id,
@@ -152,7 +169,7 @@ class CallbackManager:
             )
         except BadRequest:
             logger.warning(f"user {self.update.effective_user} is not subscribed")
-            return False
+            return True
 
         status = chat_member.status
         if status in ("restricted", "left", "kicked"):

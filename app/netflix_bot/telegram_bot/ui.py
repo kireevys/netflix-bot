@@ -81,10 +81,15 @@ class SeriesButton(AbsButton):
         super().__init__(**kwargs)
 
     def get_callback(self) -> str:
-        return json.dumps({"id": self.series.id, "type": "series"})
+        return json.dumps({"id": self.series.id, "type": self.callback_type})
 
     def get_text(self) -> str:
         return self.series.title
+
+
+class BackButton(SeriesButton):
+    def get_text(self) -> str:
+        return f"К списку сезонов {self.series.title}"
 
 
 class SeasonButton(AbsButton):
@@ -106,6 +111,20 @@ class SeasonButton(AbsButton):
 
     def get_text(self) -> str:
         return f"{self.season.id:<3}: {self.season.lang}"
+
+
+class FilmList(AbsButton):
+    callback_type = "film_list"
+
+    def __init__(self, page, **kwargs):
+        self.film_list = page
+        super().__init__(**kwargs)
+
+    def get_callback(self) -> str:
+        return json.dumps({"type": self.callback_type, "page": self.film_list})
+
+    def get_text(self) -> str:
+        return "Вернуться к списку сериалов"
 
 
 class NavigateButton(AbsButton):
