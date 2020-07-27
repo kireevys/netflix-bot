@@ -25,7 +25,8 @@ from netflix_bot.telegram_bot.ui import (
     SeasonButton,
     EpisodeButton,
     GridKeyboard,
-    FilmList, BackButton,
+    FilmList,
+    BackButton,
 )
 
 logger = logging.getLogger(__name__)
@@ -155,10 +156,14 @@ class CallbackManager:
 
         keyboard.inline_keyboard.append([BackButton(series)])
 
+        caption = f"Список серий {series.title}\n s{season_no}"
+
+        logger.info(f"{self.update.effective_user} GET {caption}")
+
         return self.context.bot.edit_message_text(
             message_id=self.update.effective_message.message_id,
             chat_id=self.chat_id,
-            text=f"Список серий {series.title}\n s{season_no}",
+            text=caption,
             reply_markup=keyboard,
         )
 
@@ -183,8 +188,14 @@ class CallbackManager:
         if not self._is_subscribed():
             return send_need_subscribe(self.chat_id, self.bot)
 
-        file_id = models.Episode.objects.get(id=self.callback_data.get("id")).file_id
-        return self.bot.send_video(chat_id=self.chat_id, video=file_id)
+        episode = models.Episode.objects.get(id=self.callback_data.get("id"))
+        caption = f"{episode.series.title} s{episode.season}e{episode.episode}"
+
+        logger.info(f"{self.update.effective_user} GET {caption}")
+
+        return self.bot.send_video(
+            chat_id=self.chat_id, video=episode.file_id, caption=caption
+        )
 
     @callback_type
     def navigate(self):

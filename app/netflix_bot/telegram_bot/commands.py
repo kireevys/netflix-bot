@@ -1,8 +1,9 @@
 import logging
 
+from telegram import ReplyKeyboardMarkup, KeyboardButton
 from telegram import Update
 from telegram.ext import CallbackContext
-from telegram import ReplyKeyboardMarkup, KeyboardButton
+
 from ..models import User
 
 logger = logging.getLogger(__name__)
@@ -18,8 +19,9 @@ def start(update: Update, context: CallbackContext):
 
     logger.info(f"{user} say /start")
 
+    name = user.user_name or user.first_name or "Странник"
     context.bot.send_message(
         chat_id=update.effective_chat.id,
-        text=f"Привет, {user.user_name}. Я покажу тебе сериалы, только прикажи)",
+        text=f"Привет, {name}. Я покажу тебе сериалы, только прикажи)",
         reply_markup=keyboard,
     )
