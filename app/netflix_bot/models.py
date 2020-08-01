@@ -39,6 +39,28 @@ class Episode(models.Model):
     season = models.IntegerField()
     lang = models.CharField(max_length=3, choices=Langs.choices, default=Langs.RUS)
 
+    def get_next(self):
+        next_episode = Episode.objects.filter(series=self.series, season=self.season, episode__gt=self.episode)
+
+        if not len(next_episode):
+            try:
+                next_episode = Episode.objects.get(series=self.series, season=self.season + 1, episode=1)
+            except Episode.DoesNotExist:
+                return None
+
+        return next_episode.first()
+
+    def get_previous(self):
+        previous = Episode.objects.filter(series=self.series, season=self.season, episode__lt=self.episode)
+
+        if not len(previous):
+            try:
+                previous = Episode.objects.get(series=self.series, season=self.season - 1)
+            except Episode.DoesNotExist:
+                return None
+
+        return previous.last()
+
     class Meta:
         unique_together = ["series", "episode", "season", "lang"]
         db_table = "episodes"

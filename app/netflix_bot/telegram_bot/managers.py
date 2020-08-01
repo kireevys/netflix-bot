@@ -11,6 +11,7 @@ from telegram import (
     ChatMember,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
+    InputMediaVideo,
 )
 from telegram import Update
 from telegram.bot import Bot
@@ -18,7 +19,6 @@ from telegram.error import BadRequest
 from telegram.ext import CallbackContext
 
 from netflix_bot import models
-
 # from netflix_bot.telegram_bot.messages import get_episode_list
 from netflix_bot.telegram_bot.handlers import get_factory
 from netflix_bot.telegram_bot.ui import (
@@ -191,11 +191,34 @@ class CallbackManager:
         episode = models.Episode.objects.get(id=self.callback_data.get("id"))
         caption = f"{episode.series.title} s{episode.season}e{episode.episode}"
 
+        n, p = (episode.get_previous(), episode.get_next())
+
+        buttons = []
+        if n:
+            buttons.append(EpisodeButton(n))
+
+        if p:
+            buttons.append(EpisodeButton(p))
+
+        keyboard = InlineKeyboardMarkup.from_row(buttons)
+
         logger.info(f"{self.update.effective_user} GET {caption}")
 
-        return self.bot.send_video(
-            chat_id=self.chat_id, video=episode.file_id, caption=caption
-        )
+        if not self.update.effective_message.video:
+            return self.bot.send_video(
+                chat_id=self.chat_id,
+                video=episode.file_id,
+                caption=caption,
+                reply_markup=keyboard,
+            )
+
+        else:
+            return self.bot.edit_message_media(
+                message_id=self.update.effective_message.message_id,
+                chat_id=self.chat_id,
+                media=InputMediaVideo(episode.file_id, caption=caption),
+                reply_markup=keyboard,
+            )
 
     @callback_type
     def navigate(self):
