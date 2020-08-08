@@ -45,6 +45,7 @@ class Episode(models.Model):
         if not len(next_episode):
             try:
                 next_episode = Episode.objects.get(series=self.series, season=self.season + 1, episode=1)
+                return next_episode
             except Episode.DoesNotExist:
                 return None
 
@@ -55,7 +56,7 @@ class Episode(models.Model):
 
         if not len(previous):
             try:
-                previous = Episode.objects.get(series=self.series, season=self.season - 1)
+                previous = Episode.objects.filter(series=self.series, season=self.season - 1)
             except Episode.DoesNotExist:
                 return None
 
