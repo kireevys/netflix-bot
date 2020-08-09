@@ -13,6 +13,7 @@ from telegram import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
     InputMediaVideo,
+    InputMediaPhoto,
 )
 from telegram import Update
 from telegram.bot import Bot
@@ -136,21 +137,46 @@ class CallbackManager(ABC):
 
 
 class UIManager(CallbackManager):
+    def _is_subscribed(self):
+        try:
+            chat_member: ChatMember = self.bot.get_chat_member(
+                settings.MAIN_CHANNEL_ID, self.update.effective_user.id
+            )
+        except BadRequest:
+            logger.warning(f"user {self.update.effective_user} is not subscribed")
+            return True
+
+        status = chat_member.status
+        if status in ("restricted", "left", "kicked"):
+            logger.warning(f"user {self.update.effective_user} has {status}")
+            return False
+
+        return True
+
     @callback_type
     def film_list(self):
+        """
+        Выбор сериала - возвращает сезоны
+        :return:
+        """
         factory = get_factory()
 
-        logger.info(f"{self.update.effective_user} request f-list")
+        logger.info(f"{self.update.effective_user} request film list")
 
-        self.bot.edit_message_text(
+        self.bot.edit_message_media(
             message_id=self.update.effective_message.message_id,
             chat_id=self.chat_id,
-            text="Вот что у меня есть",
+            media=InputMediaPhoto(
+                media=settings.MAIN_PHOTO, caption="Вот что у меня есть"
+            ),
             reply_markup=factory.page_from_column(1),
         )
 
     @callback_type
     def series(self) -> Message:
+        """
+        Возвращает Список серий в сезоне
+        """
         series = models.Series.objects.get(pk=self.callback_data.get("id"))
         buttons = [SeasonButton(season) for season in series.get_seasons()]
 
@@ -159,15 +185,21 @@ class UIManager(CallbackManager):
         keyboard = GridKeyboard.from_grid(pagination_buttons.page(1))
         keyboard.inline_keyboard.append([FilmList(1)])
 
-        return self.bot.edit_message_text(
+        return self.bot.edit_message_media(
             message_id=self.update.effective_message.message_id,
             chat_id=self.chat_id,
-            text=f"{series.title}\n\n{series.desc or ''}",
+            media=InputMediaPhoto(
+                media=series.poster or settings.MAIN_PHOTO,
+                caption=f"{series.title}\n\n{series.desc or ''}",
+            ),
             reply_markup=keyboard,
         )
 
     @callback_type
     def season(self) -> Message:
+        """
+        Список сезонов
+        """
         series, season_no, lang = (
             self.callback_data.get("series"),
             self.callback_data.get("id"),
@@ -187,28 +219,14 @@ class UIManager(CallbackManager):
 
         logger.info(f"{self.update.effective_user} GET {caption}")
 
-        return self.context.bot.edit_message_text(
+        return self.context.bot.edit_message_media(
             message_id=self.update.effective_message.message_id,
             chat_id=self.chat_id,
-            text=caption,
+            media=InputMediaPhoto(
+                media=series.poster or settings.MAIN_PHOTO, caption=caption
+            ),
             reply_markup=keyboard,
         )
-
-    def _is_subscribed(self):
-        try:
-            chat_member: ChatMember = self.bot.get_chat_member(
-                settings.MAIN_CHANNEL_ID, self.update.effective_user.id
-            )
-        except BadRequest:
-            logger.warning(f"user {self.update.effective_user} is not subscribed")
-            return True
-
-        status = chat_member.status
-        if status in ("restricted", "left", "kicked"):
-            logger.warning(f"user {self.update.effective_user} has {status}")
-            return False
-
-        return True
 
     @callback_type
     def episode(self) -> Message:
@@ -218,34 +236,23 @@ class UIManager(CallbackManager):
         episode = models.Episode.objects.get(id=self.callback_data.get("id"))
         caption = f"{episode.series.title} s{episode.season}e{episode.episode}"
 
-        n, p = (episode.get_previous(), episode.get_next())
-
-        buttons = []
-        if n:
-            buttons.append(EpisodeButton(n))
-
-        if p:
-            buttons.append(EpisodeButton(p))
+        buttons = [
+            EpisodeButton(episode)
+            for episode in (episode.get_previous(), episode.get_next())
+            if episode is not None
+        ]
 
         keyboard = InlineKeyboardMarkup.from_row(buttons)
+        keyboard.inline_keyboard.append([SeasonButton(episode.get_season())])
 
         logger.info(f"{self.update.effective_user} GET {caption}")
 
-        if not self.update.effective_message.video:
-            return self.bot.send_video(
-                chat_id=self.chat_id,
-                video=episode.file_id,
-                caption=caption,
-                reply_markup=keyboard,
-            )
-
-        else:
-            return self.bot.edit_message_media(
-                message_id=self.update.effective_message.message_id,
-                chat_id=self.chat_id,
-                media=InputMediaVideo(episode.file_id, caption=caption),
-                reply_markup=keyboard,
-            )
+        return self.bot.edit_message_media(
+            message_id=self.update.effective_message.message_id,
+            chat_id=self.chat_id,
+            media=InputMediaVideo(episode.file_id, caption=caption),
+            reply_markup=keyboard,
+        )
 
     @callback_type
     def navigate(self):
@@ -254,9 +261,11 @@ class UIManager(CallbackManager):
 
         keyboard = factory.page_from_column(page)
 
-        return self.bot.edit_message_text(
+        return self.bot.edit_message_media(
             message_id=self.update.effective_message.message_id,
             chat_id=self.chat_id,
-            text=f"Страница {page}",
+            media=InputMediaPhoto(
+                media=settings.MAIN_PHOTO, caption=f"Страница {page}"
+            ),
             reply_markup=keyboard,
         )

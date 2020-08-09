@@ -21,6 +21,11 @@ def add_description(update: Update, context: CallbackContext):
     logger.info(f"update description for {series}")
 
 
+def add_poster(update: Update, context: CallbackContext):
+    logging.info(str(update))
+    VideoUploader(update, context).add_poster(update.channel_post.photo[-1].file_id)
+
+
 def upload_video(update: Update, context: CallbackContext):
     logging.info(str(update))
     VideoUploader(update, context).upload()

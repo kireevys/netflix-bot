@@ -34,6 +34,21 @@ class VideoUploader:
             ]
         )
 
+    def add_poster(self, file_id: str):
+        manager = SeriesManager.from_caption(caption=self.update.channel_post.caption)
+        series = Series.objects.get(title=manager.title)
+        series.poster = file_id
+        series.save()
+
+        self.bot.edit_message_caption(
+            chat_id=self.update.effective_chat.id,
+            message_id=self.update.effective_message.message_id,
+            caption=f"{settings.EMOJI.get('ok')} {self.update.channel_post.caption}",
+        )
+        logger.info(f"{series} get new poster")
+
+        return series
+
     def add_description(self, desc_text) -> Series:
         series = Series.objects.get(
             episode__message_id=self.update.effective_message.reply_to_message.message_id
@@ -72,7 +87,7 @@ class VideoUploader:
         )
 
         try:
-            episode = manager.write(message.video.file_id, message.message_id, )
+            episode = manager.write(message.video.file_id, message.message_id,)
             logger.info(f"<{episode}> successful loaded")
         except IntegrityError:
             logger.info(f"Loaded exists episode <{manager}>. Message delete")
