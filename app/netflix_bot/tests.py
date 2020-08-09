@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from . import models
+from netflix_bot import models
 from .telegram_bot.managers import SeriesManager
 
 
@@ -24,15 +24,69 @@ class TestSeriesManager(TestCase):
     def test_caption_parser(self):
         for caption, title, season, episode, lang in [
             ("Тест/Test\n1 сезон/1 серия", "Тест/Test", 1, 1, models.Episode.Langs.RUS),
-            ("Тест/Test\n1 сезон/1 серия\nRUS", "Тест/Test", 1, 1, models.Episode.Langs.RUS),
-            ("Тест/Test\n1 сезон/1 серия\nENG", "Тест/Test", 1, 1, models.Episode.Langs.ENG),
-            ("Тест/Test\n1 сезон/1 серия\nEnG", "Тест/Test", 1, 1, models.Episode.Langs.ENG),
-            ("Тест/Test\n1 сезон/1 серия\nОзвучка", "Тест/Test", 1, 1, models.Episode.Langs.RUS),
-            ("Тест/Test\n1 сезон/1 серия\nSUB", "Тест/Test", 1, 1, models.Episode.Langs.SUB),
-            ("Тест/Test\n1 сезон/2 серия\nSUB", "Тест/Test", 1, 2, models.Episode.Langs.SUB),
-            ("Тест / Test\n123 сезон/2123 серия\nSUB", "Тест / Test", 123, 2123, models.Episode.Langs.SUB),
-            ("Тест/Test\n123 s / 2123 серия\nSUB", "Тест/Test", 123, 2123, models.Episode.Langs.SUB),
-            ("Тест/Test\n123 season / 2123 episode", "Тест/Test", 123, 2123, models.Episode.Langs.RUS),
+            (
+                "Тест/Test\n1 сезон/1 серия\nRUS",
+                "Тест/Test",
+                1,
+                1,
+                models.Episode.Langs.RUS,
+            ),
+            (
+                "Тест/Test\n1 сезон/1 серия\nENG",
+                "Тест/Test",
+                1,
+                1,
+                models.Episode.Langs.ENG,
+            ),
+            (
+                "Тест/Test\n1 сезон/1 серия\nEnG",
+                "Тест/Test",
+                1,
+                1,
+                models.Episode.Langs.ENG,
+            ),
+            (
+                "Тест/Test\n1 сезон/1 серия\nОзвучка",
+                "Тест/Test",
+                1,
+                1,
+                models.Episode.Langs.RUS,
+            ),
+            (
+                "Тест/Test\n1 сезон/1 серия\nSUB",
+                "Тест/Test",
+                1,
+                1,
+                models.Episode.Langs.SUB,
+            ),
+            (
+                "Тест/Test\n1 сезон/2 серия\nSUB",
+                "Тест/Test",
+                1,
+                2,
+                models.Episode.Langs.SUB,
+            ),
+            (
+                "Тест / Test\n123 сезон/2123 серия\nSUB",
+                "Тест / Test",
+                123,
+                2123,
+                models.Episode.Langs.SUB,
+            ),
+            (
+                "Тест/Test\n123 s / 2123 серия\nSUB",
+                "Тест/Test",
+                123,
+                2123,
+                models.Episode.Langs.SUB,
+            ),
+            (
+                "Тест/Test\n123 season / 2123 episode",
+                "Тест/Test",
+                123,
+                2123,
+                models.Episode.Langs.RUS,
+            ),
         ]:
             with self.subTest(caption):
                 manager = SeriesManager.from_caption(caption)
