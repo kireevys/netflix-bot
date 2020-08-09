@@ -9,7 +9,7 @@ from telegram.ext import Updater
 
 from .commands import start
 from .handlers import get_film_list
-from .messages import upload_video, callbacks
+from .messages import upload_video, callbacks, add_description
 
 logger = logging.getLogger(__name__)
 
@@ -47,10 +47,25 @@ def up_bot() -> Dispatcher:
         Filters.text("Покажи сериалы") & (~Filters.command), get_film_list,
     )
 
-    upload_handler = MessageHandler(Filters.video & (~Filters.command), upload_video)
+    upload_handler = MessageHandler(
+        Filters.video & (~Filters.command) & (~Filters.update.edited_channel_post),
+        upload_video,
+    )
+    edit_description_handler = MessageHandler(
+        Filters.reply & (~Filters.command), add_description
+    )
+
+    # FIXME: Ниработаит(((
+    #       Бот не хочет получать обновления на сообщения, который он сам и отправил
+    # edit_video_handler = MessageHandler(
+    #     Filters.update.edited_channel_post & (~Filters.command), edit_video
+    # )
+    # dispatcher.add_handler(edit_video_handler)
 
     dispatcher.add_handler(watch_handler)
     dispatcher.add_handler(upload_handler)
+
+    dispatcher.add_handler(edit_description_handler)
     dispatcher.add_handler(CallbackQueryHandler(callbacks))
 
     dispatcher.add_error_handler(error_callback)

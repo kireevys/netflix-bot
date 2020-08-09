@@ -83,7 +83,7 @@ WSGI_APPLICATION = "project.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
+        "NAME": os.path.join(BASE_DIR, "db_bkp.sqlite3"),
     }
 }
 
@@ -117,7 +117,10 @@ CERT_PATH = os.getenv("CERT_PATH")
 BOT_PORT = os.getenv("BOT_PORT", 8443)
 BOT_TOKEN = os.getenv("TOKEN")
 
-UPLOADER_ID = -1001392439062
+EMOJI = {"ok": "✅"}
+ELEMENTS_PER_PAGE = 5
+
+UPLOADER_ID = os.getenv("UPLOADER", -1001392439062)
 UPLOADER_INVITE = "https://t.me/joinchat/AAAAAEr4GjWrNeNVda-3MA"
 
 MAIN_CHANNEL_ID = -1001257773621
@@ -184,7 +187,7 @@ LOGGING = {
     "loggers": {
         "django": {"handlers": handlers, "level": LOG_LEVEL, "propagate": True},
         "project": {"handlers": handlers, "level": LOG_LEVEL, "propagate": True},
-        "telegram": {"handlers": handlers, "level": LOG_LEVEL, "propagate": True},
+        "telegram": {"handlers": handlers, "level": DEBUG, "propagate": True},
         "netflix_bot": {"handlers": handlers, "level": LOG_LEVEL, "propagate": True},
         "telegram_bot": {"handlers": handlers, "level": LOG_LEVEL, "propagate": True},
     },

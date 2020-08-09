@@ -3,6 +3,7 @@ import logging
 import random
 import re
 import string
+from abc import ABC
 
 from django.conf import settings
 from django.core.paginator import Paginator
@@ -19,7 +20,6 @@ from telegram.error import BadRequest
 from telegram.ext import CallbackContext
 
 from netflix_bot import models
-# from netflix_bot.telegram_bot.messages import get_episode_list
 from netflix_bot.telegram_bot.handlers import get_factory
 from netflix_bot.telegram_bot.ui import (
     SeasonButton,
@@ -33,26 +33,35 @@ logger = logging.getLogger(__name__)
 
 
 class SeriesManager(dict):
+    def __init__(self, title, season, episode, lang):
+        self.title = title
+        self.season = season
+        self.episode = episode
+        self.lang = self.get_lang(lang.upper())
+        super().__init__(title=title, season=season, episode=episode, lang=lang)
+
+    @staticmethod
+    def _strip_ok_emoji(caption: str) -> str:
+        if caption.startswith(settings.EMOJI.get("ok")):
+            caption = caption.strip(settings.EMOJI.get("ok"))
+
+        return caption
+
     @classmethod
-    def parse_caption(cls, caption) -> "SeriesManager":
+    def from_caption(cls, caption: str) -> "SeriesManager":
         """
         Caption example:
             Неортодоксальная / Unorthodox
             1 Сезон / 4 Серия
             SUB
         """
+        caption = cls._strip_ok_emoji(caption)
+
         title, series, *lang = caption.split("\n")
         season, episode = re.findall(r"(\d+)", series)
 
-        lang = lang[0].upper() if lang else models.Episode.Langs.RUS
-        return cls(title=title, season=season, episode=episode, lang=lang)
-
-    def __init__(self, title, season, episode, lang):
-        self.title = title
-        self.season = season
-        self.episode = episode
-        self.lang = lang
-        super().__init__(title=title, season=season, episode=episode, lang=lang)
+        lang = lang[0] if lang else "empty"
+        return cls(title=title, season=int(season), episode=int(episode), lang=lang)
 
     def _fake_write(self, file_id, message_id):
         series, _ = models.Series.objects.get_or_create(
@@ -68,6 +77,14 @@ class SeriesManager(dict):
         )
         return episode
 
+    @staticmethod
+    def get_lang(lang: str):
+        if lang not in models.Episode.Langs:
+            logger.info(f"incorrect lang {lang}. Use default")
+            return models.Episode.Langs.RUS.name
+
+        return lang
+
     def write(self, file_id, message_id):
         series, _ = models.Series.objects.get_or_create(title=self.title)
         episode = models.Episode.objects.create(
@@ -78,10 +95,14 @@ class SeriesManager(dict):
             file_id=file_id,
             message_id=message_id,
         )
+
         return episode
 
+    def get_loader_format_caption(self):
+        return f"{settings.EMOJI.get('ok')}{self.title}\n{self.season} season / {self.episode} episode\n{self.lang}"
+
     def __str__(self):
-        return f"{self.title} s{self.season}e{self.episode}"
+        return f"{self.title} s{self.season}e{self.episode} {self.lang}"
 
 
 _call_types = {}
@@ -100,7 +121,7 @@ def send_need_subscribe(chat_id, bot: Bot):
     )
 
 
-class CallbackManager:
+class CallbackManager(ABC):
     def __init__(self, update: Update, context: CallbackContext):
         self.update = update
         self.callback_data = json.loads(update.callback_query.data)
@@ -109,6 +130,12 @@ class CallbackManager:
         self.bot: Bot = context.bot
         self.chat_id = self.update.effective_chat.id
 
+    def send_reaction_on_callback(self) -> Message:
+        handler = _call_types.get(self.type)
+        return handler(self)
+
+
+class UIManager(CallbackManager):
     @callback_type
     def film_list(self):
         factory = get_factory()
@@ -127,7 +154,7 @@ class CallbackManager:
         series = models.Series.objects.get(pk=self.callback_data.get("id"))
         buttons = [SeasonButton(season) for season in series.get_seasons()]
 
-        pagination_buttons = Paginator(buttons, 5)
+        pagination_buttons = Paginator(buttons, settings.ELEMENTS_PER_PAGE)
 
         keyboard = GridKeyboard.from_grid(pagination_buttons.page(1))
         keyboard.inline_keyboard.append([FilmList(1)])
@@ -135,7 +162,7 @@ class CallbackManager:
         return self.bot.edit_message_text(
             message_id=self.update.effective_message.message_id,
             chat_id=self.chat_id,
-            text=f"Сезоны {series.title}",
+            text=f"{series.title}\n\n{series.desc or ''}",
             reply_markup=keyboard,
         )
 
@@ -178,7 +205,7 @@ class CallbackManager:
 
         status = chat_member.status
         if status in ("restricted", "left", "kicked"):
-            logger.warning(f"user {self.update.effective_user} is {status}")
+            logger.warning(f"user {self.update.effective_user} has {status}")
             return False
 
         return True
@@ -233,7 +260,3 @@ class CallbackManager:
             text=f"Страница {page}",
             reply_markup=keyboard,
         )
-
-    def send_reaction_on_callback(self) -> Message:
-        handler = _call_types.get(self.type)
-        return handler(self)
