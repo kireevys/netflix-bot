@@ -26,14 +26,14 @@ class GridKeyboard(InlineKeyboardMarkup):
 
     @classmethod
     def from_grid(
-        cls, grid_buttons: Collection[InlineKeyboardButton], length=3, **kwargs
+            cls, grid_buttons: Collection[InlineKeyboardButton], length=3, **kwargs
     ):
         grid = cls._get_grid(grid_buttons, length)
         return cls(grid, **kwargs)
 
     @classmethod
     def pagination(
-        cls, grid_buttons: Collection[InlineKeyboardButton], per_page: int, page: int
+            cls, grid_buttons: Collection[InlineKeyboardButton], per_page: int, page: int
     ):
         p = Paginator(grid_buttons, per_page)
 
