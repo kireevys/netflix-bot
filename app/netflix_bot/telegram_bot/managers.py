@@ -130,6 +130,7 @@ class CallbackManager(ABC):
         self.context = context
         self.bot: Bot = context.bot
         self.chat_id = self.update.effective_chat.id
+        self.message_id = self.update.effective_message.message_id
 
     def send_reaction_on_callback(self) -> Message:
         handler = _call_types.get(self.type)
@@ -164,7 +165,7 @@ class UIManager(CallbackManager):
         logger.info(f"{self.update.effective_user} request film list")
 
         self.bot.edit_message_media(
-            message_id=self.update.effective_message.message_id,
+            message_id=self.message_id,
             chat_id=self.chat_id,
             media=InputMediaPhoto(
                 media=settings.MAIN_PHOTO, caption="Вот что у меня есть"
@@ -186,7 +187,7 @@ class UIManager(CallbackManager):
         keyboard.inline_keyboard.append([FilmList(1)])
 
         return self.bot.edit_message_media(
-            message_id=self.update.effective_message.message_id,
+            message_id=self.message_id,
             chat_id=self.chat_id,
             media=InputMediaPhoto(
                 media=series.poster or settings.MAIN_PHOTO,
@@ -248,7 +249,7 @@ class UIManager(CallbackManager):
         logger.info(f"{self.update.effective_user} GET {caption}")
 
         return self.bot.edit_message_media(
-            message_id=self.update.effective_message.message_id,
+            message_id=self.message_id,
             chat_id=self.chat_id,
             media=InputMediaVideo(episode.file_id, caption=caption),
             reply_markup=keyboard,
@@ -262,7 +263,7 @@ class UIManager(CallbackManager):
         keyboard = factory.page_from_column(page)
 
         return self.bot.edit_message_media(
-            message_id=self.update.effective_message.message_id,
+            message_id=self.message_id,
             chat_id=self.chat_id,
             media=InputMediaPhoto(
                 media=settings.MAIN_PHOTO, caption=f"Страница {page}"
