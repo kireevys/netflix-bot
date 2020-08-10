@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 def start(update: Update, context: CallbackContext):
-    keyboard = ReplyKeyboardMarkup([[KeyboardButton("Покажи сериалы")]])
+    keyboard = ReplyKeyboardMarkup([[KeyboardButton("Покажи сериалы")]], one_time_keyboard=True)
 
     user, created = User.get_or_create(update.effective_user)
 

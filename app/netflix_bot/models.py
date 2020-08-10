@@ -39,6 +39,9 @@ class Episode(models.Model):
     season = models.IntegerField()
     lang = models.CharField(max_length=3, choices=Langs.choices, default=Langs.RUS)
 
+    def get_season(self):
+        return Season(self.series.pk, self.season, self.lang)
+
     def get_next(self):
         next_episode = Episode.objects.filter(
             series=self.series,
@@ -86,6 +89,7 @@ class Season:
 
 class Series(models.Model):
     title = models.TextField(unique=True)
+    poster = models.TextField(unique=False, null=True)
     desc = models.TextField(null=True)
 
     class Meta:
