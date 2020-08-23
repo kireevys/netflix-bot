@@ -32,6 +32,8 @@ DEBUG = bool(int(os.getenv("DEBUG", False)))
 
 ALLOWED_HOSTS = ["it-garage.fun", "194.67.104.62"]
 
+STATIC_ROOT= os.path.join(BASE_DIR, 'static')
+
 if DEBUG:
     ALLOWED_HOSTS.append("*")
 
