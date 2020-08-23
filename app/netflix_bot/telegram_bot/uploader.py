@@ -36,7 +36,7 @@ class VideoUploader:
 
     def add_poster(self, file_id: str):
         manager = SeriesManager.from_caption(caption=self.update.channel_post.caption)
-        series = Series.objects.get(title=manager.title)
+        series = Series.objects.get(title_ru=manager.title_ru)
         series.poster = file_id
         series.save()
 
