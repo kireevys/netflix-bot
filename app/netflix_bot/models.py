@@ -88,12 +88,17 @@ class Season:
 
 
 class Series(models.Model):
-    title = models.TextField(unique=True)
+    title_ru = models.TextField(unique=True, null=True)
+    title_eng = models.TextField(unique=True)
     poster = models.TextField(unique=False, null=True)
     desc = models.TextField(null=True)
 
     class Meta:
         db_table = "series"
+
+    @property
+    def title(self):
+        return f"{self.title_ru} / {self.title_eng}"
 
     def get_count(self, lang=Episode.Langs.RUS) -> int:
         return Episode.objects.filter(series=self, lang=lang).count()

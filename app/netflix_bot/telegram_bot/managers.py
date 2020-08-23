@@ -34,12 +34,23 @@ logger = logging.getLogger(__name__)
 
 
 class SeriesManager(dict):
-    def __init__(self, title, season, episode, lang):
-        self.title = title
+    def __init__(self, title_ru, title_eng, season, episode, lang):
+        self.title_ru = title_ru
+        self.title_eng = title_eng
         self.season = season
         self.episode = episode
         self.lang = self.get_lang(lang.upper())
-        super().__init__(title=title, season=season, episode=episode, lang=lang)
+        super().__init__(
+            title_ru=title_ru,
+            title_eng=title_eng,
+            season=season,
+            episode=episode,
+            lang=lang,
+        )
+
+    @property
+    def title(self):
+        return f"{self.title_ru} / {self.title_eng}"
 
     @staticmethod
     def _strip_ok_emoji(caption: str) -> str:
@@ -61,8 +72,16 @@ class SeriesManager(dict):
         title, series, *lang = caption.split("\n")
         season, episode = re.findall(r"(\d+)", series)
 
+        title_ru, title_eng = [i.strip() for i in title.split("/")]
+
         lang = lang[0] if lang else "empty"
-        return cls(title=title, season=int(season), episode=int(episode), lang=lang)
+        return cls(
+            title_ru=title_ru,
+            title_eng=title_eng,
+            season=int(season),
+            episode=int(episode),
+            lang=lang,
+        )
 
     def _fake_write(self, file_id, message_id):
         series, _ = models.Series.objects.get_or_create(
@@ -87,7 +106,9 @@ class SeriesManager(dict):
         return lang
 
     def write(self, file_id, message_id):
-        series, _ = models.Series.objects.get_or_create(title=self.title)
+        series, _ = models.Series.objects.get_or_create(
+            title_ru=self.title_ru, title_eng=self.title_eng
+        )
         episode = models.Episode.objects.create(
             series=series,
             season=self.season,
