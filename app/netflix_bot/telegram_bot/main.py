@@ -7,7 +7,7 @@ from telegram.ext import CommandHandler, CallbackQueryHandler, Dispatcher
 from telegram.ext import MessageHandler, Filters
 from telegram.ext import Updater
 
-from .commands import start
+from .commands import start, SERIES_START, START_COMMAND
 from .handlers import get_film_list
 from .messages import upload_video, callbacks, add_description, add_poster
 
@@ -40,11 +40,12 @@ def up_bot() -> Dispatcher:
     updater = Updater(token=settings.BOT_TOKEN, use_context=True)
     dispatcher: Dispatcher = updater.dispatcher
 
-    start_handler = CommandHandler("start", start)
+    start_handler = CommandHandler(START_COMMAND, start)
     dispatcher.add_handler(start_handler)
 
     watch_handler = MessageHandler(
-        Filters.text("Покажи сериалы") & (~Filters.command), get_film_list,
+        Filters.text(SERIES_START) & (~Filters.command),
+        get_film_list,
     )
 
     upload_handler = MessageHandler(
@@ -54,16 +55,7 @@ def up_bot() -> Dispatcher:
     edit_description_handler = MessageHandler(
         Filters.reply & (~Filters.command), add_description
     )
-    add_poster_handler = MessageHandler(
-        Filters.photo & (~Filters.command), add_poster
-    )
-
-    # FIXME: Ниработаит(((
-    #       Бот не хочет получать обновления на сообщения, который он сам и отправил
-    # edit_video_handler = MessageHandler(
-    #     Filters.update.edited_channel_post & (~Filters.command), edit_video
-    # )
-    # dispatcher.add_handler(edit_video_handler)
+    add_poster_handler = MessageHandler(Filters.photo & (~Filters.command), add_poster)
 
     dispatcher.add_handler(watch_handler)
     dispatcher.add_handler(upload_handler)

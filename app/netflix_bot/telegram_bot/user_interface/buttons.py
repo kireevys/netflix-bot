@@ -1,43 +1,9 @@
 import json
 from abc import abstractmethod
-from math import ceil
-from typing import Collection
 
-from django.core.paginator import Paginator
-from telegram import InlineKeyboardMarkup, InlineKeyboardButton
+from telegram import InlineKeyboardButton
 
-from netflix_bot.models import Series, Episode, Season
-
-
-class GridKeyboard(InlineKeyboardMarkup):
-    @classmethod
-    def _get_grid(cls, grid_buttons: Collection[InlineKeyboardButton], length=3):
-        h = ceil(len(grid_buttons) / length)
-
-        grid = []
-        start = 0
-
-        for i in range(h):
-            stop = length * (i + 1)
-            grid.append(grid_buttons[start:stop])
-            start += length
-
-        return grid
-
-    @classmethod
-    def from_grid(
-            cls, grid_buttons: Collection[InlineKeyboardButton], length=3, **kwargs
-    ):
-        grid = cls._get_grid(grid_buttons, length)
-        return cls(grid, **kwargs)
-
-    @classmethod
-    def pagination(
-            cls, grid_buttons: Collection[InlineKeyboardButton], per_page: int, page: int
-    ):
-        p = Paginator(grid_buttons, per_page)
-
-        return p.page(page)
+from netflix_bot.models import Series, Season, Episode
 
 
 class AbsButton(InlineKeyboardButton):
@@ -65,7 +31,6 @@ class AbsButton(InlineKeyboardButton):
     def __delete_extra(self):
         """
         Удаление дополнительных полей из словаря
-        :return:
         """
         pass
 
@@ -113,7 +78,7 @@ class SeasonButton(AbsButton):
         return f"{self.season.id:<3}: {self.season.lang}"
 
 
-class FilmList(AbsButton):
+class FilmListButton(AbsButton):
     callback_type = "film_list"
 
     def __init__(self, page, **kwargs):
@@ -131,7 +96,7 @@ class NavigateButton(AbsButton):
     callback_type = "navigate"
     LEFT = ">>"
     RIGHT = "<<"
-    _side_repr = {">>": ">>", "<<": "<<"}
+    _side_repr = {LEFT: LEFT, RIGHT: RIGHT}
 
     def __init__(self, side, current, **kwargs):
         self.navigate = side
@@ -166,38 +131,3 @@ class EpisodeButton(AbsButton):
 
     def get_text(self) -> str:
         return f"{self.episode.episode}"
-
-
-class PaginationKeyboardFactory:
-    def __init__(self, grid_buttons: Collection[InlineKeyboardButton], per_page=5):
-        self.grid_buttons = grid_buttons
-        self.per_page = per_page
-
-    def page_from_column(self, number: int) -> InlineKeyboardMarkup:
-        p = Paginator(self.grid_buttons, self.per_page)
-        keyboard = InlineKeyboardMarkup.from_column(p.page(number))
-        navigator = self._get_navigator(number, p)
-
-        keyboard.inline_keyboard.append(navigator)
-        return keyboard
-
-    def page_from_grid(self, number: int) -> InlineKeyboardMarkup:
-        p = Paginator(self.grid_buttons, self.per_page)
-        keyboard = GridKeyboard.from_grid(p.page(number))
-
-        navigator = self._get_navigator(number, p)
-
-        keyboard.inline_keyboard.append(navigator)
-
-        return keyboard
-
-    def _get_navigator(self, current_page, p):
-        navigator = []
-
-        if current_page > 1:
-            navigator.append(NavigateButton("<<", current_page - 1))
-
-        if current_page < len(p.page_range):
-            navigator.append(NavigateButton(">>", current_page + 1))
-
-        return navigator

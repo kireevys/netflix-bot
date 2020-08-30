@@ -52,7 +52,9 @@ class Episode(models.Model):
 
         if not len(next_episode):
             next_episode = Episode.objects.filter(
-                series=self.series, season=self.season + 1, lang=self.lang,
+                series=self.series,
+                season=self.season + 1,
+                lang=self.lang,
             )
 
         return next_episode.first()
@@ -67,7 +69,9 @@ class Episode(models.Model):
 
         if not len(previous):
             previous = Episode.objects.filter(
-                series=self.series, season=self.season - 1, lang=self.lang,
+                series=self.series,
+                season=self.season - 1,
+                lang=self.lang,
             )
 
         return previous.last()
@@ -116,3 +120,19 @@ class Series(models.Model):
 
     def __str__(self):
         return f"{self.pk} {self.title}"
+
+
+class Genre(models.Model):
+    name = models.CharField(max_length=20, unique=True)
+
+    class Meta:
+        db_table = "genres"
+
+
+class GenreSeries(models.Model):
+    genre = models.ForeignKey(Genre, on_delete=models.SET_NULL, null=True)
+    series = models.ForeignKey(Series, on_delete=models.CASCADE, null=True)
+
+    class Meta:
+        db_table = "genres_series"
+        unique_together = ["genre", "series"]
