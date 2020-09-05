@@ -23,6 +23,9 @@ class User(models.Model):
     class Meta:
         db_table = "users"
 
+        verbose_name = "Пользователь"
+        verbose_name_plural = "Пользователи"
+
 
 class Episode(models.Model):
     class Langs(models.TextChoices):
@@ -84,6 +87,9 @@ class Episode(models.Model):
         unique_together = ["series", "episode", "season", "lang"]
         db_table = "episodes"
 
+        verbose_name = "Эпизоды"
+        verbose_name_plural = "Эпизоды"
+
     def __str__(self):
         return f"{self.series.title} {self.season}/{self.episode} {self.lang}"
 
@@ -104,6 +110,8 @@ class Series(models.Model):
 
     class Meta:
         db_table = "series"
+        verbose_name = "Сериалы"
+        verbose_name_plural = "Сериалы"
 
     @property
     def title(self):
@@ -132,6 +140,8 @@ class Genre(models.Model):
 
     class Meta:
         db_table = "genres"
+        verbose_name = "Жанр"
+        verbose_name_plural = "Жанры"
 
     def __str__(self):
         return self.name

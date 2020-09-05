@@ -6,11 +6,13 @@ from . import models
 @admin.register(models.Episode)
 class EpisodeAdmin(admin.ModelAdmin):
     exclude = ("file_id", "message_id")
+    ordering = ("series", "lang", "season", "episode")
 
 
 @admin.register(models.User)
 class UserAdmin(admin.ModelAdmin):
-    pass
+    ordering = ("id",)
+    date_hierarchy = "add_date"
 
 
 @admin.register(models.Series)
@@ -22,4 +24,4 @@ class SeriesAdmin(admin.ModelAdmin):
 
 @admin.register(models.Genre)
 class GenreAdmin(admin.ModelAdmin):
-    pass
+    ordering = ("name",)
