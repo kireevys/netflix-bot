@@ -43,38 +43,42 @@ class Episode(models.Model):
         return Season(self.series.pk, self.season, self.lang)
 
     def get_next(self):
-        next_episode = Episode.objects.filter(
+        next_episodes = Episode.objects.filter(
             series=self.series,
             season=self.season,
             episode__gt=self.episode,
             lang=self.lang,
         )
 
-        if not len(next_episode):
-            next_episode = Episode.objects.filter(
+        if not len(next_episodes):
+            next_episodes = Episode.objects.filter(
                 series=self.series,
                 season=self.season + 1,
                 lang=self.lang,
             )
 
-        return next_episode.first()
+        next = next_episodes.first()
+
+        return next, f"{next.episode} >>"
 
     def get_previous(self):
-        previous = Episode.objects.filter(
+        previouses = Episode.objects.filter(
             series=self.series,
             season=self.season,
             episode__lt=self.episode,
             lang=self.lang,
         )
 
-        if not len(previous):
-            previous = Episode.objects.filter(
+        if not len(previouses):
+            previouses = Episode.objects.filter(
                 series=self.series,
                 season=self.season - 1,
                 lang=self.lang,
             )
 
-        return previous.last()
+        previous_episode: Episode = previouses.last()
+
+        return previous_episode, f"<< {previous_episode.episode}"
 
     class Meta:
         unique_together = ["series", "episode", "season", "lang"]
@@ -127,6 +131,9 @@ class Genre(models.Model):
 
     class Meta:
         db_table = "genres"
+
+    def __str__(self):
+        return self.name
 
 
 class GenreSeries(models.Model):

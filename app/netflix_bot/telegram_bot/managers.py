@@ -13,9 +13,16 @@ from telegram import (
 )
 
 from netflix_bot import models
-from netflix_bot.telegram_bot.callbacks import CallbackManager, callback
+from netflix_bot.telegram_bot.user_interface.buttons import (
+    BackButton,
+    SeasonButton,
+    ShowSeriesButton,
+    EpisodeButton,
+    AllGenresButton,
+    SeriesMainButton,
+)
+from netflix_bot.telegram_bot.user_interface.callbacks import CallbackManager, callback
 from netflix_bot.telegram_bot.user_interface.keyboards import GridKeyboard, get_factory
-from netflix_bot.telegram_bot.user_interface.buttons import BackButton, SeasonButton, FilmListButton, EpisodeButton
 
 logger = logging.getLogger(__name__)
 
@@ -107,8 +114,23 @@ class SeriesManager:
         return f"{self.title} s{self.season}e{self.episode} {self.lang}"
 
 
-class UIManager(CallbackManager):
-    @callback("film_list")
+class SeriesCallback(CallbackManager):
+    @callback("series_main")
+    def main_menu(self) -> Message:
+        logger.info(f"{self.user} request series list")
+
+        keyboard = InlineKeyboardMarkup(
+            [
+                [ShowSeriesButton(1)],
+                [AllGenresButton()],
+            ]
+        )
+        return self.replace_message(
+            media=InputMediaPhoto(media=settings.MAIN_PHOTO),
+            keyboard=keyboard,
+        )
+
+    @callback("series_list")
     def publish_all_series(self):
         """
         Выбор сериала - возвращает сезоны
@@ -117,11 +139,13 @@ class UIManager(CallbackManager):
 
         logger.info(f"{self.user} request film list")
 
+        keyboard = factory.page_from_column(1)
+
         return self.publish_message(
             media=InputMediaPhoto(
                 media=settings.MAIN_PHOTO, caption="Вот что у меня есть"
             ),
-            keyboard=factory.page_from_column(1),
+            keyboard=keyboard,
         )
 
     @callback("series")
@@ -135,7 +159,7 @@ class UIManager(CallbackManager):
         pagination_buttons = Paginator(buttons, settings.ELEMENTS_PER_PAGE)
 
         keyboard = GridKeyboard.from_grid(pagination_buttons.page(1))
-        keyboard.inline_keyboard.append([FilmListButton(1)])
+        keyboard.inline_keyboard.append([ShowSeriesButton(1)])
 
         return self.publish_message(
             media=InputMediaPhoto(
@@ -182,11 +206,13 @@ class UIManager(CallbackManager):
             return self.send_need_subscribe()
 
         episode = models.Episode.objects.get(id=self.callback_data.get("id"))
-        caption = f"{episode.series.title} s{episode.season}e{episode.episode}"
+        caption = (
+            f"{episode.series.title}\n\n *__s{episode.season}e{episode.episode}__*"
+        )
 
         buttons = [
-            EpisodeButton(episode)
-            for episode in (episode.get_previous(), episode.get_next())
+            EpisodeButton(episode, text=side)
+            for episode, side in (episode.get_previous(), episode.get_next())
             if episode is not None
         ]
 
@@ -196,8 +222,20 @@ class UIManager(CallbackManager):
         logger.info(f"{self.update.effective_user} GET {caption}")
 
         return self.publish_message(
-            media=InputMediaVideo(episode.file_id, caption=caption),
+            media=InputMediaVideo(
+                episode.file_id, caption=caption, parse_mode="MarkdownV2"
+            ),
             keyboard=keyboard,
+        )
+
+    @callback("all_genres")
+    def publish_all_genres(self):
+        message_media = InputMediaPhoto(
+            media=settings.MAIN_PHOTO, caption="Доступные жанры"
+        )
+        return self.publish_message(
+            media=message_media,
+            keyboard=InlineKeyboardMarkup.from_row([SeriesMainButton()]),
         )
 
     @callback("navigate")

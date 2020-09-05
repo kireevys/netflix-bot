@@ -5,7 +5,7 @@ from django.core.paginator import Paginator
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 
 from netflix_bot import models
-from netflix_bot.telegram_bot.user_interface.buttons import NavigateButton, SeriesButton
+from netflix_bot.telegram_bot.user_interface.buttons import NavigateButton, SeriesButton, SeriesMainButton
 
 
 class GridKeyboard(InlineKeyboardMarkup):
@@ -25,14 +25,14 @@ class GridKeyboard(InlineKeyboardMarkup):
 
     @classmethod
     def from_grid(
-        cls, grid_buttons: Collection[InlineKeyboardButton], length=3, **kwargs
+            cls, grid_buttons: Collection[InlineKeyboardButton], length=3, **kwargs
     ):
         grid = cls._get_grid(grid_buttons, length)
         return cls(grid, **kwargs)
 
     @classmethod
     def pagination(
-        cls, grid_buttons: Collection[InlineKeyboardButton], per_page: int, page: int
+            cls, grid_buttons: Collection[InlineKeyboardButton], per_page: int, page: int
     ):
         p = Paginator(grid_buttons, per_page)
 
@@ -50,6 +50,9 @@ class PaginationKeyboardFactory:
         navigator = self._get_navigator(number, p)
 
         keyboard.inline_keyboard.append(navigator)
+
+        keyboard.inline_keyboard.append([SeriesMainButton()])
+
         return keyboard
 
     def page_from_grid(self, number: int) -> InlineKeyboardMarkup:

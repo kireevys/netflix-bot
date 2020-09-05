@@ -4,14 +4,14 @@ from telegram import Update
 from telegram.ext import CallbackContext
 
 # https://github.com/python-telegram-bot/python-telegram-bot/wiki/InlineKeyboard-Example
-from .managers import UIManager
+from .managers import SeriesCallback
 from .uploader import VideoUploader
 
 logger = logging.getLogger(__name__)
 
 
 def callbacks(update: Update, context: CallbackContext):
-    manager = UIManager(update, context)
+    manager = SeriesCallback(update, context)
     manager.send_reaction_on_callback()
 
 

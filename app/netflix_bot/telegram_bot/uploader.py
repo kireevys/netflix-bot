@@ -87,7 +87,7 @@ class VideoUploader:
         )
 
         try:
-            episode = manager.write(message.video.file_id, message.message_id,)
+            episode = manager.write(message.video.file_id, message.message_id, )
             logger.info(f"<{episode}> successful loaded")
         except IntegrityError:
             logger.info(f"Loaded exists episode <{manager}>. Message delete")
