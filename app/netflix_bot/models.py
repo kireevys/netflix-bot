@@ -60,9 +60,14 @@ class Episode(models.Model):
                 lang=self.lang,
             )
 
-        next = next_episodes.first()
+        next_episode = next_episodes.first()
 
-        return next, f"{next.episode} >>"
+        try:
+            caption = f"{next_episode.episode} >>"
+        except AttributeError:
+            caption = None
+
+        return next_episode, caption
 
     def get_previous(self):
         previouses = Episode.objects.filter(
@@ -81,7 +86,12 @@ class Episode(models.Model):
 
         previous_episode: Episode = previouses.last()
 
-        return previous_episode, f"<< {previous_episode.episode}"
+        try:
+            caption = f"<< {previous_episode.episode}"
+        except AttributeError:
+            caption = None
+
+        return previous_episode, caption
 
     class Meta:
         unique_together = ["series", "episode", "season", "lang"]
@@ -132,7 +142,7 @@ class Series(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.pk} {self.title}"
+        return f"{self.title}"
 
 
 class Genre(models.Model):

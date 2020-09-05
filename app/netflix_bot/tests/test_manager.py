@@ -117,15 +117,15 @@ class TestSeriesManager(TransactionTestCase):
                 manager = SeriesManager.from_caption(caption)
                 parsed_episode = manager.write("test_id", 123)
 
-                series = Series.objects.get(id=parsed_episode._series.id)
+                series = Series.objects.get(id=parsed_episode.series.id)
 
                 self.assertEqual(series.title_ru, title_ru.strip())
                 self.assertEqual(series.title_eng, title_eng.strip())
                 self.assertEqual(series.title, title)
 
-                self.assertEqual(parsed_episode._episode, episode)
+                self.assertEqual(parsed_episode.episode, episode)
                 self.assertEqual(parsed_episode.lang, lang)
-                self.assertEqual(parsed_episode._season, season)
+                self.assertEqual(parsed_episode.season, season)
 
                 # tearDown
                 parsed_episode.delete()
