@@ -5,7 +5,12 @@ from django.core.paginator import Paginator
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 
 from netflix_bot import models
-from netflix_bot.telegram_bot.user_interface.buttons import NavigateButton, SeriesButton, SeriesMainButton
+from netflix_bot.telegram_bot.user_interface.buttons import (
+    NavigateButton,
+    SeriesButton,
+    SeriesMainButton,
+    _grid,
+)
 
 
 class GridKeyboard(InlineKeyboardMarkup):
@@ -25,14 +30,14 @@ class GridKeyboard(InlineKeyboardMarkup):
 
     @classmethod
     def from_grid(
-            cls, grid_buttons: Collection[InlineKeyboardButton], length=3, **kwargs
+        cls, grid_buttons: Collection[InlineKeyboardButton], length=3, **kwargs
     ):
         grid = cls._get_grid(grid_buttons, length)
         return cls(grid, **kwargs)
 
     @classmethod
     def pagination(
-            cls, grid_buttons: Collection[InlineKeyboardButton], per_page: int, page: int
+        cls, grid_buttons: Collection[InlineKeyboardButton], per_page: int, page: int
     ):
         p = Paginator(grid_buttons, per_page)
 
@@ -40,9 +45,19 @@ class GridKeyboard(InlineKeyboardMarkup):
 
 
 class PaginationKeyboardFactory:
-    def __init__(self, grid_buttons: Collection[InlineKeyboardButton], per_page=5):
+    def __init__(
+        self, grid_buttons: Collection[InlineKeyboardButton], grid, per_page=5
+    ):
         self.grid_buttons = grid_buttons
         self.per_page = per_page
+        self.grid = grid
+
+    @classmethod
+    def from_queryset(cls, qs, grid, per_page=5) -> "PaginationKeyboardFactory":
+        ButtonCls = _grid.get(grid)
+
+        grid_buttons = [ButtonCls(element) for element in qs]
+        return cls(grid_buttons, grid, per_page)
 
     def page_from_column(self, number: int) -> InlineKeyboardMarkup:
         p = Paginator(self.grid_buttons, self.per_page)
@@ -69,10 +84,10 @@ class PaginationKeyboardFactory:
         navigator = []
 
         if current_page > 1:
-            navigator.append(NavigateButton("<<", current_page - 1))
+            navigator.append(NavigateButton("<<", current_page - 1, self.grid))
 
         if current_page < len(p.page_range):
-            navigator.append(NavigateButton(">>", current_page + 1))
+            navigator.append(NavigateButton(">>", current_page + 1, self.grid))
 
         return navigator
 
