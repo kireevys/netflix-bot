@@ -23,6 +23,9 @@ class User(models.Model):
     class Meta:
         db_table = "users"
 
+        verbose_name = "Пользователь"
+        verbose_name_plural = "Пользователи"
+
 
 class Episode(models.Model):
     class Langs(models.TextChoices):
@@ -57,9 +60,14 @@ class Episode(models.Model):
                 lang=self.lang,
             )
 
-        next = next_episodes.first()
+        next_episode = next_episodes.first()
 
-        return next, f"{next.episode} >>"
+        try:
+            caption = f"{next_episode.episode} >>"
+        except AttributeError:
+            caption = None
+
+        return next_episode, caption
 
     def get_previous(self):
         previouses = Episode.objects.filter(
@@ -78,11 +86,19 @@ class Episode(models.Model):
 
         previous_episode: Episode = previouses.last()
 
-        return previous_episode, f"<< {previous_episode.episode}"
+        try:
+            caption = f"<< {previous_episode.episode}"
+        except AttributeError:
+            caption = None
+
+        return previous_episode, caption
 
     class Meta:
         unique_together = ["series", "episode", "season", "lang"]
         db_table = "episodes"
+
+        verbose_name = "Эпизоды"
+        verbose_name_plural = "Эпизоды"
 
     def __str__(self):
         return f"{self.series.title} {self.season}/{self.episode} {self.lang}"
@@ -98,11 +114,14 @@ class Season:
 class Series(models.Model):
     title_ru = models.TextField(unique=True, null=True)
     title_eng = models.TextField(unique=True)
-    poster = models.TextField(unique=False, null=True)
-    desc = models.TextField(null=True)
+    poster = models.TextField(unique=False, null=True, blank=True)
+    genre = models.ManyToManyField("Genre", blank=True)
+    desc = models.TextField(null=True, blank=True)
 
     class Meta:
         db_table = "series"
+        verbose_name = "Сериалы"
+        verbose_name_plural = "Сериалы"
 
     @property
     def title(self):
@@ -123,7 +142,7 @@ class Series(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.pk} {self.title}"
+        return f"{self.title}"
 
 
 class Genre(models.Model):
@@ -131,15 +150,8 @@ class Genre(models.Model):
 
     class Meta:
         db_table = "genres"
+        verbose_name = "Жанр"
+        verbose_name_plural = "Жанры"
 
     def __str__(self):
         return self.name
-
-
-class GenreSeries(models.Model):
-    genre = models.ForeignKey(Genre, on_delete=models.SET_NULL, null=True)
-    series = models.ForeignKey(Series, on_delete=models.CASCADE, null=True)
-
-    class Meta:
-        db_table = "genres_series"
-        unique_together = ["genre", "series"]
