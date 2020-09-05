@@ -8,7 +8,8 @@ from telegram.ext import MessageHandler, Filters
 from telegram.ext import Updater
 
 from .commands import start, SERIES_START, START_COMMAND
-from .handlers import get_film_list
+# from .handlers import starting_series
+from .managers import SeriesCallback
 from .messages import upload_video, callbacks, add_description, add_poster
 
 logger = logging.getLogger(__name__)
@@ -45,7 +46,7 @@ def up_bot() -> Dispatcher:
 
     watch_handler = MessageHandler(
         Filters.text(SERIES_START) & (~Filters.command),
-        get_film_list,
+        SeriesCallback.start_manager,
     )
 
     upload_handler = MessageHandler(
