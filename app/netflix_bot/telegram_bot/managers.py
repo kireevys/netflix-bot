@@ -5,7 +5,6 @@ import string
 
 from django.conf import settings
 from django.core.paginator import Paginator
-from django.db.models import Count
 from telegram import (
     Message,
     InlineKeyboardMarkup,
@@ -14,7 +13,6 @@ from telegram import (
 )
 
 from netflix_bot import models
-from netflix_bot.models import Genre, Series
 from netflix_bot.telegram_bot.user_interface.buttons import (
     BackButton,
     SeasonButton,
@@ -22,16 +20,9 @@ from netflix_bot.telegram_bot.user_interface.buttons import (
     EpisodeButton,
     AllGenresButton,
     SeriesMainButton,
-    GenresButton,
-    NavigateButton,
 )
 from netflix_bot.telegram_bot.user_interface.callbacks import CallbackManager, callback
-from netflix_bot.telegram_bot.user_interface.keyboards import (
-    GridKeyboard,
-    get_factory,
-    PaginationKeyboardFactory,
-)
-from ..my_lib import markdown
+from netflix_bot.telegram_bot.user_interface.keyboards import GridKeyboard, get_factory
 
 logger = logging.getLogger(__name__)
 
@@ -215,10 +206,9 @@ class SeriesCallback(CallbackManager):
             return self.send_need_subscribe()
 
         episode = models.Episode.objects.get(id=self.callback_data.get("id"))
-
-        episode_index = f"*__s{episode.season}e{episode.episode}__*"
-        series_title = markdown.escape(episode.series.title)
-        caption = f"{series_title}\n\n" f"{episode_index}"
+        caption = (
+            f"{episode.series.title}\n\n *__s{episode.season}e{episode.episode}__*"
+        )
 
         buttons = [
             EpisodeButton(episode, text=side)
@@ -240,27 +230,17 @@ class SeriesCallback(CallbackManager):
 
     @callback("all_genres")
     def publish_all_genres(self):
-        genres = (
-            Genre.objects.all()
-            .annotate(cnt_series=Count("series"))
-            .filter(cnt_series__gt=0)
-        )
-
-        buttons = [GenresButton(genre) for genre in genres.order_by("name")]
-        keyboard = InlineKeyboardMarkup.from_column(buttons)
-        keyboard.inline_keyboard.append([SeriesMainButton()])
-
         message_media = InputMediaPhoto(
             media=settings.MAIN_PHOTO, caption="Доступные жанры"
         )
         return self.publish_message(
             media=message_media,
-            keyboard=keyboard,
+            keyboard=InlineKeyboardMarkup.from_row([SeriesMainButton()]),
         )
 
     @callback("navigate")
     def make_navigation(self):
-        page = self.callback_data.get(NavigateButton.CURRENT)
+        page = self.callback_data.get("current")
         factory = get_factory()
 
         keyboard = factory.page_from_column(page)
@@ -271,21 +251,5 @@ class SeriesCallback(CallbackManager):
 
         return self.publish_message(
             media=message_media,
-            keyboard=keyboard,
-        )
-
-    @callback("genre")
-    def get_all_series_for_genre(self):
-        genre = Genre.objects.get(pk=self.callback_data.get("id"))
-        series = Series.objects.filter(genre=genre)
-
-        keyboard = PaginationKeyboardFactory.from_queryset(
-            series, "series"
-        ).page_from_column(1)
-
-        return self.publish_message(
-            media=InputMediaPhoto(
-                media=settings.MAIN_PHOTO, caption="Вот что у меня есть"
-            ),
             keyboard=keyboard,
         )
