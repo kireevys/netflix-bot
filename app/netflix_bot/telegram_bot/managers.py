@@ -1,52 +1,39 @@
-import json
 import logging
 import random
 import re
 import string
-from abc import ABC
 
 from django.conf import settings
 from django.core.paginator import Paginator
 from telegram import (
     Message,
-    ChatMember,
-    InlineKeyboardButton,
     InlineKeyboardMarkup,
     InputMediaVideo,
     InputMediaPhoto,
 )
-from telegram import Update
-from telegram.bot import Bot
-from telegram.error import BadRequest
-from telegram.ext import CallbackContext
 
 from netflix_bot import models
-from netflix_bot.telegram_bot.handlers import get_factory
-from netflix_bot.telegram_bot.ui import (
-    SeasonButton,
-    EpisodeButton,
-    GridKeyboard,
-    FilmList,
+from netflix_bot.telegram_bot.user_interface.buttons import (
     BackButton,
+    SeasonButton,
+    ShowSeriesButton,
+    EpisodeButton,
+    AllGenresButton,
+    SeriesMainButton,
 )
+from netflix_bot.telegram_bot.user_interface.callbacks import CallbackManager, callback
+from netflix_bot.telegram_bot.user_interface.keyboards import GridKeyboard, get_factory
 
 logger = logging.getLogger(__name__)
 
 
-class SeriesManager(dict):
+class SeriesManager:
     def __init__(self, title_ru, title_eng, season, episode, lang):
         self.title_ru = title_ru
         self.title_eng = title_eng
         self.season = season
         self.episode = episode
         self.lang = self.get_lang(lang.upper())
-        super().__init__(
-            title_ru=title_ru,
-            title_eng=title_eng,
-            season=season,
-            episode=episode,
-            lang=lang,
-        )
 
     @property
     def title(self):
@@ -100,7 +87,7 @@ class SeriesManager(dict):
     @staticmethod
     def get_lang(lang: str):
         if lang not in models.Episode.Langs:
-            logger.info(f"incorrect lang {lang}. Use default")
+            logger.info(f"incorrect lang {lang}. Using default")
             return models.Episode.Langs.RUS.name
 
         return lang
@@ -127,75 +114,42 @@ class SeriesManager(dict):
         return f"{self.title} s{self.season}e{self.episode} {self.lang}"
 
 
-_call_types = {}
+class SeriesCallback(CallbackManager):
+    @callback("series_main")
+    def main_menu(self) -> Message:
+        logger.info(f"{self.user} request series list")
 
+        keyboard = InlineKeyboardMarkup(
+            [
+                [ShowSeriesButton(1)],
+                [AllGenresButton()],
+            ]
+        )
+        return self.replace_message(
+            media=InputMediaPhoto(media=settings.MAIN_PHOTO),
+            keyboard=keyboard,
+        )
 
-def callback_type(fn):
-    _call_types.update({fn.__name__: fn})
-
-
-def send_need_subscribe(chat_id, bot: Bot):
-    invite_button = InlineKeyboardButton("Подпишись!", url=settings.CHAT_INVITE_LINK)
-    return bot.send_message(
-        chat_id,
-        "Просмотр недоступен без подписки на основной канал(((",
-        reply_markup=InlineKeyboardMarkup([[invite_button]]),
-    )
-
-
-class CallbackManager(ABC):
-    def __init__(self, update: Update, context: CallbackContext):
-        self.update = update
-        self.callback_data = json.loads(update.callback_query.data)
-        self.type = self.callback_data.get("type")
-        self.context = context
-        self.bot: Bot = context.bot
-        self.chat_id = self.update.effective_chat.id
-        self.message_id = self.update.effective_message.message_id
-
-    def send_reaction_on_callback(self) -> Message:
-        handler = _call_types.get(self.type)
-        return handler(self)
-
-
-class UIManager(CallbackManager):
-    def _is_subscribed(self):
-        try:
-            chat_member: ChatMember = self.bot.get_chat_member(
-                settings.MAIN_CHANNEL_ID, self.update.effective_user.id
-            )
-        except BadRequest:
-            logger.warning(f"user {self.update.effective_user} is not subscribed")
-            return True
-
-        status = chat_member.status
-        if status in ("restricted", "left", "kicked"):
-            logger.warning(f"user {self.update.effective_user} has {status}")
-            return False
-
-        return True
-
-    @callback_type
-    def film_list(self):
+    @callback("series_list")
+    def publish_all_series(self):
         """
         Выбор сериала - возвращает сезоны
-        :return:
         """
         factory = get_factory()
 
-        logger.info(f"{self.update.effective_user} request film list")
+        logger.info(f"{self.user} request film list")
 
-        self.bot.edit_message_media(
-            message_id=self.message_id,
-            chat_id=self.chat_id,
+        keyboard = factory.page_from_column(1)
+
+        return self.publish_message(
             media=InputMediaPhoto(
                 media=settings.MAIN_PHOTO, caption="Вот что у меня есть"
             ),
-            reply_markup=factory.page_from_column(1),
+            keyboard=keyboard,
         )
 
-    @callback_type
-    def series(self) -> Message:
+    @callback("series")
+    def publish_seasons_to_series(self) -> Message:
         """
         Возвращает Список серий в сезоне
         """
@@ -205,20 +159,18 @@ class UIManager(CallbackManager):
         pagination_buttons = Paginator(buttons, settings.ELEMENTS_PER_PAGE)
 
         keyboard = GridKeyboard.from_grid(pagination_buttons.page(1))
-        keyboard.inline_keyboard.append([FilmList(1)])
+        keyboard.inline_keyboard.append([ShowSeriesButton(1)])
 
-        return self.bot.edit_message_media(
-            message_id=self.message_id,
-            chat_id=self.chat_id,
+        return self.publish_message(
             media=InputMediaPhoto(
                 media=series.poster or settings.MAIN_PHOTO,
                 caption=f"{series.title}\n\n{series.desc or ''}",
             ),
-            reply_markup=keyboard,
+            keyboard=keyboard,
         )
 
-    @callback_type
-    def season(self) -> Message:
+    @callback("season")
+    def publish_all_episodes_for_season(self) -> Message:
         """
         Список сезонов
         """
@@ -239,28 +191,28 @@ class UIManager(CallbackManager):
 
         caption = f"Список серий {series.title}\n s{season_no}"
 
-        logger.info(f"{self.update.effective_user} GET {caption}")
+        logger.info(f"{self.user} GET {caption}")
 
-        return self.context.bot.edit_message_media(
-            message_id=self.update.effective_message.message_id,
-            chat_id=self.chat_id,
+        return self.publish_message(
             media=InputMediaPhoto(
                 media=series.poster or settings.MAIN_PHOTO, caption=caption
             ),
-            reply_markup=keyboard,
+            keyboard=keyboard,
         )
 
-    @callback_type
-    def episode(self) -> Message:
-        if not self._is_subscribed():
-            return send_need_subscribe(self.chat_id, self.bot)
+    @callback("episode")
+    def publish_episode(self) -> Message:
+        if not self.user_is_subscribed():
+            return self.send_need_subscribe()
 
         episode = models.Episode.objects.get(id=self.callback_data.get("id"))
-        caption = f"{episode.series.title} s{episode.season}e{episode.episode}"
+        caption = (
+            f"{episode.series.title}\n\n *__s{episode.season}e{episode.episode}__*"
+        )
 
         buttons = [
-            EpisodeButton(episode)
-            for episode in (episode.get_previous(), episode.get_next())
+            EpisodeButton(episode, text=side)
+            for episode, side in (episode.get_previous(), episode.get_next())
             if episode is not None
         ]
 
@@ -269,25 +221,35 @@ class UIManager(CallbackManager):
 
         logger.info(f"{self.update.effective_user} GET {caption}")
 
-        return self.bot.edit_message_media(
-            message_id=self.message_id,
-            chat_id=self.chat_id,
-            media=InputMediaVideo(episode.file_id, caption=caption),
-            reply_markup=keyboard,
+        return self.publish_message(
+            media=InputMediaVideo(
+                episode.file_id, caption=caption, parse_mode="MarkdownV2"
+            ),
+            keyboard=keyboard,
         )
 
-    @callback_type
-    def navigate(self):
+    @callback("all_genres")
+    def publish_all_genres(self):
+        message_media = InputMediaPhoto(
+            media=settings.MAIN_PHOTO, caption="Доступные жанры"
+        )
+        return self.publish_message(
+            media=message_media,
+            keyboard=InlineKeyboardMarkup.from_row([SeriesMainButton()]),
+        )
+
+    @callback("navigate")
+    def make_navigation(self):
         page = self.callback_data.get("current")
         factory = get_factory()
 
         keyboard = factory.page_from_column(page)
 
-        return self.bot.edit_message_media(
-            message_id=self.message_id,
-            chat_id=self.chat_id,
-            media=InputMediaPhoto(
-                media=settings.MAIN_PHOTO, caption=f"Страница {page}"
-            ),
-            reply_markup=keyboard,
+        message_media = InputMediaPhoto(
+            media=settings.MAIN_PHOTO, caption=f"Страница {page}"
+        )
+
+        return self.publish_message(
+            media=message_media,
+            keyboard=keyboard,
         )
