@@ -5,6 +5,16 @@ from telegram import InlineKeyboardButton
 
 from netflix_bot.models import Series, Season, Episode, Genre
 
+_grid = {}
+
+
+def grid(name):
+    def wrapper(cls):
+        _grid.update({name: cls})
+        return cls
+
+    return wrapper
+
 
 class AbsButton(InlineKeyboardButton):
     _callback_type = None
@@ -31,6 +41,7 @@ class AbsButton(InlineKeyboardButton):
         return f"{self._callback_type}: {self.get_text()}: {self.get_callback()}"
 
 
+@grid("series")
 class SeriesButton(AbsButton):
     _callback_type = "series"
 
@@ -89,15 +100,15 @@ class NavigateButton(AbsButton):
     _callback_type = "navigate"
     LEFT = ">>"
     RIGHT = "<<"
+    CURRENT = "cur"
+    NAVIGATE = "nav"
     _side_repr = {LEFT: LEFT, RIGHT: RIGHT}
 
-    def __init__(self, side, current, **kwargs):
+    def __init__(self, side, current, grid_type="series", **kwargs):
         self._navigate = side
         self._current = current
+        self._grid = grid_type
         super().__init__(**kwargs)
-
-    def __delete_extra(self):
-        del self.__dict__["current"]
 
     def get_text(self) -> str:
         return self._side_repr[self._navigate]
@@ -105,8 +116,9 @@ class NavigateButton(AbsButton):
     def get_callback(self) -> str:
         return json.dumps(
             {
-                "navigate": self._navigate,
-                "current": self._current,
+                self.NAVIGATE: self._navigate,
+                self.CURRENT: self._current,
+                "grid": self._grid,
                 "type": NavigateButton._callback_type,
             }
         )
