@@ -98,8 +98,9 @@ class Season:
 class Series(models.Model):
     title_ru = models.TextField(unique=True, null=True)
     title_eng = models.TextField(unique=True)
-    poster = models.TextField(unique=False, null=True)
-    desc = models.TextField(null=True)
+    poster = models.TextField(unique=False, null=True, blank=True)
+    genre = models.ManyToManyField("Genre", blank=True)
+    desc = models.TextField(null=True, blank=True)
 
     class Meta:
         db_table = "series"
@@ -134,12 +135,3 @@ class Genre(models.Model):
 
     def __str__(self):
         return self.name
-
-
-class GenreSeries(models.Model):
-    genre = models.ForeignKey(Genre, on_delete=models.SET_NULL, null=True)
-    series = models.ForeignKey(Series, on_delete=models.CASCADE, null=True)
-
-    class Meta:
-        db_table = "genres_series"
-        unique_together = ["genre", "series"]

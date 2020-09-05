@@ -1,18 +1,25 @@
 from django.contrib import admin
 
-from .models import User, Episode, Series
+from . import models
 
 
-@admin.register(Episode)
+@admin.register(models.Episode)
 class EpisodeAdmin(admin.ModelAdmin):
-    exclude = ('file_id', 'message_id')
+    exclude = ("file_id", "message_id")
 
 
-@admin.register(User)
+@admin.register(models.User)
 class UserAdmin(admin.ModelAdmin):
     pass
 
 
-@admin.register(Series)
+@admin.register(models.Series)
 class SeriesAdmin(admin.ModelAdmin):
-    exclude = ('poster', )
+    ordering = ("pk",)
+    exclude = ("poster",)
+    filter_horizontal = ("genre",)
+
+
+@admin.register(models.Genre)
+class GenreAdmin(admin.ModelAdmin):
+    pass
