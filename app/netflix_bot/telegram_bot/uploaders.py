@@ -2,66 +2,57 @@ import logging
 
 from django.conf import settings
 from django.db import IntegrityError
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from django.db.models import Model
+from telegram import Update
 from telegram.ext import CallbackContext
 
-from netflix_bot.models import Series
-from netflix_bot.telegram_bot.managers import SeriesManager
+from netflix_bot.models import Series, Movie
+from netflix_bot.telegram_bot.managers.movies_manager import MovieManager
+from netflix_bot.telegram_bot.managers.series_manager import SeriesManager
 
 logger = logging.getLogger(__name__)
 
 
-class VideoUploader:
+class Uploader:
+    uploader: int = None
+    manager = None
+    model: Model = None
+
     def __init__(self, update: Update, context: CallbackContext):
         self.bot = context.bot
         self.update = update
+
         if not self.is_upload_channel(self.update.channel_post.chat.id):
             logger.warning("Incorrect chat id for upload video")
             raise ConnectionAbortedError("Access denied")
 
-    @staticmethod
-    def is_upload_channel(chat_id: int):
-        return chat_id == int(settings.UPLOADER_ID)
-
-    def get_description_keyboard(self):
-        return InlineKeyboardMarkup(
-            [
-                [
-                    InlineKeyboardButton(
-                        "Добавить описание", callback_data="Test", force_reply=True
-                    )
-                ]
-            ]
-        )
-
     def add_poster(self, file_id: str):
-        manager = SeriesManager.from_caption(caption=self.update.channel_post.caption)
-        series = Series.objects.get(title_ru=manager.title_ru)
-        series.poster = file_id
-        series.save()
+        manager = self.manager.from_caption(caption=self.update.channel_post.caption)
+        model_instance = self.model.objects.get(title_ru=manager.title_ru)
+        model_instance.poster = file_id
+        model_instance.title_ru = file_id
+        model_instance.save(update_fields=["poster"])
 
         self.bot.edit_message_caption(
             chat_id=self.update.effective_chat.id,
             message_id=self.update.effective_message.message_id,
             caption=f"{settings.EMOJI.get('ok')} {self.update.channel_post.caption}",
         )
-        logger.info(f"{series} get new poster")
+        logger.info(f"{model_instance} get new poster")
 
-        return series
-
-    def add_description(self, desc_text) -> Series:
-        series = Series.objects.get(
+    def add_description(self, desc_text) -> model:
+        model_instance = self.model.objects.get(
             episode__message_id=self.update.effective_message.reply_to_message.message_id
         )
-        series.desc = desc_text
-        series.save()
+        model_instance.desc = desc_text
+        model_instance.save(update_fields=["desc"])
 
         self.bot.delete_message(
             chat_id=self.update.effective_chat.id,
             message_id=self.update.effective_message.message_id,
         )
 
-        return series
+        return model_instance
 
     def upload(self):
         """
@@ -79,7 +70,7 @@ class VideoUploader:
         """
         logger.info(str(self.update))
 
-        manager = SeriesManager.from_caption(caption=self.update.channel_post.caption)
+        manager = self.manager.from_caption(caption=self.update.channel_post.caption)
         message = self.bot.send_video(
             chat_id=self.update.effective_chat.id,
             video=self.update.channel_post.video.file_id,
@@ -87,10 +78,13 @@ class VideoUploader:
         )
 
         try:
-            episode = manager.write(message.video.file_id, message.message_id, )
-            logger.info(f"<{episode}> successful loaded")
+            video = manager.write(
+                message.video.file_id,
+                message.message_id,
+            )
+            logger.info(f"<{video}> successful loaded")
         except IntegrityError:
-            logger.info(f"Loaded exists episode <{manager}>. Message delete")
+            logger.info(f"Loaded exists video <{manager}>. Message delete")
             self.bot.delete_message(
                 chat_id=self.update.effective_chat.id, message_id=message.message_id
             )
@@ -99,3 +93,19 @@ class VideoUploader:
                 chat_id=self.update.effective_chat.id,
                 message_id=self.update.effective_message.message_id,
             )
+
+    @classmethod
+    def is_upload_channel(cls, chat_id: int):
+        return chat_id == cls.uploader
+
+
+class SeriesUploader(Uploader):
+    uploader = int(settings.UPLOADER_ID)
+    manager = SeriesManager
+    model = Series
+
+
+class MovieUploader(Uploader):
+    uploader = int(settings.MOVIE_UPLOADER_ID)
+    manager = MovieManager
+    model = Movie

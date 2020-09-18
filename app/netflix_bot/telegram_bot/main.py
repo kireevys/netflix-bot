@@ -9,7 +9,7 @@ from telegram.ext import Updater
 
 from .commands import start, SERIES_START, START_COMMAND
 # from .handlers import starting_series
-from .managers import SeriesCallback
+from .managers.series_manager import SeriesCallback
 from .messages import upload_video, callbacks, add_description, add_poster
 
 logger = logging.getLogger(__name__)
@@ -49,7 +49,7 @@ def up_bot() -> Dispatcher:
         SeriesCallback.start_manager,
     )
 
-    upload_handler = MessageHandler(
+    upload_series_handler = MessageHandler(
         Filters.video & (~Filters.command) & (~Filters.update.edited_channel_post),
         upload_video,
     )
@@ -59,7 +59,7 @@ def up_bot() -> Dispatcher:
     add_poster_handler = MessageHandler(Filters.photo & (~Filters.command), add_poster)
 
     dispatcher.add_handler(watch_handler)
-    dispatcher.add_handler(upload_handler)
+    dispatcher.add_handler(upload_series_handler)
     dispatcher.add_handler(add_poster_handler)
 
     dispatcher.add_handler(edit_description_handler)

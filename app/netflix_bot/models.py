@@ -27,11 +27,13 @@ class User(models.Model):
         verbose_name_plural = "Пользователи"
 
 
+class Langs(models.TextChoices):
+    SUB = "SUB", "sub"
+    RUS = "RUS", "russian"
+    ENG = "ENG", "english"
+
+
 class Episode(models.Model):
-    class Langs(models.TextChoices):
-        SUB = "SUB", "sub"
-        RUS = "RUS", "russian"
-        ENG = "ENG", "english"
 
     series = models.ForeignKey("Series", on_delete=models.CASCADE)
 
@@ -127,7 +129,7 @@ class Series(models.Model):
     def title(self):
         return f"{self.title_ru} / {self.title_eng}"
 
-    def get_count(self, lang=Episode.Langs.RUS) -> int:
+    def get_count(self, lang=Langs.RUS) -> int:
         return Episode.objects.filter(series=self, lang=lang).count()
 
     def get_seasons(self):
@@ -155,3 +157,28 @@ class Genre(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Movie(models.Model):
+    title_ru = models.CharField(max_length=56, null=True, blank=True)
+    title_eng = models.CharField(max_length=56)
+
+    file_id = models.TextField(unique=False)
+    message_id = models.IntegerField(unique=True)
+    lang = models.CharField(max_length=3, choices=Langs.choices, default=Langs.RUS)
+
+    poster = models.CharField(max_length=128, null=True, blank=True)
+    genre = models.ManyToManyField("Genre", blank=True)
+    desc = models.TextField(null=True, blank=True)
+
+    class Meta:
+        db_table = "movies"
+        verbose_name = "Фильмы"
+        verbose_name_plural = "Фильмы"
+
+    @property
+    def title(self):
+        return f"{self.title_ru} / {self.title_eng}"
+
+    def __str__(self) -> str:
+        return self.title

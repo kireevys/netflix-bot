@@ -2,7 +2,7 @@ from django.test import TransactionTestCase
 
 from netflix_bot import models
 from netflix_bot.models import Series
-from netflix_bot.telegram_bot.managers import SeriesManager
+from netflix_bot.telegram_bot.managers.series_manager import SeriesManager
 
 
 class TestSeriesManager(TransactionTestCase):
@@ -13,70 +13,70 @@ class TestSeriesManager(TransactionTestCase):
                 "Тест / Test",
                 1,
                 1,
-                models.Episode.Langs.RUS,
+                models.Langs.RUS,
             ),
             (
                 "Тест/Test\n1 сезон/1 серия\nRUS",
                 "Тест / Test",
                 1,
                 1,
-                models.Episode.Langs.RUS,
+                models.Langs.RUS,
             ),
             (
                 "   Тест /Test\n1 сезон/1 серия\nENG",
                 "Тест / Test",
                 1,
                 1,
-                models.Episode.Langs.ENG,
+                models.Langs.ENG,
             ),
             (
                 "Тест/ Test\n1 сезон/1 серия\nEnG",
                 "Тест / Test",
                 1,
                 1,
-                models.Episode.Langs.ENG,
+                models.Langs.ENG,
             ),
             (
                 " Тест/Test \n1 сезон/1 серия\nОзвучка",
                 "Тест / Test",
                 1,
                 1,
-                models.Episode.Langs.RUS,
+                models.Langs.RUS,
             ),
             (
                 "Тест/Test\n1 сезон/1 серия\nSUB",
                 "Тест / Test",
                 1,
                 1,
-                models.Episode.Langs.SUB,
+                models.Langs.SUB,
             ),
             (
                 "Тест / Test\n1 сезон/2 серия\nSUB",
                 "Тест / Test",
                 1,
                 2,
-                models.Episode.Langs.SUB,
+                models.Langs.SUB,
             ),
             (
                 "Тест / Test\n123 сезон/2123 серия\nSUB",
                 "Тест / Test",
                 123,
                 2123,
-                models.Episode.Langs.SUB,
+                models.Langs.SUB,
             ),
             (
                 "Тест / Test\n123 s / 2123 серия\nSUB",
                 "Тест / Test",
                 123,
                 2123,
-                models.Episode.Langs.SUB,
+                models.Langs.SUB,
             ),
             (
                 "Тест / Test\n123 season / 2123 episode",
                 "Тест / Test",
                 123,
                 2123,
-                models.Episode.Langs.RUS,
+                models.Langs.RUS,
             ),
         ]
 
@@ -93,7 +93,7 @@ class TestSeriesManager(TransactionTestCase):
             ("test", 1, 1, "Озвучка", "RUS"),
         ]:
             with self.subTest(lang):
-                manager = SeriesManager(title, title, season, episode, lang)
+                manager = SeriesManager(title, title, lang, season, episode)
                 self.assertEqual(manager.lang, expect)
 
     def test_parse_caption(self):

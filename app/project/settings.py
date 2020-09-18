@@ -64,7 +64,7 @@ ROOT_URLCONF = "project.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [os.path.join(BASE_DIR, "../../templates")],
+        "DIRS": [os.path.join(BASE_DIR, "../templates")],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -127,6 +127,7 @@ EMOJI = {"ok": "✅"}
 ELEMENTS_PER_PAGE = 5
 
 UPLOADER_ID = os.getenv("UPLOADER", -1001392439062)
+MOVIE_UPLOADER_ID = os.getenv('MOVIE_UPLOADER', -1001128017847)
 UPLOADER_INVITE = "https://t.me/joinchat/AAAAAEr4GjWrNeNVda-3MA"
 
 MAIN_CHANNEL_ID = -1001257773621
