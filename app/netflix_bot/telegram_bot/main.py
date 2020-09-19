@@ -7,8 +7,10 @@ from telegram.ext import CommandHandler, CallbackQueryHandler, Dispatcher
 from telegram.ext import MessageHandler, Filters
 from telegram.ext import Updater
 
-from .commands import start, SERIES_START, START_COMMAND
+from .commands import start, SERIES_START, START_COMMAND, MOVIES_START
+
 # from .handlers import starting_series
+from .managers.movies_manager import MoviesCallback
 from .managers.series_manager import SeriesCallback
 from .messages import upload_video, callbacks, add_description, add_poster
 
@@ -44,9 +46,14 @@ def up_bot() -> Dispatcher:
     start_handler = CommandHandler(START_COMMAND, start)
     dispatcher.add_handler(start_handler)
 
-    watch_handler = MessageHandler(
+    watch_series_handler = MessageHandler(
         Filters.text(SERIES_START) & (~Filters.command),
         SeriesCallback.start_manager,
+    )
+
+    watch_movie_handler = MessageHandler(
+        Filters.text(MOVIES_START) & (~Filters.command),
+        MoviesCallback.start_manager,
     )
 
     upload_series_handler = MessageHandler(
@@ -58,7 +65,9 @@ def up_bot() -> Dispatcher:
     )
     add_poster_handler = MessageHandler(Filters.photo & (~Filters.command), add_poster)
 
-    dispatcher.add_handler(watch_handler)
+    dispatcher.add_handler(watch_series_handler)
+    dispatcher.add_handler(watch_movie_handler)
+
     dispatcher.add_handler(upload_series_handler)
     dispatcher.add_handler(add_poster_handler)
 

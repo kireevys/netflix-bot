@@ -2,14 +2,15 @@ from math import ceil
 from typing import Collection
 
 from django.core.paginator import Paginator
+from django.db.models import Count
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 
 from netflix_bot import models
 from netflix_bot.telegram_bot.user_interface.buttons import (
     NavigateButton,
     SeriesButton,
-    SeriesMainButton,
     _grid,
+    MovieButton,
 )
 
 
@@ -66,8 +67,6 @@ class PaginationKeyboardFactory:
 
         keyboard.inline_keyboard.append(navigator)
 
-        keyboard.inline_keyboard.append([SeriesMainButton()])
-
         return keyboard
 
     def page_from_grid(self, number: int) -> InlineKeyboardMarkup:
@@ -96,6 +95,23 @@ def get_factory(per_page: int = 5):
     all_videos = models.Series.objects.all().order_by("title_ru")
 
     buttons = [SeriesButton(series) for series in all_videos]
+
+    factory = PaginationKeyboardFactory(buttons, per_page)
+    return factory
+
+
+def get_movie_factory(per_page: int = 5):
+    all_videos = (
+        models.Movie.objects.values("title_ru", "title_eng")
+        .annotate(Count("lang"))
+        .order_by("title_ru")
+    )
+    # all_videos = models.Movie.objects.all().order_by("title_ru")
+
+    buttons = [
+        MovieButton(models.Movie.objects.filter(title_ru=movie.get("title_ru")).first())
+        for movie in all_videos
+    ]
 
     factory = PaginationKeyboardFactory(buttons, per_page)
     return factory

@@ -175,10 +175,11 @@ class Movie(models.Model):
         db_table = "movies"
         verbose_name = "Фильмы"
         verbose_name_plural = "Фильмы"
+        unique_together = ["title_ru", "title_eng", "lang"]
 
     @property
     def title(self):
         return f"{self.title_ru} / {self.title_eng}"
 
     def __str__(self) -> str:
-        return self.title
+        return f"{self.title} {self.lang}"

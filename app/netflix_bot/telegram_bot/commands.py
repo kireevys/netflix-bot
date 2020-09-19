@@ -9,6 +9,7 @@ from ..models import User
 logger = logging.getLogger(__name__)
 
 SERIES_START = "Хочу сериал"
+MOVIES_START = "Хочу фильм"
 START_COMMAND = "start"
 
 
@@ -16,6 +17,7 @@ def start(update: Update, context: CallbackContext):
     keyboard = ReplyKeyboardMarkup(
         [
             [KeyboardButton(SERIES_START)],
+            [KeyboardButton(MOVIES_START)],
         ],
         one_time_keyboard=True,
     )

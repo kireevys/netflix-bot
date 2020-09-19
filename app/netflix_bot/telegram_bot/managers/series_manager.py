@@ -114,6 +114,8 @@ class SeriesManager(VideoManager):
 
 
 class SeriesCallback(CallbackManager):
+    main_callback_data = "series_main"
+
     @callback("series_main")
     def main_menu(self) -> Message:
         logger.info(f"{self.user} request series list")
@@ -272,6 +274,8 @@ class SeriesCallback(CallbackManager):
         keyboard = PaginationKeyboardFactory.from_queryset(
             series, "series"
         ).page_from_column(1)
+
+        keyboard.inline_keyboard.append([SeriesMainButton()])
 
         return self.publish_message(
             media=InputMediaPhoto(

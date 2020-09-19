@@ -43,6 +43,8 @@ class Callback:
 
 
 class CallbackManager(ABC):
+    main_callback_data = None
+
     def __init__(self, update: Update, context: CallbackContext):
         self.update = update
         self.context = context
@@ -58,7 +60,7 @@ class CallbackManager(ABC):
     @classmethod
     def start_manager(cls, update: Update, context: CallbackContext):
         instance = cls(update, context)
-        instance.callback_data.type = "series_main"
+        instance.callback_data.type = cls.main_callback_data
 
         instance.send_reaction_on_callback()
 

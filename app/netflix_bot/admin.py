@@ -25,3 +25,9 @@ class SeriesAdmin(admin.ModelAdmin):
 @admin.register(models.Genre)
 class GenreAdmin(admin.ModelAdmin):
     ordering = ("name",)
+
+
+@admin.register(models.Movie)
+class MovieAdmin(admin.ModelAdmin):
+    ordering = ("title_ru",)
+    filter_horizontal = ("genre",)

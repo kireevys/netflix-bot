@@ -3,7 +3,7 @@ from abc import abstractmethod
 
 from telegram import InlineKeyboardButton
 
-from netflix_bot.models import Series, Season, Episode, Genre
+from netflix_bot.models import Series, Season, Episode, Genre, Movie
 
 _grid = {}
 
@@ -56,6 +56,11 @@ class SeriesButton(AbsButton):
         return self._series.title
 
 
+@grid("movie")
+class MovieButton(SeriesButton):
+    _callback_type = "movies"
+
+
 class BackButton(SeriesButton):
     def get_text(self) -> str:
         return f"К списку сезонов {self._series.title}"
@@ -94,6 +99,20 @@ class ShowSeriesButton(AbsButton):
 
     def get_text(self) -> str:
         return "Все сериалы"
+
+
+class ShowMoviesButton(AbsButton):
+    _callback_type = "movies_list"
+
+    def __init__(self, page, **kwargs):
+        self._movies_list = page
+        super().__init__(**kwargs)
+
+    def get_callback(self) -> str:
+        return json.dumps({"type": self._callback_type, "page": self._movies_list})
+
+    def get_text(self) -> str:
+        return "Все фильмы"
 
 
 class NavigateButton(AbsButton):
@@ -138,6 +157,20 @@ class EpisodeButton(AbsButton):
         return f"{self._episode.episode}"
 
 
+class WatchMovieButton(AbsButton):
+    _callback_type = "movie"
+
+    def __init__(self, movie: Movie, **kwargs):
+        self._movie = movie
+        super().__init__(**kwargs)
+
+    def get_callback(self) -> str:
+        return json.dumps({"id": self._movie.id, "type": self._callback_type})
+
+    def get_text(self) -> str:
+        return self._movie.title
+
+
 class AllGenresButton(AbsButton):
     _callback_type = "all_genres"
 
@@ -150,6 +183,10 @@ class AllGenresButton(AbsButton):
 
     def get_text(self) -> str:
         return "Выбрать жанр"
+
+
+class MovieGenres(AllGenresButton):
+    _callback_type = "all_mv_genres"
 
 
 class GenresButton(AbsButton):
@@ -166,11 +203,25 @@ class GenresButton(AbsButton):
         return str(self._genre)
 
 
+class MovieGenre(GenresButton):
+    _callback_type = "genre_mv"
+
+
 class SeriesMainButton(AbsButton):
     _callback_type = "series_main"
 
     def get_text(self) -> str:
         return "Главное меню сериалов"
+
+    def get_callback(self) -> str:
+        return json.dumps({"type": self._callback_type})
+
+
+class MovieMainButton(AbsButton):
+    _callback_type = "movies_main"
+
+    def get_text(self) -> str:
+        return "Главное меню фильмов"
 
     def get_callback(self) -> str:
         return json.dumps({"type": self._callback_type})
