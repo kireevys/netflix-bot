@@ -125,11 +125,6 @@ UPLOADER_ID = os.getenv("UPLOADER")
 MOVIE_UPLOADER_ID = os.getenv("MOVIE_UPLOADER")
 
 
-def check_env():
-    if None in (BOT_TOKEN, MAIN_PHOTO, UPLOADER_ID, MOVIE_UPLOADER_ID):
-        raise EnvironmentError("Check your ENV")
-
-
 UPLOADER_INVITE = "https://t.me/joinchat/AAAAAEr4GjWrNeNVda-3MA"
 
 MAIN_CHANNEL_ID = -1001257773621
