@@ -22,7 +22,7 @@ from netflix_bot.telegram_bot.user_interface.buttons import (
     AllGenresButton,
     SeriesMainButton,
     GenresButton,
-    NavigateButton,
+    NavigateButton, MovieMainButton,
 )
 from netflix_bot.telegram_bot.user_interface.callbacks import CallbackManager, callback
 from netflix_bot.telegram_bot.user_interface.keyboards import (
@@ -124,10 +124,11 @@ class SeriesCallback(CallbackManager):
             [
                 [ShowSeriesButton(1)],
                 [AllGenresButton()],
+                [MovieMainButton()],
             ]
         )
         return self.replace_message(
-            media=InputMediaPhoto(media=settings.MAIN_PHOTO),
+            media=InputMediaPhoto(media=settings.MAIN_PHOTO, caption='СЕРИАЛЫ'),
             keyboard=keyboard,
         )
 

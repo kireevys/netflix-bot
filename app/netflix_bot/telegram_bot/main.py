@@ -94,9 +94,7 @@ def up_bot() -> Dispatcher:
 
     # UI
     watch_series_handler = MessageHandler(
-        Filters.text(SERIES_START)
-        & (Filters.chat(int(settings.UPLOADER_ID)))
-        & (~Filters.command),
+        Filters.text(SERIES_START) & (~Filters.command),
         SeriesCallback.start_manager,
     )
 
