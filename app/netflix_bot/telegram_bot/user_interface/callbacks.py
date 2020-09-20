@@ -75,13 +75,16 @@ class CallbackManager(ABC):
         )
 
     def user_is_subscribed(self):
+        if settings.DEBUG:
+            return True
+
         try:
             chat_member: ChatMember = self.bot.get_chat_member(
                 settings.MAIN_CHANNEL_ID, self.user.id
             )
         except BadRequest:
             logger.warning(f"user {self.user} is not subscribed")
-            return False  # TODO: Залепа для бота без админки
+            return False
 
         status = chat_member.status
         if status in ("restricted", "left", "kicked"):
@@ -95,7 +98,7 @@ class CallbackManager(ABC):
         return handler(self)
 
     def publish_message(
-            self, media: InputMedia, keyboard: InlineKeyboardMarkup, **kwargs
+        self, media: InputMedia, keyboard: InlineKeyboardMarkup, **kwargs
     ) -> Message:
         return self.bot.edit_message_media(
             message_id=self.message_id,
@@ -109,7 +112,7 @@ class CallbackManager(ABC):
         return self.update.effective_message.from_user.name == self.bot.name
 
     def replace_message(
-            self, media: InputMedia, keyboard: InlineKeyboardMarkup, **kwargs
+        self, media: InputMedia, keyboard: InlineKeyboardMarkup, **kwargs
     ) -> Message:
         if self.it_my_message():
             return self.publish_message(media=media, keyboard=keyboard)
