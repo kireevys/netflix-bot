@@ -125,6 +125,10 @@ class Series(models.Model):
         verbose_name = "Сериалы"
         verbose_name_plural = "Сериалы"
 
+    @classmethod
+    def get_by_message_id(cls, message_id):
+        return cls.objects.get(episode__message_id=message_id)
+
     @property
     def title(self):
         return f"{self.title_ru} / {self.title_eng}"
@@ -180,6 +184,10 @@ class Movie(models.Model):
     @property
     def title(self):
         return f"{self.title_ru} / {self.title_eng}"
+
+    @classmethod
+    def get_by_message_id(cls, message_id):
+        return cls.objects.get(message_id=message_id)
 
     def __str__(self) -> str:
         return f"{self.title} {self.lang}"

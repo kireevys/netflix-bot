@@ -1,8 +1,9 @@
 import logging
+from abc import abstractmethod
+from typing import Union
 
 from django.conf import settings
 from django.db import IntegrityError
-from django.db.models import Model
 from telegram import Update
 from telegram.ext import CallbackContext
 
@@ -16,7 +17,7 @@ logger = logging.getLogger(__name__)
 class Uploader:
     uploader: int = None
     manager = None
-    model: Model = None
+    model: Union[Movie, Series] = None
 
     def __init__(self, update: Update, context: CallbackContext):
         self.bot = context.bot
@@ -26,9 +27,16 @@ class Uploader:
             logger.warning("Incorrect chat id for upload video")
             raise ConnectionAbortedError("Access denied")
 
+    @abstractmethod
+    def get_model_for_add_poster(self, **kwargs):
+        pass
+
     def add_poster(self, file_id: str):
         manager = self.manager.from_caption(caption=self.update.channel_post.caption)
-        model_instance = self.model.objects.get(title_ru=manager.title_ru)
+        model_instance = self.get_model_for_add_poster(
+            title_ru=manager.title_ru, lang=manager.lang
+        )
+
         model_instance.poster = file_id
         model_instance.title_ru = file_id
         model_instance.save(update_fields=["poster"])
@@ -41,11 +49,13 @@ class Uploader:
         logger.info(f"{model_instance} get new poster")
 
     def add_description(self, desc_text) -> model:
-        model_instance = self.model.objects.get(
-            episode__message_id=self.update.effective_message.reply_to_message.message_id
+        model_instance = self.model.get_by_message_id(
+            self.update.effective_message.reply_to_message.message_id
         )
         model_instance.desc = desc_text
         model_instance.save(update_fields=["desc"])
+
+        logger.info(f"Edited description {model_instance}")
 
         self.bot.delete_message(
             chat_id=self.update.effective_chat.id,
@@ -96,16 +106,22 @@ class Uploader:
 
     @classmethod
     def is_upload_channel(cls, chat_id: int):
-        return chat_id == cls.uploader
+        return chat_id == int(cls.uploader)
 
 
 class SeriesUploader(Uploader):
-    uploader = int(settings.UPLOADER_ID)
+    uploader = settings.UPLOADER_ID
     manager = SeriesManager
     model = Series
 
+    def get_model_for_add_poster(self, title_ru, **kwargs):
+        return self.model.objects.get(title_ru=title_ru)
+
 
 class MovieUploader(Uploader):
-    uploader = int(settings.MOVIE_UPLOADER_ID)
+    uploader = settings.MOVIE_UPLOADER_ID
     manager = MovieManager
     model = Movie
+
+    def get_model_for_add_poster(self, title_ru, lang, **kwargs):
+        return self.model.objects.get(title_ru=title_ru, lang=lang)

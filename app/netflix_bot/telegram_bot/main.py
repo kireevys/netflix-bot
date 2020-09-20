@@ -12,7 +12,7 @@ from .commands import start, SERIES_START, START_COMMAND, MOVIES_START
 # from .handlers import starting_series
 from .managers.movies_manager import MoviesCallback
 from .managers.series_manager import SeriesCallback
-from .messages import upload_video, callbacks, add_description, add_poster
+from .messages import callbacks, SeriesUploadHandler, MovieUploadHandler
 
 logger = logging.getLogger(__name__)
 
@@ -46,8 +46,57 @@ def up_bot() -> Dispatcher:
     start_handler = CommandHandler(START_COMMAND, start)
     dispatcher.add_handler(start_handler)
 
+    # Uploaders
+    # Series
+    SERIES_GROUP = 1
+    series_filter = (~Filters.command) & (Filters.chat(int(settings.UPLOADER_ID)))
+
+    upload_series_h = MessageHandler(
+        Filters.video & series_filter,
+        SeriesUploadHandler.upload,
+    )
+
+    series_add_description_h = MessageHandler(
+        Filters.reply & series_filter, SeriesUploadHandler.add_description
+    )
+    series_add_poster_handler = MessageHandler(
+        Filters.photo & series_filter, SeriesUploadHandler.add_poster
+    )
+
+    dispatcher.add_handler(upload_series_h, group=SERIES_GROUP)
+    dispatcher.add_handler(series_add_poster_handler, group=SERIES_GROUP)
+    dispatcher.add_handler(series_add_description_h, group=SERIES_GROUP)
+
+    # Movies
+    MOVIES_GROUP = 2
+    movie_filter = (
+        Filters.chat(chat_id=int(settings.MOVIE_UPLOADER_ID)) & ~Filters.command
+    )
+    movie_upload_h = MessageHandler(
+        Filters.video & movie_filter,
+        MovieUploadHandler.upload,
+    )
+
+    movie_add_description_h = MessageHandler(
+        Filters.reply & movie_filter, MovieUploadHandler.add_description
+    )
+    movie_add_poster_handler = MessageHandler(
+        Filters.photo & movie_filter, MovieUploadHandler.add_poster
+    )
+
+    dispatcher.add_handler(movie_upload_h, group=MOVIES_GROUP)
+    dispatcher.add_handler(movie_add_poster_handler, group=MOVIES_GROUP)
+    dispatcher.add_handler(movie_add_description_h, group=MOVIES_GROUP)
+
+    # Callbacks
+    dispatcher.add_handler(CallbackQueryHandler(callbacks))
+    dispatcher.add_error_handler(error_callback)
+
+    # UI
     watch_series_handler = MessageHandler(
-        Filters.text(SERIES_START) & (~Filters.command),
+        Filters.text(SERIES_START)
+        & (Filters.chat(int(settings.UPLOADER_ID)))
+        & (~Filters.command),
         SeriesCallback.start_manager,
     )
 
@@ -56,25 +105,8 @@ def up_bot() -> Dispatcher:
         MoviesCallback.start_manager,
     )
 
-    upload_series_handler = MessageHandler(
-        Filters.video & (~Filters.command) & (~Filters.update.edited_channel_post),
-        upload_video,
-    )
-    edit_description_handler = MessageHandler(
-        Filters.reply & (~Filters.command), add_description
-    )
-    add_poster_handler = MessageHandler(Filters.photo & (~Filters.command), add_poster)
-
     dispatcher.add_handler(watch_series_handler)
     dispatcher.add_handler(watch_movie_handler)
-
-    dispatcher.add_handler(upload_series_handler)
-    dispatcher.add_handler(add_poster_handler)
-
-    dispatcher.add_handler(edit_description_handler)
-    dispatcher.add_handler(CallbackQueryHandler(callbacks))
-
-    dispatcher.add_error_handler(error_callback)
 
     logger.info("START POOLING")
     updater.start_polling(poll_interval=0.2)
