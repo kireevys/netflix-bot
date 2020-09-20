@@ -60,33 +60,37 @@ class PaginationKeyboardFactory:
         grid_buttons = [ButtonCls(element) for element in qs]
         return cls(grid_buttons, grid, per_page)
 
-    def page_from_column(self, number: int) -> InlineKeyboardMarkup:
+    def page_from_column(
+        self, number: int, ButtonCls=NavigateButton
+    ) -> InlineKeyboardMarkup:
         p = Paginator(self.grid_buttons, self.per_page)
         keyboard = InlineKeyboardMarkup.from_column(p.page(number))
-        navigator = self._get_navigator(number, p)
+        navigator = self._get_navigator(number, p, ButtonCls)
 
         keyboard.inline_keyboard.append(navigator)
 
         return keyboard
 
-    def page_from_grid(self, number: int) -> InlineKeyboardMarkup:
+    def page_from_grid(
+        self, number: int, ButtonCls=NavigateButton
+    ) -> InlineKeyboardMarkup:
         p = Paginator(self.grid_buttons, self.per_page)
         keyboard = GridKeyboard.from_grid(p.page(number))
 
-        navigator = self._get_navigator(number, p)
+        navigator = self._get_navigator(number, p, ButtonCls)
 
         keyboard.inline_keyboard.append(navigator)
 
         return keyboard
 
-    def _get_navigator(self, current_page, p):
+    def _get_navigator(self, current_page, p, ButtonCls):
         navigator = []
 
         if current_page > 1:
-            navigator.append(NavigateButton("<<", current_page - 1, self.grid))
+            navigator.append(ButtonCls("<<", current_page - 1, self.grid))
 
         if current_page < len(p.page_range):
-            navigator.append(NavigateButton(">>", current_page + 1, self.grid))
+            navigator.append(ButtonCls(">>", current_page + 1, self.grid))
 
         return navigator
 
@@ -109,9 +113,13 @@ def get_movie_factory(per_page: int = 5):
     # all_videos = models.Movie.objects.all().order_by("title_ru")
 
     buttons = [
-        MovieButton(models.Movie.objects.filter(title_ru=movie.get("title_ru")).first())
+        MovieButton(
+            models.Movie.objects.filter(
+                title_ru=movie.get("title_ru"), title_eng=movie.get("title_eng")
+            ).first()
+        )
         for movie in all_videos
     ]
 
-    factory = PaginationKeyboardFactory(buttons, per_page)
+    factory = PaginationKeyboardFactory(buttons, per_page=per_page, grid="movie")
     return factory
