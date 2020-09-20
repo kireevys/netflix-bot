@@ -13,6 +13,8 @@ from netflix_bot.telegram_bot.user_interface.buttons import (
     MovieGenre,
     MovieGenres,
     MovieButton,
+    NavigateButton,
+    NavigateMovie,
 )
 from netflix_bot.telegram_bot.user_interface.callbacks import CallbackManager, callback
 from netflix_bot.telegram_bot.user_interface.keyboards import (
@@ -87,7 +89,7 @@ class MoviesCallback(CallbackManager):
 
         logger.info(f"{self.user} request film list")
 
-        keyboard = factory.page_from_column(1)
+        keyboard = factory.page_from_column(1, NavigateMovie)
         keyboard.inline_keyboard.append([MovieMainButton()])
 
         return self.publish_message(
@@ -156,5 +158,22 @@ class MoviesCallback(CallbackManager):
             media=InputMediaPhoto(
                 media=settings.MAIN_PHOTO, caption="Вот что у меня есть"
             ),
+            keyboard=keyboard,
+        )
+
+    @callback("nav_mv")
+    def make_navigation(self):
+        page = self.callback_data.get(NavigateButton.CURRENT)
+        factory = get_movie_factory()
+
+        keyboard = factory.page_from_column(page, NavigateMovie)
+        keyboard.inline_keyboard.append([MovieMainButton()])
+
+        message_media = InputMediaPhoto(
+            media=settings.MAIN_PHOTO, caption=f"Страница {page}"
+        )
+
+        return self.publish_message(
+            media=message_media,
             keyboard=keyboard,
         )

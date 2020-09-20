@@ -138,9 +138,13 @@ class NavigateButton(AbsButton):
                 self.NAVIGATE: self._navigate,
                 self.CURRENT: self._current,
                 "grid": self._grid,
-                "type": NavigateButton._callback_type,
+                "type": self._callback_type,
             }
         )
+
+
+class NavigateMovie(NavigateButton):
+    _callback_type = "nav_mv"
 
 
 class EpisodeButton(AbsButton):

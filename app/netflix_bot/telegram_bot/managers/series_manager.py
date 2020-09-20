@@ -141,6 +141,7 @@ class SeriesCallback(CallbackManager):
         logger.info(f"{self.user} request film list")
 
         keyboard = factory.page_from_column(1)
+        keyboard.inline_keyboard.append([SeriesMainButton()])
 
         return self.publish_message(
             media=InputMediaPhoto(
@@ -256,6 +257,7 @@ class SeriesCallback(CallbackManager):
         factory = get_factory()
 
         keyboard = factory.page_from_column(page)
+        keyboard.inline_keyboard.append([SeriesMainButton()])
 
         message_media = InputMediaPhoto(
             media=settings.MAIN_PHOTO, caption=f"Страница {page}"
