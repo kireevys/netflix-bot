@@ -124,8 +124,11 @@ ELEMENTS_PER_PAGE = 5
 UPLOADER_ID = os.getenv("UPLOADER")
 MOVIE_UPLOADER_ID = os.getenv("MOVIE_UPLOADER")
 
-if None in (BOT_TOKEN, MAIN_PHOTO, UPLOADER_ID, MOVIE_UPLOADER_ID):
-    raise EnvironmentError("Check your ENV")
+
+def check_env():
+    if None in (BOT_TOKEN, MAIN_PHOTO, UPLOADER_ID, MOVIE_UPLOADER_ID):
+        raise EnvironmentError("Check your ENV")
+
 
 UPLOADER_INVITE = "https://t.me/joinchat/AAAAAEr4GjWrNeNVda-3MA"
 
