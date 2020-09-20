@@ -1,7 +1,5 @@
 import logging
-import random
 import re
-import string
 
 from django.conf import settings
 from django.core.paginator import Paginator
@@ -15,6 +13,7 @@ from telegram import (
 
 from netflix_bot import models
 from netflix_bot.models import Genre, Series
+from netflix_bot.my_lib import markdown
 from netflix_bot.telegram_bot.user_interface.buttons import (
     BackButton,
     SeasonButton,
@@ -31,22 +30,15 @@ from netflix_bot.telegram_bot.user_interface.keyboards import (
     get_factory,
     PaginationKeyboardFactory,
 )
-from ..my_lib import markdown
 
 logger = logging.getLogger(__name__)
 
 
-class SeriesManager:
-    def __init__(self, title_ru, title_eng, season, episode, lang):
+class VideoManager:
+    def __init__(self, title_ru, title_eng, lang, **kwargs):
         self.title_ru = title_ru
         self.title_eng = title_eng
-        self.season = season
-        self.episode = episode
         self.lang = self.get_lang(lang.upper())
-
-    @property
-    def title(self):
-        return f"{self.title_ru} / {self.title_eng}"
 
     @staticmethod
     def _strip_ok_emoji(caption: str) -> str:
@@ -54,6 +46,26 @@ class SeriesManager:
             caption = caption.strip(settings.EMOJI.get("ok"))
 
         return caption
+
+    @property
+    def title(self):
+        return f"{self.title_ru} / {self.title_eng}"
+
+    @staticmethod
+    def get_lang(lang: str):
+        if lang not in models.Langs:
+            logger.info(f"incorrect lang {lang}. Using default")
+            return models.Langs.RUS.name
+
+        return lang
+
+
+class SeriesManager(VideoManager):
+    def __init__(self, title_ru, title_eng, lang, season, episode, **kwargs):
+        super().__init__(title_ru, title_eng, lang, **kwargs)
+
+        self.season = season
+        self.episode = episode
 
     @classmethod
     def from_caption(cls, caption: str) -> "SeriesManager":
@@ -79,28 +91,6 @@ class SeriesManager:
             lang=lang,
         )
 
-    def _fake_write(self, file_id, message_id):
-        series, _ = models.Series.objects.get_or_create(
-            title=f"{self.title}_{random.choice(string.ascii_letters)}{random.randint(1, 9)}"
-        )
-        episode = models.Episode.objects.create(
-            series=series,
-            season=random.randint(1, 10),
-            episode=random.randint(1, 10),
-            lang=self.lang,
-            file_id=file_id,
-            message_id=message_id,
-        )
-        return episode
-
-    @staticmethod
-    def get_lang(lang: str):
-        if lang not in models.Episode.Langs:
-            logger.info(f"incorrect lang {lang}. Using default")
-            return models.Episode.Langs.RUS.name
-
-        return lang
-
     def write(self, file_id, message_id):
         series, _ = models.Series.objects.get_or_create(
             title_ru=self.title_ru, title_eng=self.title_eng
@@ -124,6 +114,8 @@ class SeriesManager:
 
 
 class SeriesCallback(CallbackManager):
+    main_callback_data = "series_main"
+
     @callback("series_main")
     def main_menu(self) -> Message:
         logger.info(f"{self.user} request series list")
@@ -282,6 +274,8 @@ class SeriesCallback(CallbackManager):
         keyboard = PaginationKeyboardFactory.from_queryset(
             series, "series"
         ).page_from_column(1)
+
+        keyboard.inline_keyboard.append([SeriesMainButton()])
 
         return self.publish_message(
             media=InputMediaPhoto(

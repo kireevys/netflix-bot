@@ -23,12 +23,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.setdefault(
-    "SECRET", "4tttb$@d4c0ik*302z+mtq=obd)@xhyrla09kesztwg2w&3gu*"
-)
+SECRET_KEY = os.getenv("SECRET", 'default')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = bool(int(os.getenv("DEBUG", False)))
+DEBUG = bool(os.getenv("DEBUG", False))
 
 ALLOWED_HOSTS = ["it-garage.fun", "194.67.104.62"]
 
@@ -64,7 +62,7 @@ ROOT_URLCONF = "project.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [os.path.join(BASE_DIR, "../../templates")],
+        "DIRS": [os.path.join(BASE_DIR, "../templates")],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -118,15 +116,15 @@ KEY_PATH = os.getenv("KEY_PATH")
 CERT_PATH = os.getenv("CERT_PATH")
 BOT_PORT = os.getenv("BOT_PORT", 8443)
 BOT_TOKEN = os.getenv("TOKEN")
-MAIN_PHOTO = os.getenv(
-    "MAIN_PHOTO",
-    "AgACAgIAAx0CVUZLFgADRV8v5tabRBT9QGEnrZi7xOK17qy9AAJtrjEbomqASYvatKSh0EJU_ihrli4AAwEAAwIAA3kAAxMBAAIaBA",
-)
+MAIN_PHOTO = os.getenv("MAIN_PHOTO")
 
 EMOJI = {"ok": "✅"}
 ELEMENTS_PER_PAGE = 5
 
-UPLOADER_ID = os.getenv("UPLOADER", -1001392439062)
+UPLOADER_ID = os.getenv("UPLOADER")
+MOVIE_UPLOADER_ID = os.getenv("MOVIE_UPLOADER")
+
+
 UPLOADER_INVITE = "https://t.me/joinchat/AAAAAEr4GjWrNeNVda-3MA"
 
 MAIN_CHANNEL_ID = -1001257773621
@@ -139,7 +137,6 @@ SITE_DOMAIN = os.environ.setdefault("DOMAIN", "127.0.0.1:88")  # "it_garage.fun"
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = "/static/"
-
 
 # Logging
 LOG_INTO_FILE = os.environ.setdefault("LOG_INTO_FILE", "0") == "1"
