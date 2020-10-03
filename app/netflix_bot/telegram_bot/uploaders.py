@@ -1,5 +1,4 @@
 import logging
-from abc import abstractmethod
 from typing import Union
 
 from django.conf import settings
@@ -27,42 +26,43 @@ class Uploader:
             logger.warning("Incorrect chat id for upload video")
             raise ConnectionAbortedError("Access denied")
 
-    @abstractmethod
-    def get_model_for_add_poster(self, **kwargs):
-        pass
+    def get_models_for_add_poster(self, title_ru, title_eng):
+        qs = self.model.objects.filter(title_ru=title_ru, title_eng=title_eng)
+        if not qs:
+            raise self.model.DoesNotExist()
+
+        return qs
 
     def add_poster(self, file_id: str):
         manager = self.manager.from_caption(caption=self.update.channel_post.caption)
-        model_instance = self.get_model_for_add_poster(
-            title_ru=manager.title_ru, lang=manager.lang
+        models_qs = self.get_models_for_add_poster(
+            title_ru=manager.title_ru, title_eng=manager.title_eng
         )
 
-        model_instance.poster = file_id
-        model_instance.title_ru = file_id
-        model_instance.save(update_fields=["poster"])
+        models_qs.update(poster=file_id)
 
         self.bot.edit_message_caption(
             chat_id=self.update.effective_chat.id,
             message_id=self.update.effective_message.message_id,
             caption=f"{settings.EMOJI.get('ok')} {self.update.channel_post.caption}",
         )
-        logger.info(f"{model_instance} get new poster")
+        logger.info(f"{models_qs} get new poster")
 
     def add_description(self, desc_text) -> model:
-        model_instance = self.model.get_by_message_id(
+        models = self.model.get_by_message_id(
             self.update.effective_message.reply_to_message.message_id
         )
-        model_instance.desc = desc_text
-        model_instance.save(update_fields=["desc"])
 
-        logger.info(f"Edited description {model_instance}")
+        models.update(desc=desc_text)
+
+        logger.info(f"Edited description {models.first()}")
 
         self.bot.delete_message(
             chat_id=self.update.effective_chat.id,
             message_id=self.update.effective_message.message_id,
         )
 
-        return model_instance
+        return models.first()
 
     def upload(self):
         """
@@ -114,14 +114,8 @@ class SeriesUploader(Uploader):
     manager = SeriesManager
     model = Series
 
-    def get_model_for_add_poster(self, title_ru, **kwargs):
-        return self.model.objects.get(title_ru=title_ru)
-
 
 class MovieUploader(Uploader):
     uploader = settings.MOVIE_UPLOADER_ID
     manager = MovieManager
     model = Movie
-
-    def get_model_for_add_poster(self, title_ru, lang, **kwargs):
-        return self.model.objects.get(title_ru=title_ru, lang=lang)
