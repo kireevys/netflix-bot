@@ -1,7 +1,7 @@
 # Create your models here.
 
 from django.db import models
-from django.db.models import Min
+from django.db.models import Min, QuerySet
 from telegram import user as t_user
 
 
@@ -126,8 +126,9 @@ class Series(models.Model):
         verbose_name_plural = "Сериалы"
 
     @classmethod
-    def get_by_message_id(cls, message_id):
-        return cls.objects.get(episode__message_id=message_id)
+    def get_by_message_id(cls, message_id) -> QuerySet:
+        series = cls.objects.get(episode__message_id=message_id)
+        return cls.objects.filter(title_ru=series.title_ru, title_eng=series.title_eng)
 
     @property
     def title(self):
@@ -186,8 +187,9 @@ class Movie(models.Model):
         return f"{self.title_ru} / {self.title_eng}"
 
     @classmethod
-    def get_by_message_id(cls, message_id):
-        return cls.objects.get(message_id=message_id)
+    def get_by_message_id(cls, message_id) -> QuerySet:
+        movie = cls.objects.get(message_id=message_id)
+        return cls.objects.filter(title_ru=movie.title_ru, title_eng=movie.title_eng)
 
     def __str__(self) -> str:
         return f"{self.title} {self.lang}"

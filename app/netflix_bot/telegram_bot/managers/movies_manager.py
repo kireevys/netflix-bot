@@ -14,7 +14,8 @@ from netflix_bot.telegram_bot.user_interface.buttons import (
     MovieGenres,
     MovieButton,
     NavigateButton,
-    NavigateMovie, SeriesMainButton,
+    NavigateMovie,
+    SeriesMainButton,
 )
 from netflix_bot.telegram_bot.user_interface.callbacks import CallbackManager, callback
 from netflix_bot.telegram_bot.user_interface.keyboards import (
@@ -73,15 +74,10 @@ class MoviesCallback(CallbackManager):
         logger.info(f"{self.user} request movies list")
 
         keyboard = InlineKeyboardMarkup(
-            [
-                [ShowMoviesButton(1)],
-                [MovieGenres()],
-                [SeriesMainButton()]
-
-            ]
+            [[ShowMoviesButton(1)], [MovieGenres()], [SeriesMainButton()]]
         )
         return self.replace_message(
-            media=InputMediaPhoto(media=settings.MAIN_PHOTO, caption='ФИЛЬМЫ'),
+            media=InputMediaPhoto(media=settings.MAIN_PHOTO, caption="ФИЛЬМЫ"),
             keyboard=keyboard,
         )
 
@@ -123,25 +119,48 @@ class MoviesCallback(CallbackManager):
 
     @callback("movies")
     def publish_movie(self) -> Message:
+        _before_watch_video = "Выберите озвучку"
+
         movie = models.Movie.objects.get(pk=self.callback_data.get("id"))
 
-        langs = models.Movie.objects.filter(title_ru=movie.title_ru)
+        movies_by_langs = models.Movie.objects.filter(
+            title_ru=movie.title_ru, title_eng=movie.title_eng
+        )
+        movie_with_desc = movies_by_langs.filter(desc__isnull=False).first()
+
+        desc = movie_with_desc.desc if movie_with_desc else str()
 
         langs_button = []
 
-        for movie_lang in langs:
+        if (
+            movie.poster
+            and self.update.effective_message.photo
+            and _before_watch_video not in self.update.effective_message.caption
+        ):
+            media = InputMediaPhoto(
+                media=movie.poster,
+                caption=f"{movie.title}\n\n{desc}\n\n{_before_watch_video}",
+            )
+        else:
+            media = InputMediaVideo(
+                media=movie.file_id,
+                caption=f"{movie.title}\n\n{desc}",
+            )
+
+        for movie_lang in movies_by_langs:
             lang = movie_lang.lang
-            lang = f"[ {lang} ]" if movie_lang == movie else lang
+            lang = (
+                f"[ {lang} ]"
+                if movie_lang == movie and isinstance(media, InputMediaVideo)
+                else lang
+            )
 
             langs_button.append(MovieButton(movie_lang, text=lang))
 
         keyboard = InlineKeyboardMarkup([langs_button, [ShowMoviesButton(1)]])
 
         return self.publish_message(
-            media=InputMediaVideo(
-                media=movie.file_id,
-                caption=f"{movie.title} {movie.lang}\n\n{movie.desc or ''}",
-            ),
+            media=media,
             keyboard=keyboard,
         )
 
