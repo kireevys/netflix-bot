@@ -3,7 +3,7 @@ from abc import abstractmethod
 
 from telegram import InlineKeyboardButton
 
-from netflix_bot.models import Series, Season, Episode, Genre, Movie
+from netflix_bot.models import Series, Season, Episode, Genre, Movie, Langs
 
 _grid = {}
 
@@ -68,6 +68,11 @@ class BackButton(SeriesButton):
 
 class SeasonButton(AbsButton):
     _callback_type = "season"
+    _map = {
+        Langs.RUS: '',
+        Langs.SUB: 'с субтитрами',
+        Langs.ENG: 'на английском'
+    }
 
     def __init__(self, season: Season, **kwargs):
         self._season = season
@@ -84,7 +89,7 @@ class SeasonButton(AbsButton):
         )
 
     def get_text(self) -> str:
-        return f"{self._season.id:<3}: {self._season.lang}"
+        return f"{self._season.id} сезон {self._map.get(self._season.lang, '')}"
 
 
 class ShowSeriesButton(AbsButton):
