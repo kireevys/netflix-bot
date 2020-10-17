@@ -161,7 +161,7 @@ class SeriesCallback(CallbackManager):
 
         pagination_buttons = Paginator(buttons, settings.ELEMENTS_PER_PAGE)
 
-        keyboard = GridKeyboard.from_grid(pagination_buttons.page(1))
+        keyboard = GridKeyboard.from_column(pagination_buttons.page(1))
         keyboard.inline_keyboard.append([ShowSeriesButton(1)])
 
         return self.publish_message(
