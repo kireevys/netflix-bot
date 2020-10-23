@@ -61,18 +61,33 @@ class MovieButton(SeriesButton):
     _callback_type = "movies"
 
 
-class BackButton(SeriesButton):
+class Language(AbsButton):
+    _callback_type = 'lang'
+
+    def __init__(self, episode: Episode, **kwargs):
+        self._episode = episode
+        super().__init__(**kwargs)
+
+    def get_callback(self) -> str:
+        return json.dumps(
+            {
+                "id": self._episode.series.pk,
+                "lang": self._episode.lang,
+                "type": self._callback_type,
+            }
+        )
+
     def get_text(self) -> str:
-        return f"К списку сезонов {self._series.title}"
+        return Langs.repr(self._episode.lang)
+
+
+class BackButton(Language):
+    def get_text(self) -> str:
+        return f"К списку сезонов {self._episode.series.title}"
 
 
 class SeasonButton(AbsButton):
     _callback_type = "season"
-    _map = {
-        Langs.RUS: '',
-        Langs.SUB: 'с субтитрами',
-        Langs.ENG: 'на английском'
-    }
 
     def __init__(self, season: Season, **kwargs):
         self._season = season
@@ -89,7 +104,12 @@ class SeasonButton(AbsButton):
         )
 
     def get_text(self) -> str:
-        return f"{self._season.id} сезон {self._map.get(self._season.lang, '')}"
+        return f"{self._season.id} сезон"
+
+
+class ChangeLanguage(SeriesButton):
+    def get_text(self) -> str:
+        return 'Изменить озучку'
 
 
 class ShowSeriesButton(AbsButton):
