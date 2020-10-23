@@ -119,6 +119,9 @@ class MoviesCallback(CallbackManager):
 
     @callback("movies")
     def publish_movie(self) -> Message:
+        if not self.user_is_subscribed():
+            return self.send_need_subscribe()
+
         _before_watch_video = "Выберите озвучку"
 
         movie = models.Movie.objects.get(pk=self.callback_data.get("id"))

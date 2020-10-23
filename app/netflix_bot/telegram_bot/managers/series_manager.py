@@ -2,7 +2,6 @@ import logging
 import re
 
 from django.conf import settings
-from django.core.paginator import Paginator
 from django.db.models import Count
 from telegram import (
     Message,
@@ -22,7 +21,10 @@ from netflix_bot.telegram_bot.user_interface.buttons import (
     AllGenresButton,
     SeriesMainButton,
     GenresButton,
-    NavigateButton, MovieMainButton,
+    NavigateButton,
+    MovieMainButton,
+    Language,
+    ChangeLanguage,
 )
 from netflix_bot.telegram_bot.user_interface.callbacks import CallbackManager, callback
 from netflix_bot.telegram_bot.user_interface.keyboards import (
@@ -128,7 +130,7 @@ class SeriesCallback(CallbackManager):
             ]
         )
         return self.replace_message(
-            media=InputMediaPhoto(media=settings.MAIN_PHOTO, caption='СЕРИАЛЫ'),
+            media=InputMediaPhoto(media=settings.MAIN_PHOTO, caption="СЕРИАЛЫ"),
             keyboard=keyboard,
         )
 
@@ -151,17 +153,35 @@ class SeriesCallback(CallbackManager):
             keyboard=keyboard,
         )
 
-    @callback("series")
+    @callback("lang")
     def publish_seasons_to_series(self) -> Message:
+        series = models.Series.objects.get(pk=self.callback_data.get("id"))
+        lang = self.callback_data.get("lang")
+
+        lang_repr = models.Langs.repr(lang)
+
+        buttons = [SeasonButton(season) for season in series.get_seasons(lang)]
+
+        keyboard = GridKeyboard.from_column(buttons)
+        keyboard.inline_keyboard.append([ChangeLanguage(series)])
+
+        return self.publish_message(
+            media=InputMediaPhoto(
+                media=series.poster or settings.MAIN_PHOTO,
+                caption=f"{series.title} {lang_repr}\n\n{series.desc or ''}",
+            ),
+            keyboard=keyboard,
+        )
+
+    @callback("series")
+    def publish_language(self) -> Message:
         """
-        Возвращает Список серий в сезоне
+        Возвращает Список доступных языков для сериала
         """
         series = models.Series.objects.get(pk=self.callback_data.get("id"))
-        buttons = [SeasonButton(season) for season in series.get_seasons()]
+        buttons = [Language(episode) for episode in series.get_languages()]
 
-        pagination_buttons = Paginator(buttons, settings.ELEMENTS_PER_PAGE)
-
-        keyboard = GridKeyboard.from_column(pagination_buttons.page(1))
+        keyboard = GridKeyboard.from_column(buttons)
         keyboard.inline_keyboard.append([ShowSeriesButton(1)])
 
         return self.publish_message(
@@ -190,9 +210,11 @@ class SeriesCallback(CallbackManager):
         keyboard = GridKeyboard.from_grid(buttons)
         series = models.Series.objects.get(pk=series)
 
-        keyboard.inline_keyboard.append([BackButton(series)])
+        keyboard.inline_keyboard.append([BackButton(episodes.first())])
 
-        caption = f"Список серий {series.title}\n s{season_no}"
+        caption = (
+            f"Список серий {series.title} {models.Langs.repr(lang)}\n s{season_no}"
+        )
 
         logger.info(f"{self.user} GET {caption}")
 

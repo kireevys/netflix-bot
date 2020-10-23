@@ -32,9 +32,17 @@ class Langs(models.TextChoices):
     RUS = "RUS", "russian"
     ENG = "ENG", "english"
 
+    @classmethod
+    def repr(cls, lang):
+        _map = {
+            Langs.RUS: "на русском",
+            Langs.SUB: "с субтитрами",
+            Langs.ENG: "на английском",
+        }
+        return _map.get(lang, "")
+
 
 class Episode(models.Model):
-
     series = models.ForeignKey("Series", on_delete=models.CASCADE)
 
     file_id = models.TextField(unique=False)
@@ -137,9 +145,9 @@ class Series(models.Model):
     def get_count(self, lang=Langs.RUS) -> int:
         return Episode.objects.filter(series=self, lang=lang).count()
 
-    def get_seasons(self):
+    def get_seasons(self, lang):
         qs = (
-            Episode.objects.filter(series=self)
+            Episode.objects.filter(series=self, lang=lang)
             .values("season", "lang")
             .annotate(mn=Min("pk"))
         )
@@ -147,6 +155,10 @@ class Series(models.Model):
             Season(self.pk, episode.get("season"), episode.get("lang"))
             for episode in qs
         ]
+
+    def get_languages(self):
+        qs = Episode.objects.filter(series=self).values("lang").annotate(mn=Min("pk"))
+        return [Episode.objects.get(pk=dk.get("mn")) for dk in qs]
 
     def __str__(self):
         return f"{self.title}"
