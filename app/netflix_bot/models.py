@@ -13,9 +13,16 @@ class User(models.Model):
 
     @classmethod
     def get_or_create(cls, user: t_user.User):
-        return User.objects.get_or_create(
-            user_id=user.id, user_name=user.username, first_name=user.first_name
-        )
+        try:
+            user = User.objects.get(user_id=user.id)
+            created = False
+        except User.DoesNotExist:
+            user = User.objects.create(
+                user_id=user.id, user_name=user.username, first_name=user.first_name
+            )
+            created = True
+
+        return user, created
 
     def __str__(self):
         return f"{self.pk} - {self.user_id} - {self.user_name}"
