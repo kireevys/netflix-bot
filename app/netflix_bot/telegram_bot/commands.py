@@ -8,8 +8,8 @@ from ..models import User
 
 logger = logging.getLogger(__name__)
 
-SERIES_START = "Хочу сериал"
-MOVIES_START = "Хочу фильм"
+SERIES_START = "Cериалы"
+MOVIES_START = "Фильмы"
 START_COMMAND = "start"
 
 
