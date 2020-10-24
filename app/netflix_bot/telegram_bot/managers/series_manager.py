@@ -134,6 +134,24 @@ class SeriesCallback(CallbackManager):
             keyboard=keyboard,
         )
 
+    def search(self, title_eng):
+        qs = models.Series.objects.filter(title_eng__icontains=title_eng).order_by(
+            "title_ru"
+        )
+        caption = "Вот что я нашел" if qs else "Ничего не найдено. Главное меню"
+
+        factory = get_factory(10, qs)
+
+        logger.info("search series", extra=dict(user=self.user.__dict__))
+
+        keyboard = factory.page_from_column(1)
+        keyboard.inline_keyboard.append([SeriesMainButton()])
+
+        return self.replace_message(
+            media=InputMediaPhoto(media=settings.MAIN_PHOTO, caption=caption),
+            keyboard=keyboard,
+        )
+
     @callback("series_list")
     def publish_all_series(self):
         """

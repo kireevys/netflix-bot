@@ -12,6 +12,7 @@ from telegram import (
     InlineKeyboardMarkup,
     InlineKeyboardButton,
     CallbackQuery,
+    InputMediaPhoto,
 )
 from telegram.error import BadRequest
 from telegram.ext import CallbackContext
@@ -122,6 +123,12 @@ class CallbackManager(ABC):
         except Exception as e:
             logger.info(e)
 
+        media: InputMediaPhoto
+
         return self.bot.send_photo(
-            chat_id=self.chat_id, photo=media.media, reply_markup=keyboard, **kwargs
+            chat_id=self.chat_id,
+            photo=media.media,
+            caption=media.caption,
+            reply_markup=keyboard,
+            **kwargs,
         )

@@ -4,13 +4,29 @@ from telegram import ReplyKeyboardMarkup, KeyboardButton
 from telegram import Update
 from telegram.ext import CallbackContext
 
+from .managers.movies_manager import MoviesCallback
+from .managers.series_manager import SeriesCallback
 from ..models import User
 
 logger = logging.getLogger(__name__)
 
 SERIES_START = "Cериалы"
 MOVIES_START = "Фильмы"
+MOVIES_SEARCH = "movies"
+SERIES_SEARCH = "series"
 START_COMMAND = "start"
+
+
+def movies_search(update: Update, context: CallbackContext):
+    title_eng = ' '.join(context.args)
+    manager = MoviesCallback(update, context)
+    manager.search(title_eng)
+
+
+def series_search(update: Update, context: CallbackContext):
+    title_eng = ' '.join(context.args)
+    manager = SeriesCallback(update, context)
+    manager.search(title_eng)
 
 
 def start(update: Update, context: CallbackContext):

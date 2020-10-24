@@ -81,6 +81,30 @@ class MoviesCallback(CallbackManager):
             keyboard=keyboard,
         )
 
+    def search(self, title_eng):
+        qs = (
+            Movie.objects.filter(title_eng__icontains=title_eng)
+            .values("title_ru", "title_eng")
+            .annotate(Count("lang"))
+            .order_by("title_ru")
+        )
+
+        caption = "Вот что я нашел" if qs else "Ничего не найдено. Главное меню"
+
+        factory = get_movie_factory(per_page=10, qs=qs)
+
+        logger.info(
+            "search movies", extra=dict(user=self.user.__dict__, string=title_eng)
+        )
+
+        keyboard = factory.page_from_column(1, NavigateMovie)
+        keyboard.inline_keyboard.append([MovieMainButton()])
+
+        return self.replace_message(
+            media=InputMediaPhoto(media=settings.MAIN_PHOTO, caption=caption),
+            keyboard=keyboard,
+        )
+
     @callback("movies_list")
     def publish_all_movies(self):
         factory = get_movie_factory()
