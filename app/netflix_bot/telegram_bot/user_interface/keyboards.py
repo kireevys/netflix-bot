@@ -95,8 +95,11 @@ class PaginationKeyboardFactory:
         return navigator
 
 
-def get_factory(per_page: int = 5):
-    all_videos = models.Series.objects.all().order_by("title_ru")
+def get_factory(per_page: int = 5, qs=False):
+    if not qs:
+        all_videos = models.Series.objects.all().order_by("title_ru")
+    else:
+        all_videos = qs
 
     buttons = [SeriesButton(series) for series in all_videos]
 
@@ -104,12 +107,15 @@ def get_factory(per_page: int = 5):
     return factory
 
 
-def get_movie_factory(per_page: int = 5):
-    all_videos = (
-        models.Movie.objects.values("title_ru", "title_eng")
-        .annotate(Count("lang"))
-        .order_by("title_ru")
-    )
+def get_movie_factory(per_page: int = 5, qs=False):
+    if not qs:
+        all_videos = (
+            models.Movie.objects.values("title_ru", "title_eng")
+            .annotate(Count("lang"))
+            .order_by("title_ru")
+        )
+    else:
+        all_videos = qs
     # all_videos = models.Movie.objects.all().order_by("title_ru")
 
     buttons = [

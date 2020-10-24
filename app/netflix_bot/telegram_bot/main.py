@@ -7,9 +7,8 @@ from telegram.ext import CommandHandler, CallbackQueryHandler, Dispatcher
 from telegram.ext import MessageHandler, Filters
 from telegram.ext import Updater
 
-from .commands import start, SERIES_START, START_COMMAND, MOVIES_START
-
-# from .handlers import starting_series
+from .commands import start, SERIES_START, START_COMMAND, MOVIES_START, movies_search, series_search, MOVIES_SEARCH, \
+    SERIES_SEARCH
 from .managers.movies_manager import MoviesCallback
 from .managers.series_manager import SeriesCallback
 from .messages import callbacks, SeriesUploadHandler, MovieUploadHandler
@@ -43,8 +42,16 @@ def up_bot() -> Dispatcher:
     updater = Updater(token=settings.BOT_TOKEN, use_context=True)
     dispatcher: Dispatcher = updater.dispatcher
 
+    # commands
     start_handler = CommandHandler(START_COMMAND, start)
+
+    movie_search_handler = CommandHandler(MOVIES_SEARCH, movies_search)
+    series_search_handler = CommandHandler(SERIES_SEARCH, series_search)
+
     dispatcher.add_handler(start_handler)
+
+    dispatcher.add_handler(movie_search_handler)
+    dispatcher.add_handler(series_search_handler)
 
     # Uploaders
     # Series
