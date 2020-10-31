@@ -1,41 +1,52 @@
 import logging
 
-from telegram import ReplyKeyboardMarkup, KeyboardButton
+from django.conf import settings
+from telegram import InlineKeyboardMarkup
 from telegram import Update
 from telegram.ext import CallbackContext
 
-from .managers.movies_manager import MoviesCallback
-from .managers.series_manager import SeriesCallback
+from .user_interface.buttons import (
+    MovieMainButton,
+    SeriesMainButton,
+    SearchSeries,
+    SearchMovies,
+)
 from ..models import User
 
 logger = logging.getLogger(__name__)
 
-SERIES_START = "Cериалы"
-MOVIES_START = "Фильмы"
-MOVIES_SEARCH = "movies"
-SERIES_SEARCH = "series"
 START_COMMAND = "start"
 
 
-def movies_search(update: Update, context: CallbackContext):
-    title_eng = ' '.join(context.args)
-    manager = MoviesCallback(update, context)
-    manager.search(title_eng)
+def build_keyboard(search_string):
+    keyboard = InlineKeyboardMarkup(
+        [
+            [SearchSeries(search_string)],
+            [SearchMovies(search_string)],
+        ]
+    )
+
+    return keyboard
 
 
-def series_search(update: Update, context: CallbackContext):
-    title_eng = ' '.join(context.args)
-    manager = SeriesCallback(update, context)
-    manager.search(title_eng)
+def search(update: Update, context: CallbackContext):
+    search_string = update.effective_message.text[:28]
+    keyboard = build_keyboard(search_string)
+
+    context.bot.send_photo(
+        photo=settings.MAIN_PHOTO,
+        chat_id=update.effective_chat.id,
+        caption=f"Вы ищете: \n{search_string}\nСтрока может быть обрезана - так надо",
+        reply_markup=keyboard,
+    )
 
 
 def start(update: Update, context: CallbackContext):
-    keyboard = ReplyKeyboardMarkup(
+    keyboard = InlineKeyboardMarkup(
         [
-            [KeyboardButton(SERIES_START)],
-            [KeyboardButton(MOVIES_START)],
-        ],
-        one_time_keyboard=True,
+            [MovieMainButton()],
+            [SeriesMainButton()],
+        ]
     )
 
     user, created = User.get_or_create(update.effective_user)
@@ -45,9 +56,16 @@ def start(update: Update, context: CallbackContext):
 
     logger.info(f"{user} say /start")
 
+    about_search = "Ты можешь воспользоваться поиском: просто напиши мне сообщение" \
+                   "\n\nПока что я могу искать только по <b>английским названиям</b>" \
+                   "\n\nВводи часть названия, например - напиши <b>harry</b>, и я покажу тебе все," \
+                   "что подходит)"
+
     name = user.user_name or user.first_name or "Странник"
-    context.bot.send_message(
+    context.bot.send_photo(
+        parse_mode='HTML',
+        photo=settings.MAIN_PHOTO,
         chat_id=update.effective_chat.id,
-        text=f"Привет, {name}. Я покажу тебе сериалы, только прикажи)",
+        caption=f"Привет, {name}. Ты находишься в главном меню\n\n{about_search}",
         reply_markup=keyboard,
     )

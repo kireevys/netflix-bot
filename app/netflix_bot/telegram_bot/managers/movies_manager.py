@@ -81,7 +81,9 @@ class MoviesCallback(CallbackManager):
             keyboard=keyboard,
         )
 
-    def search(self, title_eng):
+    @callback('mv_search')
+    def search(self):
+        title_eng = self.callback_data.get("search")
         qs = (
             Movie.objects.filter(title_eng__icontains=title_eng)
             .values("title_ru", "title_eng")
@@ -198,7 +200,7 @@ class MoviesCallback(CallbackManager):
 
         keyboard = PaginationKeyboardFactory.from_queryset(
             movies, "movie"
-        ).page_from_column(1)
+        ).page_from_column(1, NavigateMovie)
 
         keyboard.inline_keyboard.append([MovieMainButton()])
 

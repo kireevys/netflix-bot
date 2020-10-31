@@ -62,7 +62,7 @@ class MovieButton(SeriesButton):
 
 
 class Language(AbsButton):
-    _callback_type = 'lang'
+    _callback_type = "lang"
 
     def __init__(self, episode: Episode, **kwargs):
         self._episode = episode
@@ -109,7 +109,7 @@ class SeasonButton(AbsButton):
 
 class ChangeLanguage(SeriesButton):
     def get_text(self) -> str:
-        return 'Изменить озучку'
+        return "Изменить озучку"
 
 
 class ShowSeriesButton(AbsButton):
@@ -254,3 +254,26 @@ class MovieMainButton(AbsButton):
 
     def get_callback(self) -> str:
         return json.dumps({"type": self._callback_type})
+
+
+class Search(AbsButton):
+    def __init__(self, string, **kwargs):
+        self._search_string = string
+        super().__init__(**kwargs)
+
+    def get_callback(self) -> str:
+        return json.dumps({"type": self._callback_type, "search": self._search_string})
+
+
+class SearchSeries(Search):
+    _callback_type = "se_search"
+
+    def get_text(self) -> str:
+        return "Найти сериалы"
+
+
+class SearchMovies(Search):
+    _callback_type = "mv_search"
+
+    def get_text(self) -> str:
+        return "Найти фильмы"
