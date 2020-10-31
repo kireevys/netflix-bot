@@ -7,10 +7,7 @@ from telegram.ext import CommandHandler, CallbackQueryHandler, Dispatcher
 from telegram.ext import MessageHandler, Filters
 from telegram.ext import Updater
 
-from .commands import start, SERIES_START, START_COMMAND, MOVIES_START, movies_search, series_search, MOVIES_SEARCH, \
-    SERIES_SEARCH
-from .managers.movies_manager import MoviesCallback
-from .managers.series_manager import SeriesCallback
+from .commands import start, START_COMMAND, search
 from .messages import callbacks, SeriesUploadHandler, MovieUploadHandler
 
 logger = logging.getLogger(__name__)
@@ -45,13 +42,11 @@ def up_bot() -> Dispatcher:
     # commands
     start_handler = CommandHandler(START_COMMAND, start)
 
-    movie_search_handler = CommandHandler(MOVIES_SEARCH, movies_search)
-    series_search_handler = CommandHandler(SERIES_SEARCH, series_search)
+    movie_search_handler = MessageHandler(Filters.text & ~Filters.command, search)
 
     dispatcher.add_handler(start_handler)
 
     dispatcher.add_handler(movie_search_handler)
-    dispatcher.add_handler(series_search_handler)
 
     # Uploaders
     # Series
@@ -98,20 +93,6 @@ def up_bot() -> Dispatcher:
     # Callbacks
     dispatcher.add_handler(CallbackQueryHandler(callbacks))
     dispatcher.add_error_handler(error_callback)
-
-    # UI
-    watch_series_handler = MessageHandler(
-        Filters.text(SERIES_START) & (~Filters.command),
-        SeriesCallback.start_manager,
-    )
-
-    watch_movie_handler = MessageHandler(
-        Filters.text(MOVIES_START) & (~Filters.command),
-        MoviesCallback.start_manager,
-    )
-
-    dispatcher.add_handler(watch_series_handler)
-    dispatcher.add_handler(watch_movie_handler)
 
     logger.info("START POOLING")
     updater.start_polling(poll_interval=0.2)

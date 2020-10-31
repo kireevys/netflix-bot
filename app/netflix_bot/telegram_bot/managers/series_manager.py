@@ -134,7 +134,10 @@ class SeriesCallback(CallbackManager):
             keyboard=keyboard,
         )
 
-    def search(self, title_eng):
+    @callback('se_search')
+    def search(self):
+        title_eng = self.callback_data.get("search")
+
         qs = models.Series.objects.filter(title_eng__icontains=title_eng).order_by(
             "title_ru"
         )
