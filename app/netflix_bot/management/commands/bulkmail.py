@@ -1,12 +1,16 @@
+import logging
 import time
 from argparse import RawTextHelpFormatter
 
+import telegram
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandParser
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, Dispatcher
 
 from netflix_bot import models
+
+logger = logging.getLogger("project")
 
 
 class Command(BaseCommand):
@@ -43,9 +47,24 @@ class Command(BaseCommand):
             if num % 30 == 0:
                 time.sleep(0.05)
 
-            self.dispatcher.bot.send_message(
-                chat_id=user.user_id, text=message, reply_markup=keyboard
-            )
+            try:
+                self.dispatcher.bot.send_message(
+                    chat_id=user.user_id, text=message, reply_markup=keyboard
+                )
+                logger.info(
+                    "Success send", extra={"user_id": user.user_id, "user": user.id}
+                )
+                if not user.authorize:
+                    user.authorizing()
+
+            except telegram.error.Unauthorized:
+                user.unauthorizing()
+                logger.info("User unauthorized", extra={"user_id": user.user_id})
+            except telegram.error.TelegramError as e:
+                logger.warning(
+                    "Cant send to user",
+                    extra={"exception": str(e), "user_id": user.user_id},
+                )
 
     def init(self):
         self.updater = Updater(token=settings.BOT_TOKEN, use_context=True)
