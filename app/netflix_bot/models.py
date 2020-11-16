@@ -10,6 +10,7 @@ class User(models.Model):
     user_name = models.TextField(null=True)
     first_name = models.TextField(null=True)
     add_date = models.DateTimeField(auto_now_add=True)
+    authorize = models.BooleanField(default=True)
 
     @classmethod
     def get_or_create(cls, user: t_user.User):
@@ -23,6 +24,14 @@ class User(models.Model):
             created = True
 
         return user, created
+
+    def unauthorizing(self):
+        self.authorize = False
+        self.save()
+
+    def authorizing(self):
+        self.authorize = True
+        self.save()
 
     def __str__(self):
         return f"{self.pk} - {self.user_id} - {self.user_name}"
