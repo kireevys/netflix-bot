@@ -14,14 +14,16 @@ logger = logging.getLogger("project")
 
 
 class Command(BaseCommand):
-    help = "Bot up"
+    help = """Usage
+           ./manage.py bulkmail -u 362954912 -m=all -ln=СКАЧАТЬ -l=https://t.me/softwareBoxRu/363 -f=data.md"""
 
     def add_arguments(self, parser: CommandParser):
         parser.add_argument("-u", "--user_id", type=int, nargs="+")
         parser.add_argument("-m", "--mode", type=str, default="one")
         parser.add_argument("-l", "--link", type=str)
         parser.add_argument("-ln", "--link-name", type=str, default="ТЫЦ!")
-        parser.add_argument("-t", "--text", type=str)
+        # parser.add_argument("-t", "--text", type=str)
+        parser.add_argument("-f", "--file", type=str)
 
     def create_parser(self, *args, **kwargs):
         parser = super(Command, self).create_parser(*args, **kwargs)
@@ -85,7 +87,10 @@ class Command(BaseCommand):
         mode = options.get("mode")
         print(mode)
 
-        text = options.get("text").replace("\\n", "\n")
+        file = options.get("file").replace("\\n", "\n")
+
+        with open(file) as f:
+            text = f.read()
 
         if mode == "one":
             users = options.get("user_id")
