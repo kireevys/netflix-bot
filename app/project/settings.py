@@ -23,7 +23,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv("SECRET", 'default')
+SECRET_KEY = os.getenv("SECRET", "default")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool(os.getenv("DEBUG", False))
@@ -185,6 +185,12 @@ LOGGING = {
             "filename": LOG_FILE,
             "formatter": LOG_FORMATTER_FILE,
         },
+        "temp": {
+            "level": "INFO",
+            "class": "logging.FileHandler",
+            "filename": "temp.log",
+            "formatter": LOG_FORMATTER_FILE,
+        },
     },
     "loggers": {
         "django": {"handlers": handlers, "level": LOG_LEVEL, "propagate": True},
@@ -192,5 +198,10 @@ LOGGING = {
         "telegram": {"handlers": handlers, "level": DEBUG, "propagate": True},
         "netflix_bot": {"handlers": handlers, "level": LOG_LEVEL, "propagate": True},
         "telegram_bot": {"handlers": handlers, "level": LOG_LEVEL, "propagate": True},
+        "bulkmail": {
+            "handlers": ["console", "temp"],
+            "level": LOG_LEVEL,
+            "propagate": True,
+        },
     },
 }
