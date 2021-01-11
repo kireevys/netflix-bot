@@ -114,10 +114,10 @@ class Command(BaseCommand):
             except telegram.error.TelegramError:
                 failed += 1
 
-        end_message = (
-            f"success: {success}\n" f"failed: {failed}\n" f"new_unauth: {new_unauth}"
+        logger.info(
+            "Bulkmail has been end.",
+            extra={"success": success, "failed": failed, "new_unauth": new_unauth},
         )
-        logger.info(end_message)
 
     def init(self):
         self.updater = Updater(token=settings.BOT_TOKEN, use_context=True)

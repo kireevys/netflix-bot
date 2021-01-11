@@ -5,7 +5,5 @@ def escape(text: str) -> str:
         .replace("_", r"\_")
         .replace("*", r"\*")
         .replace("-", r"\-")
-        .replace("(", r"\(")
-        .replace(")", r"\)")
         .replace(".", r"\.")
     )
