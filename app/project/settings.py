@@ -26,7 +26,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = os.getenv("SECRET", "default")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = bool(os.getenv("DEBUG", False))
+DEBUG = bool(int(os.getenv("DEBUG", False)))
 
 ALLOWED_HOSTS = ["it-garage.fun", "194.67.104.62"]
 
@@ -126,9 +126,11 @@ MOVIE_UPLOADER_ID = os.getenv("MOVIE_UPLOADER")
 
 UPLOADER_INVITE = "https://t.me/joinchat/AAAAAEr4GjWrNeNVda-3MA"
 
-MAIN_CHANNEL_ID = -1001257773621
+MAIN_CHANNEL_ID = [
+    -1001357329839,
+]
 # MAIN_CHANNEL_ID = UPLOADER_ID
-CHAT_INVITE_LINK = "https://t.me/joinchat/AAAAAEr4GjXNB1THirwNfw"
+CHAT_INVITE_LINK = "https://t.me/joinchat/UOc1rzOVBufiy1UB"
 
 SITE_DOMAIN = os.environ.setdefault("DOMAIN", "127.0.0.1:88")  # "it_garage.fun"
 
