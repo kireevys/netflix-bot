@@ -67,11 +67,11 @@ class CallbackManager(ABC):
 
     def send_need_subscribe(self):
         invite_button = InlineKeyboardButton(
-            "Подпишись!", url=settings.CHAT_INVITE_LINK
+            "RUSFLIX", url=settings.CHAT_INVITE_LINK
         )
         return self.bot.send_message(
             self.chat_id,
-            "Просмотр недоступен без подписки на основной канал(((",
+            "Для просмотра подпишитесь на основной канал.",
             reply_markup=InlineKeyboardMarkup([[invite_button]]),
         )
 
@@ -79,10 +79,12 @@ class CallbackManager(ABC):
         if settings.DEBUG:
             return True
 
+        return any(map(self._check_subscribe, settings.MAIN_CHANNEL_ID))
+
+    def _check_subscribe(self, channel: int) -> bool:
+        """Проверка подписки на канал."""
         try:
-            chat_member: ChatMember = self.bot.get_chat_member(
-                settings.MAIN_CHANNEL_ID, self.user.id
-            )
+            chat_member: ChatMember = self.bot.get_chat_member(channel, self.user.id)
         except BadRequest:
             logger.warning(f"user {self.user} is not subscribed")
             return False
@@ -96,7 +98,10 @@ class CallbackManager(ABC):
 
     def send_reaction_on_callback(self) -> Message:
         handler = _call_types.get(self.callback_data.type)
-        return handler(self)
+        try:
+            return handler(self)
+        finally:
+            self.update.callback_query.answer()
 
     def publish_message(
         self, media: InputMedia, keyboard: InlineKeyboardMarkup, **kwargs
