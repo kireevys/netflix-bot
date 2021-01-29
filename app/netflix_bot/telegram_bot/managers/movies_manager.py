@@ -1,10 +1,11 @@
 import logging
 
 from django.conf import settings
-from django.db.models import Count
+from django.db.models import Count, Q
 from telegram import Message, InlineKeyboardMarkup, InputMediaPhoto, InputMediaVideo
 
 from netflix_bot import models
+from netflix_bot.common import decodeb64
 from netflix_bot.models import Genre, Movie
 from netflix_bot.telegram_bot.managers.series_manager import VideoManager
 from netflix_bot.telegram_bot.user_interface.buttons import (
@@ -81,11 +82,14 @@ class MoviesCallback(CallbackManager):
             keyboard=keyboard,
         )
 
-    @callback('mv_search')
+    @callback("mv_search")
     def search(self):
-        title_eng = self.callback_data.get("search")
+        title = decodeb64(self.callback_data.get("search"))
         qs = (
-            Movie.objects.filter(title_eng__icontains=title_eng)
+            Movie.objects.filter(
+                Q(title_eng__icontains=title)
+                | Q(title_ru_upper__contains=title.upper())
+            )
             .values("title_ru", "title_eng")
             .annotate(Count("lang"))
             .order_by("title_ru")
@@ -95,9 +99,7 @@ class MoviesCallback(CallbackManager):
 
         factory = get_movie_factory(per_page=10, qs=qs)
 
-        logger.info(
-            "search movies", extra=dict(user=self.user.__dict__, string=title_eng)
-        )
+        logger.info("search movies", extra=dict(user=self.user.__dict__, string=title))
 
         keyboard = factory.page_from_column(1, NavigateMovie)
         keyboard.inline_keyboard.append([MovieMainButton()])

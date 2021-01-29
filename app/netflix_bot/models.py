@@ -1,5 +1,5 @@
 # Create your models here.
-
+import django
 from django.db import models
 from django.db.models import Min, QuerySet
 from telegram import user as t_user
@@ -140,6 +140,7 @@ class Season:
 class Series(models.Model):
     title_ru = models.TextField(unique=True, null=True)
     title_eng = models.TextField(unique=True)
+    title_ru_upper = models.TextField()
     poster = models.TextField(unique=False, null=True, blank=True)
     genre = models.ManyToManyField("Genre", blank=True)
     desc = models.TextField(null=True, blank=True)
@@ -194,6 +195,7 @@ class Genre(models.Model):
 
 class Movie(models.Model):
     title_ru = models.CharField(max_length=56, null=True, blank=True)
+    title_ru_upper = models.TextField(max_length=56)
     title_eng = models.CharField(max_length=56)
 
     file_id = models.TextField(unique=False)
@@ -221,3 +223,31 @@ class Movie(models.Model):
 
     def __str__(self) -> str:
         return f"{self.title} {self.lang}"
+
+
+@django.dispatch.receiver(models.signals.post_init, sender=Movie)
+def set_default_movie_title(sender, instance: Movie, *args, **kwargs):
+    """
+    Set the default value for `title_ru_upper` on the `instance`.
+
+    :param sender: The `Movie` class that sent the signal.
+    :param instance: The `Movie` instance that is being
+        initialised.
+    :return: None.
+    """
+    if not instance.title_ru_upper:
+        instance.title_ru_upper = instance.title_ru.upper()
+
+
+@django.dispatch.receiver(models.signals.post_init, sender=Series)
+def set_default_series_title(sender, instance: Series, *args, **kwargs):
+    """
+    Set the default value for `title_ru_upper` on the `instance`.
+
+    :param sender: The `Movie` class that sent the signal.
+    :param instance: The `Movie` instance that is being
+        initialised.
+    :return: None.
+    """
+    if not instance.title_ru_upper:
+        instance.title_ru_upper = instance.title_ru.upper()

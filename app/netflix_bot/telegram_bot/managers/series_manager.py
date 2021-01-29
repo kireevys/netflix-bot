@@ -2,36 +2,18 @@ import logging
 import re
 
 from django.conf import settings
-from django.db.models import Count
-from telegram import (
-    Message,
-    InlineKeyboardMarkup,
-    InputMediaVideo,
-    InputMediaPhoto,
-)
+from django.db.models import Count, Q
+from telegram import (InlineKeyboardMarkup, InputMediaPhoto, InputMediaVideo, Message)
 
 from netflix_bot import models
+from netflix_bot.common import decodeb64
 from netflix_bot.models import Genre, Series
 from netflix_bot.my_lib import markdown
-from netflix_bot.telegram_bot.user_interface.buttons import (
-    BackButton,
-    SeasonButton,
-    ShowSeriesButton,
-    EpisodeButton,
-    AllGenresButton,
-    SeriesMainButton,
-    GenresButton,
-    NavigateButton,
-    MovieMainButton,
-    Language,
-    ChangeLanguage,
-)
+from netflix_bot.telegram_bot.user_interface.buttons import (AllGenresButton, BackButton, ChangeLanguage, EpisodeButton,
+                                                             GenresButton, Language, MovieMainButton, NavigateButton,
+                                                             SeasonButton, SeriesMainButton, ShowSeriesButton)
 from netflix_bot.telegram_bot.user_interface.callbacks import CallbackManager, callback
-from netflix_bot.telegram_bot.user_interface.keyboards import (
-    GridKeyboard,
-    get_factory,
-    PaginationKeyboardFactory,
-)
+from netflix_bot.telegram_bot.user_interface.keyboards import (GridKeyboard, PaginationKeyboardFactory, get_factory)
 
 logger = logging.getLogger(__name__)
 
@@ -134,13 +116,13 @@ class SeriesCallback(CallbackManager):
             keyboard=keyboard,
         )
 
-    @callback('se_search')
+    @callback("se_search")
     def search(self):
-        title_eng = self.callback_data.get("search")
+        title: str = decodeb64(self.callback_data.get("search"))
 
-        qs = models.Series.objects.filter(title_eng__icontains=title_eng).order_by(
-            "title_ru"
-        )
+        qs = models.Series.objects.filter(
+            Q(title_eng__icontains=title) | Q(title_ru_upper__contains=title.upper())
+        ).order_by("title_ru")
         caption = "Вот что я нашел" if qs else "Ничего не найдено. Главное меню"
 
         factory = get_factory(10, qs)
