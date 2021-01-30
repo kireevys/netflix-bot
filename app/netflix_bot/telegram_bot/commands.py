@@ -35,7 +35,7 @@ def search(update: Update, context: CallbackContext):
     context.bot.send_photo(
         photo=settings.MAIN_PHOTO,
         chat_id=update.effective_chat.id,
-        caption=f"Вы ищете: \n{text}\nСтрока может быть обрезана - так надо",
+        caption=f"{text}\nВыбери - в какой категории искать:",
         reply_markup=keyboard,
     )
 
