@@ -12,7 +12,7 @@ from .user_interface.buttons import (
     SeriesMainButton,
 )
 from ..common import safe_encode
-from ..models import User
+from ..models import Referral, User
 
 logger = logging.getLogger(__name__)
 
@@ -69,3 +69,6 @@ def start(update: Update, context: CallbackContext):
         caption=f"Привет, {name}.\nТы находишься в главном меню\n\n{about_search}",
         reply_markup=keyboard,
     )
+
+    if context.args:
+        Referral.add(context.args[0], user)

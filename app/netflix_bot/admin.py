@@ -31,3 +31,17 @@ class GenreAdmin(admin.ModelAdmin):
 class MovieAdmin(admin.ModelAdmin):
     ordering = ("title_ru",)
     filter_horizontal = ("genre",)
+
+
+@admin.register(models.Referral)
+class ReferralAdmin(admin.ModelAdmin):
+    list_display = (
+        "owner",
+        "view_owner_count",
+        "refferal",
+        "created_at",
+    )
+    search_fields = ("owner",)
+
+    def view_owner_count(self, obj: models.Referral):
+        return models.Referral.objects.filter(owner=obj.owner).count()

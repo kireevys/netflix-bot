@@ -225,6 +225,25 @@ class Movie(models.Model):
         return f"{self.title} {self.lang}"
 
 
+class Referral(models.Model):
+    owner = models.TextField()
+    refferal = models.ForeignKey("User", on_delete=models.DO_NOTHING)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "referrals"
+        verbose_name = "Реферал"
+        verbose_name_plural = "Рефералы"
+        unique_together = ["owner", "refferal"]
+
+    @classmethod
+    def add(cls, owner: str, user: User) -> "Referral":
+        return cls.objects.get_or_create(owner=owner, refferal=user)[0]
+
+    def __str__(self) -> str:
+        return f"{self.owner} {self.refferal}"
+
+
 @django.dispatch.receiver(models.signals.post_init, sender=Movie)
 def set_default_movie_title(sender, instance: Movie, *args, **kwargs):
     """
