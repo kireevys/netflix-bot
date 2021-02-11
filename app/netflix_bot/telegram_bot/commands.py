@@ -70,5 +70,5 @@ def start(update: Update, context: CallbackContext):
         reply_markup=keyboard,
     )
 
-    if context.args:
+    if context.args and created:
         Referral.add(context.args[0], user)
