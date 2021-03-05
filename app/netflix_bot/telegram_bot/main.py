@@ -4,11 +4,16 @@ import traceback
 from django.conf import settings
 from telegram import Chat
 from telegram.error import TelegramError
-from telegram.ext import BaseFilter, CallbackQueryHandler, CommandHandler, Dispatcher
+from telegram.ext import (
+    BaseFilter,
+    CallbackQueryHandler,
+    CommandHandler,
+    Dispatcher,
+)
 from telegram.ext import Filters, MessageHandler
 from telegram.ext import Updater
 
-from .commands import START_COMMAND, search, start
+from .commands import START_COMMAND, movie_link, search, start
 from .messages import MovieUploadHandler, SeriesUploadHandler, callbacks
 
 logger = logging.getLogger(__name__)
@@ -35,6 +40,7 @@ def error_callback(update, context):
 
 class Channel(BaseFilter):
     """Фильтр по чат - это канал"""
+
     def filter(self, message):
         return message.chat.type in [Chat.CHANNEL]
 
@@ -52,8 +58,10 @@ def up_bot() -> Dispatcher:
     movie_search_handler = MessageHandler(
         Filters.text & ~Filters.command & ~Channel(), search
     )
+    movie_link_handler = CommandHandler("movie", movie_link, pass_args=True)
 
     dispatcher.add_handler(start_handler)
+    dispatcher.add_handler(movie_link_handler)
 
     dispatcher.add_handler(movie_search_handler)
 
@@ -81,7 +89,7 @@ def up_bot() -> Dispatcher:
     # Movies
     MOVIES_GROUP = 2
     movie_filter = (
-            Filters.chat(chat_id=int(settings.MOVIE_UPLOADER_ID)) & ~Filters.command
+        Filters.chat(chat_id=int(settings.MOVIE_UPLOADER_ID)) & ~Filters.command
     )
     movie_upload_h = MessageHandler(
         Filters.video & movie_filter,

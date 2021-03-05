@@ -5,6 +5,7 @@ from telegram import InlineKeyboardMarkup
 from telegram import Update
 from telegram.ext import CallbackContext
 
+from .managers.movies_manager import MoviesCallback
 from .user_interface.buttons import (
     MovieMainButton,
     SearchMovies,
@@ -17,6 +18,8 @@ from ..models import Referral, User
 logger = logging.getLogger(__name__)
 
 START_COMMAND = "start"
+MOVIE = "movie"
+SERIES = "series"
 
 
 def build_keyboard(search_string):
@@ -26,6 +29,28 @@ def build_keyboard(search_string):
             [SearchMovies(search_string)],
         ]
     )
+
+
+class CallbackFake:
+    def __init__(self, inp):
+        self._dict = inp
+
+    @property
+    def type(self):
+        return self.get("type")
+
+    def get(self, item):
+        return self._dict.get(item)
+
+
+def movie_link(update: Update, context: CallbackContext):
+    movie_id = context.args[0].split("=")[-1]
+    manager = MoviesCallback(update, context)
+    manager.callback_data = CallbackFake({"id": int(movie_id), "type": "movies"})
+    try:
+        manager.send_reaction_on_callback()
+    except AttributeError:
+        pass
 
 
 def search(update: Update, context: CallbackContext):
@@ -41,6 +66,17 @@ def search(update: Update, context: CallbackContext):
 
 
 def start(update: Update, context: CallbackContext):
+    try:
+        if "movie" in context.args[0]:
+            movie_link(update, context)
+            return
+
+        if "series" in context.args[0]:
+            movie_link(update, context)
+            return
+    except IndexError:
+        pass
+
     keyboard = InlineKeyboardMarkup(
         [
             [MovieMainButton()],
