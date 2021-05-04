@@ -121,7 +121,7 @@ MAIN_PHOTO = os.getenv("MAIN_PHOTO")
 EMOJI = {"ok": "✅"}
 ELEMENTS_PER_PAGE = 5
 
-UPLOADER_ID = os.getenv("UPLOADER")
+SERIES_UPLOADER = os.getenv("SERIES_UPLOADER")
 MOVIE_UPLOADER_ID = os.getenv("MOVIE_UPLOADER")
 
 UPLOADER_INVITE = "https://t.me/joinchat/AAAAAEr4GjWrNeNVda-3MA"
@@ -129,7 +129,7 @@ UPLOADER_INVITE = "https://t.me/joinchat/AAAAAEr4GjWrNeNVda-3MA"
 MAIN_CHANNEL_ID = [
     -1001357329839,
 ]
-# MAIN_CHANNEL_ID = UPLOADER_ID
+# MAIN_CHANNEL_ID = SERIES_UPLOADER
 CHAT_INVITE_LINK = "https://t.me/joinchat/UOc1rzOVBufiy1UB"
 
 SITE_DOMAIN = os.environ.setdefault("DOMAIN", "127.0.0.1:88")  # "it_garage.fun"

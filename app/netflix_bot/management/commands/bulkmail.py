@@ -75,7 +75,7 @@ class Command(BaseCommand):
         if None in (
             settings.BOT_TOKEN,
             settings.MAIN_PHOTO,
-            settings.UPLOADER_ID,
+            settings.SERIES_UPLOADER,
             settings.MOVIE_UPLOADER_ID,
         ):
             raise EnvironmentError("Check your ENV")

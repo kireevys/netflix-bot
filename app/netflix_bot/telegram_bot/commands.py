@@ -5,7 +5,7 @@ from telegram import InlineKeyboardMarkup
 from telegram import Update
 from telegram.ext import CallbackContext
 
-from .managers.movies_manager import MoviesCallback
+from movies.front.cb import MoviesCallback
 from .user_interface.buttons import (
     MovieMainButton,
     SearchMovies,

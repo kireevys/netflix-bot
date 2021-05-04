@@ -1,5 +1,6 @@
 import logging
 import traceback
+from enum import Enum
 
 from django.conf import settings
 from telegram import Chat
@@ -13,10 +14,17 @@ from telegram.ext import (
 from telegram.ext import Filters, MessageHandler
 from telegram.ext import Updater
 
+from movies.handlers import handlers as movies_handlers
+from series.handlers import handlers as series_handlers
 from .commands import START_COMMAND, movie_link, search, start
-from .messages import MovieUploadHandler, SeriesUploadHandler, callbacks
+from .messages import callbacks
 
 logger = logging.getLogger(__name__)
+
+
+class Groups(Enum):
+    SERIES = 1
+    MOVIES = 2
 
 
 def error_callback(update, context):
@@ -67,45 +75,12 @@ def up_bot() -> Dispatcher:
 
     # Uploaders
     # Series
-    SERIES_GROUP = 1
-    series_filter = (~Filters.command) & (Filters.chat(int(settings.UPLOADER_ID)))
-
-    upload_series_h = MessageHandler(
-        Filters.video & series_filter,
-        SeriesUploadHandler.upload,
-    )
-
-    series_add_description_h = MessageHandler(
-        Filters.reply & series_filter, SeriesUploadHandler.add_description
-    )
-    series_add_poster_handler = MessageHandler(
-        Filters.photo & series_filter, SeriesUploadHandler.add_poster
-    )
-
-    dispatcher.add_handler(upload_series_h, group=SERIES_GROUP)
-    dispatcher.add_handler(series_add_poster_handler, group=SERIES_GROUP)
-    dispatcher.add_handler(series_add_description_h, group=SERIES_GROUP)
+    for h in series_handlers:
+        dispatcher.add_handler(h, group=Groups.SERIES.value)
 
     # Movies
-    MOVIES_GROUP = 2
-    movie_filter = (
-        Filters.chat(chat_id=int(settings.MOVIE_UPLOADER_ID)) & ~Filters.command
-    )
-    movie_upload_h = MessageHandler(
-        Filters.video & movie_filter,
-        MovieUploadHandler.upload,
-    )
-
-    movie_add_description_h = MessageHandler(
-        Filters.reply & movie_filter, MovieUploadHandler.add_description
-    )
-    movie_add_poster_handler = MessageHandler(
-        Filters.photo & movie_filter, MovieUploadHandler.add_poster
-    )
-
-    dispatcher.add_handler(movie_upload_h, group=MOVIES_GROUP)
-    dispatcher.add_handler(movie_add_poster_handler, group=MOVIES_GROUP)
-    dispatcher.add_handler(movie_add_description_h, group=MOVIES_GROUP)
+    for h in movies_handlers:
+        dispatcher.add_handler(h, group=Groups.MOVIES.value)
 
     # Callbacks
     dispatcher.add_handler(CallbackQueryHandler(callbacks))

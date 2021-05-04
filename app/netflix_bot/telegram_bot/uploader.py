@@ -1,4 +1,5 @@
 import logging
+from abc import ABC
 from typing import Union
 
 from django.conf import settings
@@ -7,8 +8,6 @@ from telegram import Update
 from telegram.ext import CallbackContext
 
 from netflix_bot.models import Series, Movie
-from netflix_bot.telegram_bot.managers.movies_manager import MovieManager
-from netflix_bot.telegram_bot.managers.series_manager import SeriesManager
 
 logger = logging.getLogger(__name__)
 
@@ -107,15 +106,3 @@ class Uploader:
     @classmethod
     def is_upload_channel(cls, chat_id: int):
         return chat_id == int(cls.uploader)
-
-
-class SeriesUploader(Uploader):
-    uploader = settings.UPLOADER_ID
-    manager = SeriesManager
-    model = Series
-
-
-class MovieUploader(Uploader):
-    uploader = settings.MOVIE_UPLOADER_ID
-    manager = MovieManager
-    model = Movie

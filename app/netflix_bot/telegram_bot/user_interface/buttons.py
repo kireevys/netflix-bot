@@ -15,7 +15,6 @@ def grid(name):
 
     return wrapper
 
-
 class AbsButton(InlineKeyboardButton):
     _callback_type = None
 

@@ -3,11 +3,11 @@ from unittest.mock import MagicMock, patch
 from django.test import TestCase
 
 from netflix_bot.models import Series, Episode
-from netflix_bot.telegram_bot.uploaders import SeriesUploader
+from series.loader import SeriesUploader
 
 
 class TestUploader(TestCase):
-    uploaders_path = "netflix_bot.telegram_bot.uploaders"
+    uploaders_path = "series.loader"
 
     def setUp(self) -> None:
         self.title_ru = "Тест"
@@ -34,7 +34,7 @@ class TestUploader(TestCase):
 
 
 class TestSeriesUploader(TestCase):
-    uploaders_path = "netflix_bot.telegram_bot.uploaders"
+    uploaders_path = "series.loader"
 
     def setUp(self) -> None:
         self.title_ru = "Test"

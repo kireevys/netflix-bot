@@ -11,8 +11,8 @@ from telegram.ext import Dispatcher, Updater
 
 from netflix_bot import models
 from netflix_bot.management.commands.bulkmail import Mail
-from netflix_bot.telegram_bot.managers.movies_manager import MovieManager
-from netflix_bot.telegram_bot.managers.series_manager import SeriesManager
+from movies.loader import MovieManager
+from series.loader import SeriesManager
 
 logger = logging.getLogger("bulkmail")
 
@@ -31,7 +31,7 @@ class Command(BaseCommand):
         if None in (
             settings.BOT_TOKEN,
             settings.MAIN_PHOTO,
-            settings.UPLOADER_ID,
+            settings.SERIES_UPLOADER,
             settings.MOVIE_UPLOADER_ID,
         ):
             raise EnvironmentError("Check your ENV")
@@ -67,7 +67,7 @@ class Command(BaseCommand):
         manager = self.build_series_manager(episode)
         try:
             self.dispatcher.bot.send_video(
-                settings.UPLOADER_ID,
+                settings.SERIES_UPLOADER,
                 episode.file_id,
                 caption=manager.get_loader_format_caption(),
             )

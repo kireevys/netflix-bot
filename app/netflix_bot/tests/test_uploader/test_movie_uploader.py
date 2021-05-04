@@ -3,11 +3,11 @@ from unittest.mock import MagicMock, patch
 from django.test import TestCase
 
 from netflix_bot.models import Movie, Langs
-from netflix_bot.telegram_bot.uploaders import MovieUploader
+from movies.loader import MovieUploader
 
 
 class TestSeriesUploader(TestCase):
-    uploaders_path = "netflix_bot.telegram_bot.uploaders"
+    uploaders_path = "netflix_bot.telegram_bot.uploader"
 
     def setUp(self) -> None:
         self.title_ru = "Test"
