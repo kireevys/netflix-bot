@@ -69,17 +69,20 @@ class CallbackManager(ABC):
         invite_button = InlineKeyboardButton(
             "RUSFLIX", url=settings.CHAT_INVITE_LINK
         )
+        invite_button_2 = InlineKeyboardButton(
+            "Гранд Кино", url="https://t.me/kinomaxRF"
+        )
         return self.bot.send_message(
             self.chat_id,
-            "Для просмотра подпишитесь на основной канал.",
-            reply_markup=InlineKeyboardMarkup([[invite_button]]),
+            "Для просмотра подпишитесь на основные каналы.",
+            reply_markup=InlineKeyboardMarkup([[invite_button, invite_button_2]]),
         )
 
     def user_is_subscribed(self):
         if settings.DEBUG:
             return True
 
-        return any(map(self._check_subscribe, settings.MAIN_CHANNEL_ID))
+        return any(map(self._check_subscribe, [settings.MAIN_CHANNEL_ID]))
 
     def _check_subscribe(self, channel: int) -> bool:
         """Проверка подписки на канал."""
