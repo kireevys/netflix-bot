@@ -128,7 +128,7 @@ UPLOADER_INVITE = "https://t.me/joinchat/AAAAAEr4GjWrNeNVda-3MA"
 
 MAIN_CHANNEL_ID = [
     -1001357329839,
-    -1001333439160
+    -1001333439160,
 ]
 # MAIN_CHANNEL_ID = UPLOADER_ID
 CHAT_INVITE_LINK = "https://t.me/joinchat/UOc1rzOVBufiy1UB"
@@ -196,7 +196,7 @@ LOGGING = {
         },
     },
     "loggers": {
-        "django": {"handlers": handlers, "level": LOG_LEVEL, "propagate": True},
+        "django": {"handlers": handlers, "level": LOG_LEVEL, "pis not subscribedropagate": True},
         "project": {"handlers": handlers, "level": LOG_LEVEL, "propagate": True},
         "telegram": {"handlers": handlers, "level": DEBUG, "propagate": True},
         "netflix_bot": {"handlers": handlers, "level": LOG_LEVEL, "propagate": True},

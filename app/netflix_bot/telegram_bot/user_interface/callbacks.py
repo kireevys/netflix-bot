@@ -81,8 +81,7 @@ class CallbackManager(ABC):
     def user_is_subscribed(self):
         if settings.DEBUG:
             return True
-
-        return any(map(self._check_subscribe, [settings.MAIN_CHANNEL_ID]))
+        return all(map(self._check_subscribe, settings.MAIN_CHANNEL_ID))
 
     def _check_subscribe(self, channel: int) -> bool:
         """Проверка подписки на канал."""
