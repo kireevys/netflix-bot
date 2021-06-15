@@ -22,7 +22,6 @@ def fill_title_ru_upper_movie(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("netflix_bot", "0007_user_authorize"),
     ]

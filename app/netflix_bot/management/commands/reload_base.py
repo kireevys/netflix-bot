@@ -9,9 +9,9 @@ from django.core.management.base import BaseCommand
 from telegram.error import RetryAfter
 from telegram.ext import Dispatcher, Updater
 
+from movies.loader import MovieManager
 from netflix_bot import models
 from netflix_bot.management.commands.bulkmail import Mail
-from movies.loader import MovieManager
 from series.loader import SeriesManager
 
 logger = logging.getLogger("bulkmail")

@@ -2,7 +2,7 @@ from unittest.mock import MagicMock, patch
 
 from django.test import TestCase
 
-from netflix_bot.models import Series, Episode
+from netflix_bot.models import Episode, Series
 from series.loader import SeriesUploader
 
 

@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('netflix_bot', '0006_add_movies'),
+        ("netflix_bot", "0006_add_movies"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='user',
-            name='authorize',
+            model_name="user",
+            name="authorize",
             field=models.BooleanField(default=True),
         ),
     ]

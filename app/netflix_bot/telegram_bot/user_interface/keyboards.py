@@ -3,14 +3,14 @@ from typing import Collection
 
 from django.core.paginator import Paginator
 from django.db.models import Count
-from telegram import InlineKeyboardMarkup, InlineKeyboardButton
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 from netflix_bot import models
 from netflix_bot.telegram_bot.user_interface.buttons import (
+    MovieButton,
     NavigateButton,
     SeriesButton,
     _grid,
-    MovieButton,
 )
 
 

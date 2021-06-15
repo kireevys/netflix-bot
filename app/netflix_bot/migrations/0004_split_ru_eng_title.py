@@ -8,7 +8,7 @@ def split_title(apps, schema_editor):
     all_series = Series.objects.all()
 
     for series in all_series:
-        title_ru, title_eng = series.title_eng.split('/')
+        title_ru, title_eng = series.title_eng.split("/")
 
         series.title_ru = title_ru.strip()
         series.title_eng = title_eng.strip()
@@ -17,19 +17,19 @@ def split_title(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('netflix_bot', '0003_add_poster'),
+        ("netflix_bot", "0003_add_poster"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='series',
-            old_name='title',
-            new_name='title_eng',
+            model_name="series",
+            old_name="title",
+            new_name="title_eng",
         ),
         migrations.AddField(
-            model_name='series',
-            name='title_ru',
+            model_name="series",
+            name="title_ru",
             field=models.TextField(null=True, unique=True),
         ),
-        migrations.RunPython(split_title)
+        migrations.RunPython(split_title),
     ]

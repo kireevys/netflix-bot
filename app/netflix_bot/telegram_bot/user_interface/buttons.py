@@ -3,7 +3,7 @@ from abc import abstractmethod
 
 from telegram import InlineKeyboardButton
 
-from netflix_bot.models import Series, Season, Episode, Genre, Movie, Langs
+from netflix_bot.models import Episode, Genre, Langs, Movie, Season, Series
 
 _grid = {}
 
@@ -14,6 +14,7 @@ def grid(name):
         return cls
 
     return wrapper
+
 
 class AbsButton(InlineKeyboardButton):
     _callback_type = None

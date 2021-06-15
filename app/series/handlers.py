@@ -1,10 +1,9 @@
-from django.conf import settings
 from telegram.ext import Filters, MessageHandler
 
 from netflix_bot.telegram_bot.messages import SeriesUploadHandler
 
 SERIES_GROUP = 1
-series_filter = (~Filters.command) #& (Filters.chat(int(settings.SERIES_UPLOADER)))
+series_filter = ~Filters.command  # & (Filters.chat(int(settings.SERIES_UPLOADER)))
 upload_series_h = MessageHandler(
     Filters.video & series_filter,
     SeriesUploadHandler.upload,

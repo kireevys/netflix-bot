@@ -1,5 +1,4 @@
 import logging
-from abc import ABC
 from typing import Union
 
 from django.conf import settings
@@ -7,7 +6,7 @@ from django.db import IntegrityError
 from telegram import Update
 from telegram.ext import CallbackContext
 
-from netflix_bot.models import Series, Movie
+from netflix_bot.models import Movie, Series
 
 logger = logging.getLogger(__name__)
 

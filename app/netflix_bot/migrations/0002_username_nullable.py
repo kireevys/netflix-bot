@@ -5,23 +5,23 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('netflix_bot', '0001_initial'),
+        ("netflix_bot", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='episode',
-            name='file_id',
+            model_name="episode",
+            name="file_id",
             field=models.TextField(),
         ),
         migrations.AlterField(
-            model_name='user',
-            name='first_name',
+            model_name="user",
+            name="first_name",
             field=models.TextField(null=True),
         ),
         migrations.AlterField(
-            model_name='user',
-            name='user_name',
+            model_name="user",
+            name="user_name",
             field=models.TextField(null=True),
         ),
     ]

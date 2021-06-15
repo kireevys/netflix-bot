@@ -4,9 +4,10 @@ from telegram import Update
 from telegram.ext import CallbackContext
 
 from movies.loader import MovieUploader
-from series.loader import SeriesUploader
+
 # https://github.com/python-telegram-bot/python-telegram-bot/wiki/InlineKeyboard-Example
 from series.front.cb import SeriesCallback
+from series.loader import SeriesUploader
 
 logger = logging.getLogger(__name__)
 

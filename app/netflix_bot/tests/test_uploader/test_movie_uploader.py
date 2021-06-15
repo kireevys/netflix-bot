@@ -2,8 +2,8 @@ from unittest.mock import MagicMock, patch
 
 from django.test import TestCase
 
-from netflix_bot.models import Movie, Langs
 from movies.loader import MovieUploader
+from netflix_bot.models import Langs, Movie
 
 
 class TestSeriesUploader(TestCase):
@@ -38,9 +38,7 @@ class TestSeriesUploader(TestCase):
         self.context = MagicMock()
 
     def test_add_multiple_poster(self):
-        self.update.channel_post.caption = (
-            f"{self.title_ru}/{self.title_eng}\nENG"
-        )
+        self.update.channel_post.caption = f"{self.title_ru}/{self.title_eng}\nENG"
 
         with patch(
             f"{self.uploaders_path}.Uploader.is_upload_channel",
@@ -67,9 +65,7 @@ class TestSeriesUploader(TestCase):
         )
 
     def test_add_poster_to_not_exists_series(self):
-        self.update.channel_post.caption = (
-            f"not exists/{self.title_eng}\nENG"
-        )
+        self.update.channel_post.caption = f"not exists/{self.title_eng}\nENG"
         self.update.effective_message.reply_to_message.message_id = (
             self.movie_ru.message_id
         )
@@ -85,9 +81,7 @@ class TestSeriesUploader(TestCase):
             uploader.add_poster(file_id)
 
     def test_add_description(self):
-        self.update.channel_post.caption = (
-            f"{self.title_ru}/{self.title_eng}\nENG"
-        )
+        self.update.channel_post.caption = f"{self.title_ru}/{self.title_eng}\nENG"
 
         self.update = MagicMock(
             effective_message=MagicMock(reply_to_message=MagicMock(message_id=1))
@@ -112,9 +106,7 @@ class TestSeriesUploader(TestCase):
         self.assertEqual(self.movie_sub.desc, desc)
 
     def test_add_description_to_not_exists_movie(self):
-        self.update.channel_post.caption = (
-            f"not exists/{self.title_eng}\nENG"
-        )
+        self.update.channel_post.caption = f"not exists/{self.title_eng}\nENG"
 
         self.update = MagicMock(
             effective_message=MagicMock(reply_to_message=MagicMock(message_id=5))

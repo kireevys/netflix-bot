@@ -8,7 +8,7 @@ import telegram
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandParser
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import Updater, Dispatcher
+from telegram.ext import Dispatcher, Updater
 
 from netflix_bot import models
 from netflix_bot.my_lib import markdown

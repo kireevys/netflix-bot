@@ -4,15 +4,15 @@ from abc import ABC
 
 from django.conf import settings
 from telegram import (
-    Update,
     Bot,
-    ChatMember,
-    Message,
-    InputMedia,
-    InlineKeyboardMarkup,
-    InlineKeyboardButton,
     CallbackQuery,
+    ChatMember,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    InputMedia,
     InputMediaPhoto,
+    Message,
+    Update,
 )
 from telegram.error import BadRequest
 from telegram.ext import CallbackContext
@@ -66,9 +66,7 @@ class CallbackManager(ABC):
         instance.send_reaction_on_callback()
 
     def send_need_subscribe(self):
-        invite_button = InlineKeyboardButton(
-            "RUSFLIX", url=settings.CHAT_INVITE_LINK
-        )
+        invite_button = InlineKeyboardButton("RUSFLIX", url=settings.CHAT_INVITE_LINK)
         return self.bot.send_message(
             self.chat_id,
             "Для просмотра подпишитесь на основной канал.",
