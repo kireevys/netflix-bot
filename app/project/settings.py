@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "netflix_bot.apps.ProjectConfig",
+    "bulkmail.apps.BulkmailConfig",
 ]
 
 MIDDLEWARE = [
