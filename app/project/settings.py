@@ -128,7 +128,6 @@ UPLOADER_INVITE = "https://t.me/joinchat/AAAAAEr4GjWrNeNVda-3MA"
 
 MAIN_CHANNEL_ID = [
     -1001357329839,
-    -1001333439160,
 ]
 # MAIN_CHANNEL_ID = UPLOADER_ID
 CHAT_INVITE_LINK = "https://t.me/joinchat/UOc1rzOVBufiy1UB"
