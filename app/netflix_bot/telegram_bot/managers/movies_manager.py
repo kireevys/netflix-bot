@@ -2,27 +2,16 @@ import logging
 
 from django.conf import settings
 from django.db.models import Count, Q
-from telegram import Message, InlineKeyboardMarkup, InputMediaPhoto, InputMediaVideo
+from telegram import InlineKeyboardMarkup, InputMediaPhoto, InputMediaVideo, Message
 
 from netflix_bot import models
 from netflix_bot.common import decodeb64
 from netflix_bot.models import Genre, Movie
 from netflix_bot.telegram_bot.managers.series_manager import VideoManager
-from netflix_bot.telegram_bot.user_interface.buttons import (
-    ShowMoviesButton,
-    MovieMainButton,
-    MovieGenre,
-    MovieGenres,
-    MovieButton,
-    NavigateButton,
-    NavigateMovie,
-    SeriesMainButton,
-)
+from netflix_bot.telegram_bot.user_interface.buttons import (MovieButton, MovieGenre, MovieGenres, MovieMainButton,
+                                                             NavigateButton, NavigateMovie, SeriesMainButton,
+                                                             ShowMoviesButton)
 from netflix_bot.telegram_bot.user_interface.callbacks import CallbackManager, callback
-from netflix_bot.telegram_bot.user_interface.keyboards import (
-    get_movie_factory,
-    PaginationKeyboardFactory,
-)
 
 logger = logging.getLogger(__name__)
 

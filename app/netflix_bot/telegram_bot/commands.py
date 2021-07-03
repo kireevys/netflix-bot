@@ -1,7 +1,7 @@
 import logging
 
 from django.conf import settings
-from telegram import InlineKeyboardMarkup
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram import Update
 from telegram.ext import CallbackContext
 
@@ -43,6 +43,7 @@ def search(update: Update, context: CallbackContext):
 def start(update: Update, context: CallbackContext):
     keyboard = InlineKeyboardMarkup(
         [
+            [InlineKeyboardButton("Movies", callback_data='movie/')],
             [MovieMainButton()],
             [SeriesMainButton()],
         ]

@@ -4,14 +4,15 @@ from telegram import Update
 from telegram.ext import CallbackContext
 
 from netflix_bot.telegram_bot.uploaders import SeriesUploader, MovieUploader
+
 # https://github.com/python-telegram-bot/python-telegram-bot/wiki/InlineKeyboard-Example
-from .managers.series_manager import SeriesCallback
+from .managers.path_manager import PathManager  # noqa
 
 logger = logging.getLogger(__name__)
 
 
 def callbacks(update: Update, context: CallbackContext):
-    manager = SeriesCallback(update, context)
+    manager = PathManager(update, context)
     manager.send_reaction_on_callback()
 
 

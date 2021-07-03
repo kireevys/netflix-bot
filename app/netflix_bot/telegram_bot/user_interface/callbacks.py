@@ -1,19 +1,10 @@
-import json
 import logging
+import re
 from abc import ABC
 
 from django.conf import settings
-from telegram import (
-    Update,
-    Bot,
-    ChatMember,
-    Message,
-    InputMedia,
-    InlineKeyboardMarkup,
-    InlineKeyboardButton,
-    CallbackQuery,
-    InputMediaPhoto,
-)
+from telegram import (Bot, ChatMember, InlineKeyboardButton, InlineKeyboardMarkup, InputMedia, InputMediaPhoto, Message,
+                      Update)
 from telegram.error import BadRequest
 from telegram.ext import CallbackContext
 
@@ -22,25 +13,20 @@ logger = logging.getLogger(__name__)
 _call_types = {}
 
 
-def callback(name):
+def callback(regexp):
     def wrapper(fn):
-        _call_types.update({name: fn})
+        _call_types.update({regexp: fn})
         return fn
 
     return wrapper
 
 
-class Callback:
-    def __init__(self, callback_query: CallbackQuery):
-        self._data = {}
-
-        if callback_query:
-            self._data = json.loads(callback_query.data)
-
-        self.type = self._data.get("type")
-
-    def get(self, item):
-        return self._data.get(item)
+def get_handler(route):
+    for i in _call_types.keys():
+        if re.findall(i, route):
+            return _call_types[i], i
+    else:
+        logger.warning("Not found")
 
 
 class CallbackManager(ABC):
@@ -51,7 +37,7 @@ class CallbackManager(ABC):
         self.context = context
         self.bot: Bot = context.bot
 
-        self.callback_data = Callback(self.update.callback_query)
+        self.callback_data = self.update.callback_query.data
 
         self.chat_id = self.update.effective_chat.id
         self.message_id = self.update.effective_message.message_id
@@ -61,14 +47,12 @@ class CallbackManager(ABC):
     @classmethod
     def start_manager(cls, update: Update, context: CallbackContext):
         instance = cls(update, context)
-        instance.callback_data.type = cls.main_callback_data
+        # instance.callback_data.type = cls.main_callback_data
 
         instance.send_reaction_on_callback()
 
     def send_need_subscribe(self):
-        invite_button = InlineKeyboardButton(
-            "RUSFLIX", url=settings.CHAT_INVITE_LINK
-        )
+        invite_button = InlineKeyboardButton("RUSFLIX", url=settings.CHAT_INVITE_LINK)
         return self.bot.send_message(
             self.chat_id,
             "Для просмотра подпишитесь на основной канал.",
@@ -96,9 +80,10 @@ class CallbackManager(ABC):
         return True
 
     def send_reaction_on_callback(self) -> Message:
-        handler = _call_types.get(self.callback_data.type)
+        handler, regexp = get_handler(self.callback_data)
+        args = re.search(regexp, self.update.callback_query.data).groups()
         try:
-            return handler(self)
+            return handler(self, *args)
         finally:
             self.update.callback_query.answer()
 

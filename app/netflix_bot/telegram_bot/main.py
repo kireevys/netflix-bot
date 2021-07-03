@@ -1,17 +1,37 @@
 import logging
 import traceback
+from uuid import uuid4
 
 from django.conf import settings
-from telegram import Chat
+from django.db.models import Count, Q
+from telegram import (
+    Chat,
+    InlineKeyboardButton, InlineKeyboardMarkup, InlineQueryResultArticle,
+    InlineQueryResultPhoto,
+    InputTextMessageContent,
+    ParseMode,
+    InputMessageContent,
+    Update,
+)
 from telegram.error import TelegramError
-from telegram.ext import BaseFilter, CallbackQueryHandler, CommandHandler, Dispatcher
+from telegram.ext import (
+    BaseFilter,
+    CallbackContext,
+    CallbackQueryHandler,
+    CommandHandler,
+    Dispatcher,
+    InlineQueryHandler,
+)
 from telegram.ext import Filters, MessageHandler
 from telegram.ext import Updater
 
 from .commands import START_COMMAND, search, start
 from .messages import MovieUploadHandler, SeriesUploadHandler, callbacks
+from ..models import Movie
+from ..my_lib.markdown import escape
 
 logger = logging.getLogger(__name__)
+error_logger = logging.getLogger("error")
 
 
 def error_callback(update, context):
@@ -28,15 +48,47 @@ def error_callback(update, context):
     # except ChatMigrated as e:
     #     # the chat_id of a group has changed, use e.new_chat_id instead
     except TelegramError:
-        logger.error(traceback.format_exc())
+        error_logger.error(traceback.format_exc())
     except Exception:
-        logger.error(traceback.format_exc())
+        error_logger.error(traceback.format_exc())
 
 
 class Channel(BaseFilter):
     """Фильтр по чат - это канал"""
+
     def filter(self, message):
         return message.chat.type in [Chat.CHANNEL]
+
+
+def inline_query(update: Update, context: CallbackContext) -> None:
+    query = update.inline_query.query
+    if not query:
+        return
+
+    qs = (
+        Movie.objects.filter(
+            Q(title_eng__icontains=query) | Q(title_ru_upper__contains=query.upper())
+        )
+        .values("title_ru", "title_eng", "pk")
+        .annotate(Count("lang"))
+        .order_by("title_ru")
+    )
+
+    result = []
+    for movie in qs[:10]:
+        result.append(
+            InlineQueryResultArticle(
+                id=str(movie["pk"]),
+                title=movie["title_ru"],
+                description="Киношка",
+                reply_markup=InlineKeyboardMarkup([[            InlineKeyboardButton(
+               movie["title_ru"], callback_data=f"movie/{movie['pk']}?l=RUS&p=1"
+            )]]),
+                input_message_content=InputTextMessageContent(movie["title_ru"])
+            )
+        )
+
+    update.inline_query.answer(result)
 
 
 def up_bot() -> Dispatcher:
@@ -50,12 +102,12 @@ def up_bot() -> Dispatcher:
     start_handler = CommandHandler(START_COMMAND, start)
 
     movie_search_handler = MessageHandler(
-        Filters.text & ~Filters.command & ~Channel(), search
+        Filters.text & ~Filters.command & ~Channel(), inline_query
     )
 
     dispatcher.add_handler(start_handler)
 
-    dispatcher.add_handler(movie_search_handler)
+    # dispatcher.add_handler(movie_search_handler)
 
     # Uploaders
     # Series
@@ -81,7 +133,7 @@ def up_bot() -> Dispatcher:
     # Movies
     MOVIES_GROUP = 2
     movie_filter = (
-            Filters.chat(chat_id=int(settings.MOVIE_UPLOADER_ID)) & ~Filters.command
+        Filters.chat(chat_id=int(settings.MOVIE_UPLOADER_ID)) & ~Filters.command
     )
     movie_upload_h = MessageHandler(
         Filters.video & movie_filter,
@@ -98,6 +150,8 @@ def up_bot() -> Dispatcher:
     dispatcher.add_handler(movie_upload_h, group=MOVIES_GROUP)
     dispatcher.add_handler(movie_add_poster_handler, group=MOVIES_GROUP)
     dispatcher.add_handler(movie_add_description_h, group=MOVIES_GROUP)
+    dispatcher.add_handler(InlineQueryHandler(inline_query))
+    dispatcher.add_handler(movie_search_handler)
 
     # Callbacks
     dispatcher.add_handler(CallbackQueryHandler(callbacks))

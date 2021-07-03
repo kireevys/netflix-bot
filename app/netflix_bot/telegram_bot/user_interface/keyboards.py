@@ -1,5 +1,5 @@
 from math import ceil
-from typing import Collection
+from typing import Collection, List
 
 from django.core.paginator import Paginator
 from django.db.models import Count
@@ -32,100 +32,49 @@ class GridKeyboard(InlineKeyboardMarkup):
     @classmethod
     def from_grid(
         cls, grid_buttons: Collection[InlineKeyboardButton], length=3, **kwargs
-    ):
+    ) -> InlineKeyboardMarkup:
         grid = cls._get_grid(grid_buttons, length)
         return cls(grid, **kwargs)
 
+
+class PaginationKeyboard(InlineKeyboardMarkup):
     @classmethod
-    def pagination(
-        cls, grid_buttons: Collection[InlineKeyboardButton], per_page: int, page: int
-    ):
-        p = Paginator(grid_buttons, per_page)
-
-        return p.page(page)
-
-
-class PaginationKeyboardFactory:
-    def __init__(
-        self, grid_buttons: Collection[InlineKeyboardButton], grid, per_page=5
-    ):
-        self.grid_buttons = grid_buttons
-        self.per_page = per_page
-        self.grid = grid
-
-    @classmethod
-    def from_queryset(cls, qs, grid, per_page=5) -> "PaginationKeyboardFactory":
-        ButtonCls = _grid.get(grid)
-
-        grid_buttons = [ButtonCls(element) for element in qs]
-        return cls(grid_buttons, grid, per_page)
-
-    def page_from_column(
-        self, number: int, ButtonCls=NavigateButton
+    def from_pagination(
+        cls,
+        buttons: Collection[InlineKeyboardButton],
+        page: int,
+        path: str,
+            per_page=5,
+        **kwargs,
     ) -> InlineKeyboardMarkup:
-        p = Paginator(self.grid_buttons, self.per_page)
-        keyboard = InlineKeyboardMarkup.from_column(p.page(number))
-        navigator = self._get_navigator(number, p, ButtonCls)
+        p = Paginator(buttons, per_page)
 
-        keyboard.inline_keyboard.append(navigator)
+        p_page = list(p.page(page))
+
+        keyboard = cls.from_column(p_page, **kwargs)
+        keyboard = append_button(keyboard, cls._get_navigator(page, p, path))
 
         return keyboard
 
-    def page_from_grid(
-        self, number: int, ButtonCls=NavigateButton
-    ) -> InlineKeyboardMarkup:
-        p = Paginator(self.grid_buttons, self.per_page)
-        keyboard = GridKeyboard.from_grid(p.page(number))
-
-        navigator = self._get_navigator(number, p, ButtonCls)
-
-        keyboard.inline_keyboard.append(navigator)
-
-        return keyboard
-
-    def _get_navigator(self, current_page, p, ButtonCls):
+    @staticmethod
+    def _get_navigator(current_page, p: Paginator, path):
         navigator = []
 
         if current_page > 1:
-            navigator.append(ButtonCls("<<", current_page - 1, self.grid))
+            navigator.append(
+                InlineKeyboardButton("<<", callback_data=f"{path}{current_page - 1}")
+            )
 
         if current_page < len(p.page_range):
-            navigator.append(ButtonCls(">>", current_page + 1, self.grid))
+            navigator.append(
+                InlineKeyboardButton(">>", callback_data=f"{path}{current_page + 1}")
+            )
 
         return navigator
 
 
-def get_factory(per_page: int = 5, qs=False):
-    if not qs:
-        all_videos = models.Series.objects.all().order_by("title_ru")
-    else:
-        all_videos = qs
-
-    buttons = [SeriesButton(series) for series in all_videos]
-
-    factory = PaginationKeyboardFactory(buttons, per_page)
-    return factory
-
-
-def get_movie_factory(per_page: int = 5, qs=False):
-    if not qs:
-        all_videos = (
-            models.Movie.objects.values("title_ru", "title_eng")
-            .annotate(Count("lang"))
-            .order_by("title_ru")
-        )
-    else:
-        all_videos = qs
-    # all_videos = models.Movie.objects.all().order_by("title_ru")
-
-    buttons = [
-        MovieButton(
-            models.Movie.objects.filter(
-                title_ru=movie.get("title_ru"), title_eng=movie.get("title_eng")
-            ).first()
-        )
-        for movie in all_videos
-    ]
-
-    factory = PaginationKeyboardFactory(buttons, per_page=per_page, grid="movie")
-    return factory
+def append_button(
+    keyboard: InlineKeyboardMarkup, buttons: List[InlineKeyboardButton]
+) -> InlineKeyboardMarkup:
+    keyboard.inline_keyboard.append(buttons)
+    return keyboard

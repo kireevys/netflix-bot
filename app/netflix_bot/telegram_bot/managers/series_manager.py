@@ -3,17 +3,29 @@ import re
 
 from django.conf import settings
 from django.db.models import Count, Q
-from telegram import (InlineKeyboardMarkup, InputMediaPhoto, InputMediaVideo, Message)
+from telegram import InlineKeyboardMarkup, InputMediaPhoto, InputMediaVideo, Message
 
 from netflix_bot import models
 from netflix_bot.common import decodeb64
 from netflix_bot.models import Genre, Series
 from netflix_bot.my_lib import markdown
-from netflix_bot.telegram_bot.user_interface.buttons import (AllGenresButton, BackButton, ChangeLanguage, EpisodeButton,
-                                                             GenresButton, Language, MovieMainButton, NavigateButton,
-                                                             SeasonButton, SeriesMainButton, ShowSeriesButton)
+from netflix_bot.telegram_bot.user_interface.buttons import (
+    AllGenresButton,
+    BackButton,
+    ChangeLanguage,
+    EpisodeButton,
+    GenresButton,
+    Language,
+    MovieMainButton,
+    NavigateButton,
+    SeasonButton,
+    SeriesMainButton,
+    ShowSeriesButton,
+)
 from netflix_bot.telegram_bot.user_interface.callbacks import CallbackManager, callback
-from netflix_bot.telegram_bot.user_interface.keyboards import (GridKeyboard, PaginationKeyboardFactory, get_factory)
+from netflix_bot.telegram_bot.user_interface.keyboards import (
+    GridKeyboard,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -294,7 +306,6 @@ class SeriesCallback(CallbackManager):
             keyboard=keyboard,
         )
 
-    @callback("genre")
     def get_all_series_for_genre(self):
         genre = Genre.objects.get(pk=self.callback_data.get("id"))
         series = Series.objects.filter(genre=genre)
