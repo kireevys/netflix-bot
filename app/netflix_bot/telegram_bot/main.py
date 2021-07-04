@@ -1,16 +1,10 @@
 import logging
 import traceback
-from uuid import uuid4
+from random import shuffle
 
 from django.conf import settings
-from django.db.models import Count, Q
 from telegram import (
     Chat,
-    InlineKeyboardButton, InlineKeyboardMarkup, InlineQueryResultArticle,
-    InlineQueryResultPhoto,
-    InputTextMessageContent,
-    ParseMode,
-    InputMessageContent,
     Update,
 )
 from telegram.error import TelegramError
@@ -25,10 +19,12 @@ from telegram.ext import (
 from telegram.ext import Filters, MessageHandler
 from telegram.ext import Updater
 
-from .commands import START_COMMAND, search, start
+from .commands import Commands, movie, series, start
+from .managers.movie import MovieCallback
+from .managers.series import SeriesCallback
 from .messages import MovieUploadHandler, SeriesUploadHandler, callbacks
-from ..models import Movie
-from ..my_lib.markdown import escape
+from .senders import InlineSender
+from .user_interface.router import router
 
 logger = logging.getLogger(__name__)
 error_logger = logging.getLogger("error")
@@ -61,34 +57,25 @@ class Channel(BaseFilter):
 
 
 def inline_query(update: Update, context: CallbackContext) -> None:
+    if not update.inline_query:
+        handler, args = router.get_handler(update.effective_message.text)
+        m = MovieCallback(update, context, InlineSender(update, context))
+        handler(m, *args)
+        return
     query = update.inline_query.query
     if not query:
         return
 
-    qs = (
-        Movie.objects.filter(
-            Q(title_eng__icontains=query) | Q(title_ru_upper__contains=query.upper())
-        )
-        .values("title_ru", "title_eng", "pk")
-        .annotate(Count("lang"))
-        .order_by("title_ru")
-    )
-
+    sender = InlineSender(update, context)
     result = []
-    for movie in qs[:10]:
-        result.append(
-            InlineQueryResultArticle(
-                id=str(movie["pk"]),
-                title=movie["title_ru"],
-                description="Киношка",
-                reply_markup=InlineKeyboardMarkup([[            InlineKeyboardButton(
-               movie["title_ru"], callback_data=f"movie/{movie['pk']}?l=RUS&p=1"
-            )]]),
-                input_message_content=InputTextMessageContent(movie["title_ru"])
-            )
-        )
 
-    update.inline_query.answer(result)
+    movies = MovieCallback(update, context, sender=sender).search(query)
+    series = SeriesCallback(update, context, sender=sender).search(query)
+
+    result.extend(movies)
+    result.extend(series)
+    shuffle(result)
+    update.inline_query.answer(result[:50])
 
 
 def up_bot() -> Dispatcher:
@@ -98,16 +85,9 @@ def up_bot() -> Dispatcher:
     updater = Updater(token=settings.BOT_TOKEN, use_context=True)
     dispatcher: Dispatcher = updater.dispatcher
 
-    # commands
-    start_handler = CommandHandler(START_COMMAND, start)
-
-    movie_search_handler = MessageHandler(
-        Filters.text & ~Filters.command & ~Channel(), inline_query
-    )
-
-    dispatcher.add_handler(start_handler)
-
-    # dispatcher.add_handler(movie_search_handler)
+    dispatcher.add_handler(CommandHandler(Commands.START.value, start))
+    dispatcher.add_handler(CommandHandler(Commands.MOVIE.value, movie))
+    dispatcher.add_handler(CommandHandler(Commands.SERIES.value, series))
 
     # Uploaders
     # Series
@@ -150,8 +130,7 @@ def up_bot() -> Dispatcher:
     dispatcher.add_handler(movie_upload_h, group=MOVIES_GROUP)
     dispatcher.add_handler(movie_add_poster_handler, group=MOVIES_GROUP)
     dispatcher.add_handler(movie_add_description_h, group=MOVIES_GROUP)
-    dispatcher.add_handler(InlineQueryHandler(inline_query))
-    dispatcher.add_handler(movie_search_handler)
+    dispatcher.add_handler(InlineQueryHandler(inline_query, pattern=r"\w+"))
 
     # Callbacks
     dispatcher.add_handler(CallbackQueryHandler(callbacks))

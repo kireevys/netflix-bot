@@ -3,17 +3,23 @@ import logging
 from telegram import Update
 from telegram.ext import CallbackContext
 
-from netflix_bot.telegram_bot.uploaders import SeriesUploader, MovieUploader
-
+from netflix_bot.telegram_bot.uploaders import MovieUploader, SeriesUploader
 # https://github.com/python-telegram-bot/python-telegram-bot/wiki/InlineKeyboard-Example
-from .managers.path_manager import PathManager  # noqa
+from .managers.movie import MovieCallback
+from .senders import InlineSender, MessageSender
+from .user_interface.router import router
 
 logger = logging.getLogger(__name__)
 
 
 def callbacks(update: Update, context: CallbackContext):
-    manager = PathManager(update, context)
-    manager.send_reaction_on_callback()
+    if update.effective_chat:
+        sender = MessageSender(update, context)
+    else:
+        sender = InlineSender(update, context)
+
+    manager = MovieCallback(update, context, sender)
+    manager.send_reaction_on_callback(router)
 
 
 class UploadHandler:

@@ -11,8 +11,7 @@ from telegram.ext import Dispatcher, Updater
 
 from netflix_bot import models
 from netflix_bot.management.commands.bulkmail import Mail
-from netflix_bot.telegram_bot.managers.movies_manager import MovieManager
-from netflix_bot.telegram_bot.managers.series_manager import SeriesManager
+from netflix_bot.telegram_bot.managers.series_manager import MovieManager, SeriesManager
 
 logger = logging.getLogger("bulkmail")
 

@@ -2,16 +2,7 @@ from math import ceil
 from typing import Collection, List
 
 from django.core.paginator import Paginator
-from django.db.models import Count
-from telegram import InlineKeyboardMarkup, InlineKeyboardButton
-
-from netflix_bot import models
-from netflix_bot.telegram_bot.user_interface.buttons import (
-    NavigateButton,
-    SeriesButton,
-    _grid,
-    MovieButton,
-)
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 
 class GridKeyboard(InlineKeyboardMarkup):
@@ -44,7 +35,7 @@ class PaginationKeyboard(InlineKeyboardMarkup):
         buttons: Collection[InlineKeyboardButton],
         page: int,
         path: str,
-            per_page=5,
+        per_page=5,
         **kwargs,
     ) -> InlineKeyboardMarkup:
         p = Paginator(buttons, per_page)
