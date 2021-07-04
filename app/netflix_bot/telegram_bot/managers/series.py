@@ -260,7 +260,7 @@ class SeriesCallback(CallbackManager):
             ],
         )
         rule = VideoRule(self.context.bot, self.update.effective_user.id)
-        if rule.user_is_subscribed():
+        if not rule.user_is_subscribed():
             rule.need_subscribe(self.sender)
             return
 
