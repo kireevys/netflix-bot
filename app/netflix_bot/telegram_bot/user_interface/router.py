@@ -12,7 +12,7 @@ class Route:
 
     def __str__(self):
         path = "/".join(self.args)
-        raw_query = [f"{k}={v}" for k,v in self.query.items()]
+        raw_query = [f"{k}={v}" for k, v in self.query.items()]
         query = "&".join(raw_query)
         return path + (f"?{query}" if query else "")
 
@@ -27,7 +27,7 @@ class Route:
     @classmethod
     def b64decode(self, row: str):
         # TODO: Вернуть Route
-        return base64.urlsafe_b64decode(row.encode('ascii')).decode()
+        return base64.urlsafe_b64decode(row.encode("ascii")).decode()
 
     def b64encode(self):
         return base64.urlsafe_b64encode(str(self).encode("ascii")).decode("ascii")

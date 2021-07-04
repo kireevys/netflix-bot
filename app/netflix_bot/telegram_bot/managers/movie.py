@@ -181,7 +181,7 @@ class MovieCallback(CallbackManager):
         buttons.append(
             InlineKeyboardButton(
                 "Выбор жанра",
-                callback_data=str(Route(f"movie", "genre", genre_id, p=page)),
+                callback_data=str(Route("movie", "genre", genre_id, p=page)),
             )
         )
 
@@ -202,15 +202,14 @@ class MovieCallback(CallbackManager):
         buttons = [
             InlineKeyboardButton(
                 f"[ {models.Langs.repr(mov.lang)} ]" if mov.lang == lang else models.Langs.repr(mov.lang),
-                # callback_data=f"movie/{movie_id}?l={l.lang}&p={page}",
-                callback_data=str(Route(f"movie", movie_id, l=mov.lang, p=page)),
+                callback_data=str(Route("movie", movie_id, l=mov.lang, p=page)),
             )
             for mov in langs
         ]
         buttons.append(
             InlineKeyboardButton(
                 "К выбору жанра",
-                callback_data=str(Route(f"movie", "genre", movie_id, p=page)),
+                callback_data=str(Route("movie", "genre", movie_id, p=page)),
             )
         )
 
@@ -282,7 +281,8 @@ class MovieCallback(CallbackManager):
                 description="Киношка",
                 reply_markup=keyboard,
                 input_message_content=InputTextMessageContent(
-                    f"Фильм {movie.title}:\nПостоянная ссылка: https://t.me/{self.context.bot.get_me().first_name}?start={path}"
+                    f"Фильм {movie.title}:\n"
+                    f"Постоянная ссылка: https://t.me/{self.context.bot.get_me().first_name}?start={path}"
                 )
             )
             result.append(article)
