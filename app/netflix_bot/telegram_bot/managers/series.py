@@ -104,7 +104,7 @@ class SeriesCallback(CallbackManager):
 
         return self.publish_message(
             media=InputMediaPhoto(
-                media=settings.MAIN_PHOTO, caption="Вот что у меня есть"
+                media=settings.MAIN_PHOTO, caption=f"Список сериалов, страница {page}"
             ),
             keyboard=keyboard,
         )
@@ -164,7 +164,7 @@ class SeriesCallback(CallbackManager):
             keyboard,
             [
                 InlineKeyboardButton(
-                    "Список сериалов",
+                    f"Список сериалов, страница {page}",
                     callback_data=str(Route("series", "pagination", p=page)),
                 )
             ],

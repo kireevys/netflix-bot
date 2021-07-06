@@ -73,7 +73,7 @@ class MovieCallback(CallbackManager):
         )
 
         return self.publish_message(
-            media=InputMediaPhoto(media=settings.MAIN_PHOTO, caption=f"Page {current}"),
+            media=InputMediaPhoto(media=settings.MAIN_PHOTO, caption=f"Фильмы, страница {current}"),
             keyboard=keyboard,
         )
 
@@ -100,7 +100,7 @@ class MovieCallback(CallbackManager):
 
         keyboard = InlineKeyboardMarkup.from_column(buttons)
         return self.publish_message(
-            media=InputMediaPhoto(media=settings.MAIN_PHOTO, caption=movie.title),
+            media=InputMediaPhoto(media=movie.poster or settings.MAIN_PHOTO, caption=movie.title),
             keyboard=keyboard,
         )
 
@@ -160,7 +160,7 @@ class MovieCallback(CallbackManager):
 
         return self.publish_message(
             media=InputMediaPhoto(
-                media=settings.MAIN_PHOTO, caption="Вот что у меня есть"
+                media=settings.MAIN_PHOTO, caption=f"Список фильмов, страница {page}"
             ),
             keyboard=keyboard,
         )
@@ -215,7 +215,7 @@ class MovieCallback(CallbackManager):
 
         return self.publish_message(
             media=InputMediaPhoto(
-                media=settings.MAIN_PHOTO, caption=f"{movie.title}\n\n{movie.desc}"
+                media=movie.poster or settings.MAIN_PHOTO, caption=f"{movie.title}\n\n{movie.desc}"
             ),
             keyboard=InlineKeyboardMarkup.from_column(buttons),
         )
@@ -276,8 +276,8 @@ class MovieCallback(CallbackManager):
             article = InlineQueryResultArticle(
                 id=str(uuid.uuid4()),
                 title=f"{movie.title} {movie.lang}",
-                thumb_url=movie.poster or settings.MAIN_PHOTO,
-                photo_url=movie.poster or settings.MAIN_PHOTO,
+                thumb_url=settings.MAIN_PHOTO,
+                photo_url=settings.MAIN_PHOTO,
                 description="Киношка",
                 reply_markup=keyboard,
                 input_message_content=InputTextMessageContent(
