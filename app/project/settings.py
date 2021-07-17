@@ -132,7 +132,8 @@ MAIN_CHANNEL_ID = [
 # MAIN_CHANNEL_ID = UPLOADER_ID
 CHAT_INVITE_LINK = "https://t.me/joinchat/UOc1rzOVBufiy1UB"
 
-SITE_DOMAIN = os.environ.setdefault("DOMAIN", "127.0.0.1:88")  # "it_garage.fun"
+SITE_DOMAIN = os.environ.setdefault(
+    "DOMAIN", "127.0.0.1:88")  # "it_garage.fun"
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/

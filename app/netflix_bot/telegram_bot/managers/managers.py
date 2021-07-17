@@ -2,7 +2,6 @@ import logging
 import re
 
 from django.conf import settings
-
 from netflix_bot import models
 
 logger = logging.getLogger(__name__)

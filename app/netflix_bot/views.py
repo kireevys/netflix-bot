@@ -3,10 +3,8 @@
 import logging
 
 # from django.conf import settings
-from django.http import (
-    # HttpResponseForbidden,
-    JsonResponse,
-)
+from django.http import JsonResponse  # HttpResponseForbidden,
+
 # from django.utils.decorators import method_decorator
 from django.views import View
 

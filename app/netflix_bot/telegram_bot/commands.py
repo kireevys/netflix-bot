@@ -5,11 +5,11 @@ from enum import Enum
 from telegram import Update
 from telegram.ext import CallbackContext
 
+from ..models import Referral, User
 from .managers.movie import MovieCallback
 from .managers.series import SeriesCallback
 from .senders import InlineSender
 from .user_interface.router import Route, router
-from ..models import Referral, User
 
 logger = logging.getLogger(__name__)
 

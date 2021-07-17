@@ -1,9 +1,9 @@
 import logging
 
+from netflix_bot.telegram_bot.uploaders import MovieUploader, SeriesUploader
 from telegram import Update
 from telegram.ext import CallbackContext
 
-from netflix_bot.telegram_bot.uploaders import MovieUploader, SeriesUploader
 # https://github.com/python-telegram-bot/python-telegram-bot/wiki/InlineKeyboard-Example
 from .managers.movie import MovieCallback
 from .senders import InlineSender, MessageSender
@@ -27,11 +27,13 @@ class UploadHandler:
 
     @classmethod
     def add_description(cls, update: Update, context: CallbackContext):
-        cls.uploader(update, context).add_description(update.effective_message.text)
+        cls.uploader(update, context).add_description(
+            update.effective_message.text)
 
     @classmethod
     def add_poster(cls, update: Update, context: CallbackContext):
-        cls.uploader(update, context).add_poster(update.channel_post.photo[-1].file_id)
+        cls.uploader(update, context).add_poster(
+            update.channel_post.photo[-1].file_id)
 
     @classmethod
     def upload(cls, update: Update, context: CallbackContext):

@@ -1,13 +1,7 @@
 import logging
 from abc import ABC, abstractmethod
 
-from telegram import (
-    InlineKeyboardMarkup,
-    InputMedia,
-    InputMediaPhoto,
-    Message,
-    Update,
-)
+from telegram import InlineKeyboardMarkup, InputMedia, InputMediaPhoto, Message, Update
 from telegram.ext import CallbackContext
 
 logger = logging.getLogger()

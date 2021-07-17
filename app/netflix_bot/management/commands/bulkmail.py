@@ -7,11 +7,10 @@ from datetime import datetime
 import telegram
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandParser
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import Updater, Dispatcher
-
 from netflix_bot import models
 from netflix_bot.my_lib import markdown
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import Dispatcher, Updater
 
 logger = logging.getLogger("bulkmail")
 
@@ -116,7 +115,8 @@ class Command(BaseCommand):
 
         logger.info(
             "Bulkmail has been end.",
-            extra={"success": success, "failed": failed, "new_unauth": new_unauth},
+            extra={"success": success, "failed": failed,
+                   "new_unauth": new_unauth},
         )
 
     def init(self):

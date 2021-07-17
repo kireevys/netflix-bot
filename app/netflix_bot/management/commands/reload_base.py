@@ -6,12 +6,11 @@ from time import sleep
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from telegram.error import RetryAfter
-from telegram.ext import Dispatcher, Updater
-
 from netflix_bot import models
 from netflix_bot.management.commands.bulkmail import Mail
 from netflix_bot.telegram_bot.managers.series_manager import MovieManager, SeriesManager
+from telegram.error import RetryAfter
+from telegram.ext import Dispatcher, Updater
 
 logger = logging.getLogger("bulkmail")
 

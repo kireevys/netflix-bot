@@ -12,7 +12,8 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterModelOptions(
             name='episode',
-            options={'verbose_name': 'Эпизоды', 'verbose_name_plural': 'Эпизоды'},
+            options={'verbose_name': 'Эпизоды',
+                     'verbose_name_plural': 'Эпизоды'},
         ),
         migrations.AlterModelOptions(
             name='genre',
@@ -20,11 +21,13 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterModelOptions(
             name='series',
-            options={'verbose_name': 'Сериалы', 'verbose_name_plural': 'Сериалы'},
+            options={'verbose_name': 'Сериалы',
+                     'verbose_name_plural': 'Сериалы'},
         ),
         migrations.AlterModelOptions(
             name='user',
-            options={'verbose_name': 'Пользователь', 'verbose_name_plural': 'Пользователи'},
+            options={'verbose_name': 'Пользователь',
+                     'verbose_name_plural': 'Пользователи'},
         ),
         migrations.AlterField(
             model_name='series',
@@ -44,15 +47,18 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Movie',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.AutoField(auto_created=True,
+                 primary_key=True, serialize=False, verbose_name='ID')),
                 ('title_ru', models.CharField(blank=True, max_length=56, null=True)),
                 ('title_eng', models.CharField(max_length=56)),
                 ('file_id', models.TextField()),
                 ('message_id', models.IntegerField(unique=True)),
-                ('lang', models.CharField(choices=[('SUB', 'sub'), ('RUS', 'russian'), ('ENG', 'english')], default='RUS', max_length=3)),
+                ('lang', models.CharField(choices=[
+                 ('SUB', 'sub'), ('RUS', 'russian'), ('ENG', 'english')], default='RUS', max_length=3)),
                 ('poster', models.CharField(blank=True, max_length=128, null=True)),
                 ('desc', models.TextField(blank=True, null=True)),
-                ('genre', models.ManyToManyField(blank=True, to='netflix_bot.Genre')),
+                ('genre', models.ManyToManyField(
+                    blank=True, to='netflix_bot.Genre')),
             ],
             options={
                 'verbose_name': 'Фильмы',
