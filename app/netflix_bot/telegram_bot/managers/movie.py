@@ -189,8 +189,8 @@ class MovieCallback(CallbackManager):
                 description="Киношка",
                 reply_markup=keyboard,
                 input_message_content=InputTextMessageContent(
-                    f"Фильм {movie.title}:\n"
-                    f"Постоянная ссылка: https://t.me/{self.context.bot.get_me().first_name}?start={path}"
+                    f"Фильм {movie.title}:\n\n"
+                    f"Постоянная ссылка: {self.context.bot.get_me().link}?start={path}"
                 )
             )
             result.append(article)

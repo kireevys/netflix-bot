@@ -267,7 +267,8 @@ class SeriesCallback(CallbackManager):
                 description="Сериальчик",
                 reply_markup=keyboard,
                 input_message_content=InputTextMessageContent(
-                    f"https://t.me/{self.context.bot.get_me().first_name}?start={path}"
+                    f"Сериальчик {series.title}:\n\n"
+                    f"{self.context.bot.get_me().link}?start={path}"
                 ),
             )
             result.append(article)
