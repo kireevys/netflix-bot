@@ -191,8 +191,9 @@ class MovieCallback(CallbackManager):
                 description="Киношка",
                 reply_markup=keyboard,
                 input_message_content=InputTextMessageContent(
-                    f"Фильм\n{movie.title} \n\n"
-                    f"Желаем приятного просмотра, команда {self.context.bot.get_me().name}"
+                    f"Фильм\n\n<strong>{movie.title}</strong>\n\n"
+                    f"<em>Желаем приятного просмотра, команда {self.context.bot.get_me().name}</em>",
+                    parse_mode="HTML"
                 )
             )
             result.append(article)

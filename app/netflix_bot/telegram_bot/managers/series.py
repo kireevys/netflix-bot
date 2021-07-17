@@ -263,8 +263,9 @@ class SeriesCallback(CallbackManager):
                 description="Сериальчик",
                 reply_markup=keyboard,
                 input_message_content=InputTextMessageContent(
-                    f"Сериал\n\n{series.title} \n\n"
-                    f"Желаем приятного просмотра, команда {self.context.bot.get_me().name}"
+                    f"Сериал\n\n<strong>{series.title}</strong> \n\n"
+                    f"<em>Желаем приятного просмотра, команда {self.context.bot.get_me().name}</em>",
+                    parse_mode="HTML",
                 ),
             )
             result.append(article)
