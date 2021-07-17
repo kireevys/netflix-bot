@@ -1,3 +1,4 @@
+import functools
 import logging
 import uuid
 from typing import List
@@ -26,16 +27,34 @@ logger = logging.getLogger(__name__)
 
 
 class MovieCallback(CallbackManager):
+    @router.add_method("^/$")
+    def root(self):
+        keyboard = InlineKeyboardMarkup(
+            [
+                [InlineKeyboardButton("Все фильмы", callback_data="movie/")],
+                [InlineKeyboardButton("Все сериалы", callback_data="series/")],
+            ]
+        )
+
+        about_search = (
+            "Смотри весь список фильмов и сериалов, "
+            "используя кнопки ниже или воспользуйся поиском,"
+            f"напиши {self.context.bot.get_me().name} и начни искать."
+        )
+
+        self.sender.publish(
+            media=InputMediaPhoto(media=settings.MAIN_PHOTO, caption=about_search),
+            keyboard=keyboard,
+        )
+
     @router.add_method("movie/$")
     def main(self, *_):
         keyboard = InlineKeyboardMarkup(
             [
                 [
                     InlineKeyboardButton("Список фильмов", callback_data="movie/all/"),
-                    InlineKeyboardButton(
-                        "Фильмы по жанрам", callback_data="movie/genre/"
-                    ),
                 ],
+                [InlineKeyboardButton("Главная", callback_data="/"), ]
             ]
         )
         return self.publish_message(
@@ -49,8 +68,8 @@ class MovieCallback(CallbackManager):
         current = int(current)
         movies = (
             models.Movie.objects.values("title_ru", "title_eng")
-            .annotate(Count("lang"))
-            .order_by("title_ru")
+                .annotate(Count("lang"))
+                .order_by("title_ru")
         )
 
         buttons = []
@@ -69,7 +88,9 @@ class MovieCallback(CallbackManager):
             buttons, page=current, path="movie/pagination?p="
         )
         keyboard = append_button(
-            keyboard, [InlineKeyboardButton("Главная", callback_data="movie/")]
+            keyboard, [
+                InlineKeyboardButton("Меню фильмов", callback_data="movie/"),
+            ]
         )
 
         return self.publish_message(
@@ -84,6 +105,12 @@ class MovieCallback(CallbackManager):
         langs = models.Movie.objects.filter(
             title_ru=movie.title_ru, title_eng=movie.title_eng
         )
+        description = ''
+        for d in langs: # type: Movie
+            if d.desc:
+                description = d.desc
+                break
+
         buttons = [
             InlineKeyboardButton(
                 models.Langs.repr(m.lang),
@@ -100,128 +127,12 @@ class MovieCallback(CallbackManager):
 
         keyboard = InlineKeyboardMarkup.from_column(buttons)
         return self.publish_message(
-            media=InputMediaPhoto(media=movie.poster or settings.MAIN_PHOTO, caption=movie.title),
+            media=InputMediaPhoto(media=movie.poster or settings.MAIN_PHOTO, caption=f"{movie.title}\n\n{description}"),
             keyboard=keyboard,
-        )
-
-    @router.add_method(r"movie/genre/$")
-    def genres(self, *_):
-        genres = (
-            models.Genre.objects.all()
-            .annotate(cnt_series=Count("movie"))
-            .filter(cnt_series__gt=0)
-        )
-
-        buttons = [
-            InlineKeyboardButton(
-                genre.name, callback_data=str(Route("movie", "genre", genre.id, p=1))
-            )
-            for genre in genres.order_by("name")
-        ]
-        buttons.append(
-            InlineKeyboardButton(
-                "Главное меню",
-                callback_data=str(Route("movie/")),
-            )
-        )
-        keyboard = InlineKeyboardMarkup.from_column(buttons)
-
-        message_media = InputMediaPhoto(
-            media=settings.MAIN_PHOTO, caption="Доступные жанры"
-        )
-        return self.publish_message(
-            media=message_media,
-            keyboard=keyboard,
-        )
-
-    @router.add_method(r"movie/genre/(\d+)\?p=(\d+)")
-    def concrete_genre(self, genre_id: int, page: int = 1):
-        page = int(page)
-        genre = models.Genre.objects.get(pk=genre_id)
-        movies = models.Movie.objects.filter(genre=genre)
-
-        keyboard = PaginationKeyboard.from_pagination(
-            [
-                InlineKeyboardButton(
-                    movie.title,
-                    callback_data=str(
-                        Route("movie", "genre", genre.id, movie.id, p=page)
-                    ),
-                )
-                for movie in movies
-            ],
-            path=f"movie/genre/{genre_id}?p=",
-            page=page,
-        )
-
-        append_button(
-            keyboard, [InlineKeyboardButton("Жанры", callback_data="movie/genre/")]
-        )
-
-        return self.publish_message(
-            media=InputMediaPhoto(
-                media=settings.MAIN_PHOTO, caption=f"Список фильмов, страница {page}"
-            ),
-            keyboard=keyboard,
-        )
-
-    @router.add_method(r"movie/genre/(\d+)/(\d+)\?p=(\d+)$")
-    def genre_movie(self, genre_id: int, movie_id: int, page: str, *_):
-        page = int(page)
-        movie = models.Movie.objects.get(id=movie_id)
-        langs = models.Movie.objects.filter(
-            title_ru=movie.title_ru, title_eng=movie.title_eng
-        )
-        buttons = [
-            InlineKeyboardButton(
-                m.lang, callback_data=str(Route("movie", m.id, l=m.lang, p=page))
-            )
-            for m in langs
-        ]
-        buttons.append(
-            InlineKeyboardButton(
-                "Выбор жанра",
-                callback_data=str(Route("movie", "genre", genre_id, p=page)),
-            )
-        )
-
-        keyboard = InlineKeyboardMarkup.from_column(buttons)
-        return self.publish_message(
-            media=InputMediaPhoto(media=settings.MAIN_PHOTO, caption=movie.title),
-            keyboard=keyboard,
-        )
-
-    @router.add_method(r"movie/genre/(\d+)\?l=(\w+)&p=(\d+)$")
-    def lang_genre(self, movie_id: int, lang: str, page: int = 1, *_):
-        movie = models.Movie.objects.get(id=movie_id)
-        langs = models.Movie.objects.filter(
-            title_ru=movie.title_ru, title_eng=movie.title_eng
-        )
-        movie = langs.get(lang=lang)
-
-        buttons = [
-            InlineKeyboardButton(
-                f"[ {models.Langs.repr(mov.lang)} ]" if mov.lang == lang else models.Langs.repr(mov.lang),
-                callback_data=str(Route("movie", movie_id, l=mov.lang, p=page)),
-            )
-            for mov in langs
-        ]
-        buttons.append(
-            InlineKeyboardButton(
-                "К выбору жанра",
-                callback_data=str(Route("movie", "genre", movie_id, p=page)),
-            )
-        )
-
-        return self.publish_message(
-            media=InputMediaPhoto(
-                media=movie.poster or settings.MAIN_PHOTO, caption=f"{movie.title}\n\n{movie.desc}"
-            ),
-            keyboard=InlineKeyboardMarkup.from_column(buttons),
         )
 
     @router.add_method(r"movie/(\d+)\?l=(\w+)&p=(\d+)$")
-    def lang(self, movie_id: int, lang: str, page: int = 1, *_):
+    def concrete_movie(self, movie_id: int, lang: str, page: int = 1, *_):
         movie = models.Movie.objects.get(id=movie_id)
         langs = models.Movie.objects.filter(
             title_ru=movie.title_ru, title_eng=movie.title_eng
@@ -249,7 +160,7 @@ class MovieCallback(CallbackManager):
         self.publish_message(
             media=InputMediaVideo(
                 media=movie.file_id,
-                caption=f"{movie.title}\n\n{movie.desc}",
+                caption=movie.title,
             ),
             keyboard=InlineKeyboardMarkup.from_column(buttons),
         )
@@ -258,6 +169,7 @@ class MovieCallback(CallbackManager):
     def _del(self):
         self.sender.delete()
 
+    @functools.lru_cache
     def search(self, query: str) -> List[InlineQueryResultArticle]:
         """Метод поиска."""
         qs = Movie.objects.filter(

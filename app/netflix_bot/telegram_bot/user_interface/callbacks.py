@@ -15,6 +15,7 @@ from telegram.error import BadRequest
 from telegram.ext import CallbackContext
 
 from netflix_bot.telegram_bot.senders import Sender
+from netflix_bot.telegram_bot.user_interface.router import Router
 
 logger = logging.getLogger(__name__)
 
@@ -59,14 +60,13 @@ class VideoRule:
 
 
 class CallbackManager(ABC):
-    main_callback_data = None
 
     def __init__(self, update: Update, context: CallbackContext, sender: Sender):
         self.update = update
         self.context = context
         self.sender = sender
 
-    def send_reaction_on_callback(self, router) -> Message:
+    def send_reaction_on_callback(self, router: Router) -> Message:
         handler, args = router.get_handler(self.update.callback_query.data)
         try:
             return handler(self, *args)
@@ -74,11 +74,6 @@ class CallbackManager(ABC):
             self.update.callback_query.answer()
 
     def publish_message(
-        self, media: InputMedia, keyboard: InlineKeyboardMarkup, **kwargs
+            self, media: InputMedia, keyboard: InlineKeyboardMarkup, **kwargs
     ) -> None:
         return self.sender.publish(media, keyboard, **kwargs)
-
-    def replace_message(
-        self, media: InputMedia, keyboard: InlineKeyboardMarkup, **kwargs
-    ) -> None:
-        return self.sender.replace(media, keyboard, **kwargs)

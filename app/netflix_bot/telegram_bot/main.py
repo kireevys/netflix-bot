@@ -63,8 +63,6 @@ def inline_query(update: Update, context: CallbackContext) -> None:
         handler(m, *args)
         return
     query = update.inline_query.query
-    if not query:
-        return
 
     sender = InlineSender(update, context)
     result = []
@@ -130,7 +128,7 @@ def up_bot() -> Dispatcher:
     dispatcher.add_handler(movie_upload_h, group=MOVIES_GROUP)
     dispatcher.add_handler(movie_add_poster_handler, group=MOVIES_GROUP)
     dispatcher.add_handler(movie_add_description_h, group=MOVIES_GROUP)
-    dispatcher.add_handler(InlineQueryHandler(inline_query, pattern=r"\w+"))
+    dispatcher.add_handler(InlineQueryHandler(inline_query))
 
     # Callbacks
     dispatcher.add_handler(CallbackQueryHandler(callbacks))

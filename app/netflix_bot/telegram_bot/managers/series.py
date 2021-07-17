@@ -1,3 +1,4 @@
+import functools
 import logging
 import uuid
 from typing import List
@@ -37,46 +38,13 @@ class SeriesCallback(CallbackManager):
                 #         "Сериалы по жанрам", callback_data="series/genre/"
                 #     )
                 # ],
+                [InlineKeyboardButton("Главная", callback_data="/"), ],
             ]
         )
         return self.publish_message(
             media=InputMediaPhoto(media=settings.MAIN_PHOTO, caption="СЕРИАЛЫ"),
             keyboard=keyboard,
         )
-
-    def search(self, query: str) -> List[InlineQueryResultArticle]:
-        qs = models.Series.objects.filter(
-            Q(title_eng__icontains=query) | Q(title_ru_upper__contains=query.upper())
-        ).order_by("title_ru")
-
-        result = []
-        for series in qs[:49]:
-            keyboard = InlineKeyboardMarkup(
-                [
-                    [
-                        InlineKeyboardButton(
-                            series.title,
-                            callback_data=str(Route("series", str(series.id), p=1)),
-                        )
-                    ]
-                ]
-            )
-            path = Route("series", series.id, p=1).b64encode()
-            article = InlineQueryResultArticle(
-                id=str(uuid.uuid4()),
-                caption=series.title,
-                title=series.title,
-                thumb_url=settings.MAIN_PHOTO,
-                photo_url=settings.MAIN_PHOTO,
-                description="Сериальчик",
-                reply_markup=keyboard,
-                input_message_content=InputTextMessageContent(
-                    f"https://t.me/{self.context.bot.get_me().first_name}?start={path}"
-                ),
-            )
-            result.append(article)
-
-        return result
 
     @router.add_method(r"series/all/$")
     @router.add_method(r"series/pagination\?p=(\d+)")
@@ -99,7 +67,7 @@ class SeriesCallback(CallbackManager):
             buttons, page=page, path="series/pagination?p="
         )
         keyboard = append_button(
-            keyboard, [InlineKeyboardButton("Главная", callback_data="series/")]
+            keyboard, [InlineKeyboardButton("Меню сериалов", callback_data="series/")]
         )
 
         return self.publish_message(
@@ -139,13 +107,13 @@ class SeriesCallback(CallbackManager):
         return self.publish_message(
             media=InputMediaPhoto(
                 media=series.poster or settings.MAIN_PHOTO,
-                caption=f"{series.title} {lang_repr}\n\n{series.desc or ''}",
+                caption=f"{series.title}\n\n{lang_repr}\n\n{series.desc or ''}",
             ),
             keyboard=keyboard,
         )
 
     @router.add_method(r"series/(\d+)\?p=(\d+)")
-    def language(self, series_id: int, page: int = 1):
+    def choose_language(self, series_id: int, page: int = 1):
         """
         Возвращает Список доступных языков для сериала
         """
@@ -212,7 +180,7 @@ class SeriesCallback(CallbackManager):
         )
 
         caption = (
-            f"Список серий {series.title} {models.Langs.repr(lang)}\n Сезон {season_id}"
+            f"Список серий\n\n{series.title}\n\nСезон {season_id}\n\n{models.Langs.repr(lang)}"
         )
 
         return self.publish_message(
@@ -230,7 +198,7 @@ class SeriesCallback(CallbackManager):
 
         episode_index = f"Сезон {episode.season} Эпизод {episode.episode}"
         series_title = markdown.escape(episode.series.title)
-        caption = f"{series_title}\n\n{episode_index} {models.Langs.repr(episode.lang)}"
+        caption = f"{series_title}\n\n{episode_index}\n\n{models.Langs.repr(episode.lang)}"
 
         buttons = [
             InlineKeyboardButton(
@@ -270,3 +238,38 @@ class SeriesCallback(CallbackManager):
             ),
             keyboard=keyboard,
         )
+
+    @functools.lru_cache
+    def search(self, query: str) -> List[InlineQueryResultArticle]:
+        qs = models.Series.objects.filter(
+            Q(title_eng__icontains=query) | Q(title_ru_upper__contains=query.upper())
+        ).order_by("title_ru")
+
+        result = []
+        for series in qs[:49]:
+            keyboard = InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton(
+                            series.title,
+                            callback_data=str(Route("series", str(series.id), p=1)),
+                        )
+                    ]
+                ]
+            )
+            path = Route("series", series.id, p=1).b64encode()
+            article = InlineQueryResultArticle(
+                id=str(uuid.uuid4()),
+                caption=series.title,
+                title=series.title,
+                thumb_url=settings.MAIN_PHOTO,
+                photo_url=settings.MAIN_PHOTO,
+                description="Сериальчик",
+                reply_markup=keyboard,
+                input_message_content=InputTextMessageContent(
+                    f"https://t.me/{self.context.bot.get_me().first_name}?start={path}"
+                ),
+            )
+            result.append(article)
+
+        return result
