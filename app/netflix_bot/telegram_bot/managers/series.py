@@ -247,17 +247,13 @@ class SeriesCallback(CallbackManager):
 
         result = []
         for series in qs[:49]:
-            keyboard = InlineKeyboardMarkup(
-                [
-                    [
-                        InlineKeyboardButton(
-                            series.title,
-                            callback_data=str(Route("series", str(series.id), p=1)),
-                        )
-                    ]
-                ]
-            )
             path = Route("series", series.id, p=1).b64encode()
+            keyboard = InlineKeyboardMarkup.from_button(
+                InlineKeyboardButton(
+                    "СМОТРЕТЬ 🎥",
+                    url=f"{self.context.bot.get_me().link}?start={path}"
+                )
+            )
             article = InlineQueryResultArticle(
                 id=str(uuid.uuid4()),
                 caption=series.title,
@@ -267,8 +263,8 @@ class SeriesCallback(CallbackManager):
                 description="Сериальчик",
                 reply_markup=keyboard,
                 input_message_content=InputTextMessageContent(
-                    f"Сериальчик {series.title}:\n\n"
-                    f"{self.context.bot.get_me().link}?start={path}"
+                    f"Сериал\n\n{series.title} \n\n"
+                    f"Желаем приятного просмотра, команда {self.context.bot.get_me().name}"
                 ),
             )
             result.append(article)

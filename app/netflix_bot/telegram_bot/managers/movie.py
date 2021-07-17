@@ -174,13 +174,15 @@ class MovieCallback(CallbackManager):
 
         result = []
         for movie in qs[:49]:
+            path = Route("movie", movie.id, p=1).b64encode()
+
             keyboard = InlineKeyboardMarkup.from_button(
                 InlineKeyboardButton(
-                    movie.title,
-                    callback_data=str(Route("movie", movie.id, p=1)),
+                    "СМОТРЕТЬ 🎥",
+                    url=f"{self.context.bot.get_me().link}?start={path}",
                 )
             )
-            path = Route("movie", movie.id, p=1).b64encode()
+
             article = InlineQueryResultArticle(
                 id=str(uuid.uuid4()),
                 title=f"{movie.title} {movie.lang}",
@@ -189,8 +191,8 @@ class MovieCallback(CallbackManager):
                 description="Киношка",
                 reply_markup=keyboard,
                 input_message_content=InputTextMessageContent(
-                    f"Фильм {movie.title}:\n\n"
-                    f"Постоянная ссылка: {self.context.bot.get_me().link}?start={path}"
+                    f"Фильм\n{movie.title} \n\n"
+                    f"Желаем приятного просмотра, команда {self.context.bot.get_me().name}"
                 )
             )
             result.append(article)
