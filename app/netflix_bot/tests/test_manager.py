@@ -1,5 +1,4 @@
 from django.test import TransactionTestCase
-
 from netflix_bot import models
 from netflix_bot.models import Series
 from netflix_bot.telegram_bot.managers.managers import SeriesManager

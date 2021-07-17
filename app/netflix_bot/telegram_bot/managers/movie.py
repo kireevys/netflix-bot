@@ -5,15 +5,6 @@ from typing import List
 
 from django.conf import settings
 from django.db.models import Count, Q
-from telegram import (
-    InlineKeyboardButton,
-    InlineKeyboardMarkup,
-    InlineQueryResultArticle,
-    InputMediaPhoto,
-    InputMediaVideo,
-    InputTextMessageContent,
-)
-
 from netflix_bot import models
 from netflix_bot.models import Movie
 from netflix_bot.telegram_bot.user_interface.callbacks import CallbackManager, VideoRule
@@ -22,6 +13,14 @@ from netflix_bot.telegram_bot.user_interface.keyboards import (
     append_button,
 )
 from netflix_bot.telegram_bot.user_interface.router import Route, router
+from telegram import (
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    InlineQueryResultArticle,
+    InputMediaPhoto,
+    InputMediaVideo,
+    InputTextMessageContent,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +42,8 @@ class MovieCallback(CallbackManager):
         )
 
         self.sender.publish(
-            media=InputMediaPhoto(media=settings.MAIN_PHOTO, caption=about_search),
+            media=InputMediaPhoto(
+                media=settings.MAIN_PHOTO, caption=about_search),
             keyboard=keyboard,
         )
 
@@ -52,7 +52,8 @@ class MovieCallback(CallbackManager):
         keyboard = InlineKeyboardMarkup(
             [
                 [
-                    InlineKeyboardButton("Список фильмов", callback_data="movie/all/"),
+                    InlineKeyboardButton(
+                        "Список фильмов", callback_data="movie/all/"),
                 ],
                 [InlineKeyboardButton("Главная", callback_data="/"), ]
             ]
@@ -66,7 +67,8 @@ class MovieCallback(CallbackManager):
     @router.add_method(r"movie/pagination\?p=(\d+)")
     def all(self, current: int = 1):
         current = int(current)
-        movies = models.Movie.objects.values("title_ru", "title_eng").annotate(Count("lang")).order_by("title_ru")
+        movies = models.Movie.objects.values("title_ru", "title_eng").annotate(
+            Count("lang")).order_by("title_ru")
 
         buttons = []
         for movie in movies:
@@ -90,7 +92,8 @@ class MovieCallback(CallbackManager):
         )
 
         return self.publish_message(
-            media=InputMediaPhoto(media=settings.MAIN_PHOTO, caption=f"Фильмы, страница {current}"),
+            media=InputMediaPhoto(media=settings.MAIN_PHOTO,
+                                  caption=f"Фильмы, страница {current}"),
             keyboard=keyboard,
         )
 
@@ -123,7 +126,8 @@ class MovieCallback(CallbackManager):
 
         keyboard = InlineKeyboardMarkup.from_column(buttons)
         return self.publish_message(
-            media=InputMediaPhoto(media=movie.poster or settings.MAIN_PHOTO, caption=f"{movie.title}\n\n{description}"),
+            media=InputMediaPhoto(
+                media=movie.poster or settings.MAIN_PHOTO, caption=f"{movie.title}\n\n{description}"),
             keyboard=keyboard,
         )
 
@@ -137,7 +141,8 @@ class MovieCallback(CallbackManager):
 
         buttons = [
             InlineKeyboardButton(
-                f"[ {models.Langs.repr(mov.lang)} ]" if mov.lang == lang else models.Langs.repr(mov.lang),
+                f"[ {models.Langs.repr(mov.lang)} ]" if mov.lang == lang else models.Langs.repr(
+                    mov.lang),
                 callback_data=str(Route("movie", mov.id, l=mov.lang, p=page)),
             )
             for mov in langs
@@ -169,7 +174,8 @@ class MovieCallback(CallbackManager):
     def search(self, query: str) -> List[InlineQueryResultArticle]:
         """Метод поиска."""
         qs = Movie.objects.filter(
-            Q(title_eng__icontains=query) | Q(title_ru_upper__contains=query.upper())
+            Q(title_eng__icontains=query) | Q(
+                title_ru_upper__contains=query.upper())
         )
 
         result = []

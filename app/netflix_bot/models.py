@@ -68,7 +68,8 @@ class Episode(models.Model):
 
     episode = models.IntegerField()
     season = models.IntegerField()
-    lang = models.CharField(max_length=3, choices=Langs.choices, default=Langs.RUS)
+    lang = models.CharField(
+        max_length=3, choices=Langs.choices, default=Langs.RUS)
 
     def get_season(self):
         return Season(self.series.pk, self.season, self.lang)
@@ -176,7 +177,8 @@ class Series(models.Model):
         ]
 
     def get_languages(self) -> List[str]:
-        qs = Episode.objects.filter(series=self).values("lang").annotate(mn=Min("pk"))
+        qs = Episode.objects.filter(series=self).values(
+            "lang").annotate(mn=Min("pk"))
         return [Episode.objects.get(pk=dk.get("mn")) for dk in qs]
 
     def __str__(self):
@@ -202,7 +204,8 @@ class Movie(models.Model):
 
     file_id = models.TextField(unique=False)
     message_id = models.IntegerField(unique=True)
-    lang = models.CharField(max_length=3, choices=Langs.choices, default=Langs.RUS)
+    lang = models.CharField(
+        max_length=3, choices=Langs.choices, default=Langs.RUS)
 
     poster = models.CharField(max_length=128, null=True, blank=True)
     genre = models.ManyToManyField("Genre", blank=True)

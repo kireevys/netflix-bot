@@ -2,6 +2,8 @@ import logging
 from abc import ABC
 
 from django.conf import settings
+from netflix_bot.telegram_bot.senders import Sender
+from netflix_bot.telegram_bot.user_interface.router import Router
 from telegram import (
     Bot,
     ChatMember,
@@ -13,9 +15,6 @@ from telegram import (
 )
 from telegram.error import BadRequest
 from telegram.ext import CallbackContext
-
-from netflix_bot.telegram_bot.senders import Sender
-from netflix_bot.telegram_bot.user_interface.router import Router
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +45,8 @@ class VideoRule:
     def _check_subscribe(self, channel: int) -> bool:
         """Проверка подписки на канал."""
         try:
-            chat_member: ChatMember = self.bot.get_chat_member(channel, self.user_id)
+            chat_member: ChatMember = self.bot.get_chat_member(
+                channel, self.user_id)
         except BadRequest:
             logger.warning(f"user {self.user_id} is not subscribed")
             return False

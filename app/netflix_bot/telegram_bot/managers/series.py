@@ -5,15 +5,6 @@ from typing import List
 
 from django.conf import settings
 from django.db.models import Q
-from telegram import (
-    InlineKeyboardButton,
-    InlineKeyboardMarkup,
-    InlineQueryResultArticle,
-    InputMediaPhoto,
-    InputMediaVideo,
-    InputTextMessageContent,
-)
-
 from netflix_bot import models
 from netflix_bot.my_lib import markdown
 from netflix_bot.telegram_bot.user_interface.callbacks import CallbackManager, VideoRule
@@ -23,6 +14,14 @@ from netflix_bot.telegram_bot.user_interface.keyboards import (
     append_button,
 )
 from netflix_bot.telegram_bot.user_interface.router import Route, router
+from telegram import (
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    InlineQueryResultArticle,
+    InputMediaPhoto,
+    InputMediaVideo,
+    InputTextMessageContent,
+)
 
 logger = logging.getLogger()
 
@@ -32,7 +31,8 @@ class SeriesCallback(CallbackManager):
     def main(self, *_):
         keyboard = InlineKeyboardMarkup(
             [
-                [InlineKeyboardButton("Список сериалов", callback_data="series/all/")],
+                [InlineKeyboardButton(
+                    "Список сериалов", callback_data="series/all/")],
                 # [
                 #     InlineKeyboardButton(
                 #         "Сериалы по жанрам", callback_data="series/genre/"
@@ -42,7 +42,8 @@ class SeriesCallback(CallbackManager):
             ]
         )
         return self.publish_message(
-            media=InputMediaPhoto(media=settings.MAIN_PHOTO, caption="СЕРИАЛЫ"),
+            media=InputMediaPhoto(
+                media=settings.MAIN_PHOTO, caption="СЕРИАЛЫ"),
             keyboard=keyboard,
         )
 
@@ -67,7 +68,8 @@ class SeriesCallback(CallbackManager):
             buttons, page=page, path="series/pagination?p="
         )
         keyboard = append_button(
-            keyboard, [InlineKeyboardButton("Меню сериалов", callback_data="series/")]
+            keyboard, [InlineKeyboardButton(
+                "Меню сериалов", callback_data="series/")]
         )
 
         return self.publish_message(
@@ -122,7 +124,8 @@ class SeriesCallback(CallbackManager):
         buttons = [
             InlineKeyboardButton(
                 f"{models.Langs.repr(episode.lang)}",
-                callback_data=str(Route("series", series_id, l=episode.lang, p=page)),
+                callback_data=str(
+                    Route("series", series_id, l=episode.lang, p=page)),
             )
             for episode in langs
         ]
@@ -174,7 +177,8 @@ class SeriesCallback(CallbackManager):
             [
                 InlineKeyboardButton(
                     "Список сезонов",
-                    callback_data=str(Route("series", series_id, l=lang, p=page)),
+                    callback_data=str(
+                        Route("series", series_id, l=lang, p=page)),
                 )
             ],
         )
@@ -204,7 +208,8 @@ class SeriesCallback(CallbackManager):
             InlineKeyboardButton(
                 side,
                 callback_data=str(
-                    Route("series", series_id, season_id, ep.episode, l=lang, p=page)
+                    Route("series", series_id, season_id,
+                          ep.episode, l=lang, p=page)
                 ),
             )
             for ep, side in (
@@ -242,7 +247,8 @@ class SeriesCallback(CallbackManager):
     @functools.lru_cache
     def search(self, query: str) -> List[InlineQueryResultArticle]:
         qs = models.Series.objects.filter(
-            Q(title_eng__icontains=query) | Q(title_ru_upper__contains=query.upper())
+            Q(title_eng__icontains=query) | Q(
+                title_ru_upper__contains=query.upper())
         ).order_by("title_ru")
 
         result = []

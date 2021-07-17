@@ -1,5 +1,4 @@
 from django.test import TestCase
-
 from netflix_bot.common import decodeb64, safe_encode
 
 

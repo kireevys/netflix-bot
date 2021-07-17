@@ -31,12 +31,14 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="movie",
             name="title_ru_upper",
-            field=models.TextField(default="<DJANGO.DB.MODELS.FIELDS.CHARFIELD>"),
+            field=models.TextField(
+                default="<DJANGO.DB.MODELS.FIELDS.CHARFIELD>"),
         ),
         migrations.AddField(
             model_name="series",
             name="title_ru_upper",
-            field=models.TextField(default="<DJANGO.DB.MODELS.FIELDS.TEXTFIELD>"),
+            field=models.TextField(
+                default="<DJANGO.DB.MODELS.FIELDS.TEXTFIELD>"),
         ),
         migrations.RunPython(fill_title_ru_upper_movie),
         migrations.RunPython(fill_title_ru_upper_series),

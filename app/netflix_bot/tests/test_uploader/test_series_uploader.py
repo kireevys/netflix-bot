@@ -1,8 +1,7 @@
 from unittest.mock import MagicMock, patch
 
 from django.test import TestCase
-
-from netflix_bot.models import Series, Episode
+from netflix_bot.models import Episode, Series
 from netflix_bot.telegram_bot.uploaders import SeriesUploader
 
 
@@ -48,7 +47,8 @@ class TestSeriesUploader(TestCase):
         )
 
         self.update = MagicMock(
-            effective_message=MagicMock(reply_to_message=MagicMock(message_id=1))
+            effective_message=MagicMock(
+                reply_to_message=MagicMock(message_id=1))
         )
         self.context = MagicMock()
 
@@ -93,7 +93,8 @@ class TestSeriesUploader(TestCase):
         )
 
         self.update = MagicMock(
-            effective_message=MagicMock(reply_to_message=MagicMock(message_id=1))
+            effective_message=MagicMock(
+                reply_to_message=MagicMock(message_id=1))
         )
 
         with patch(
@@ -114,7 +115,8 @@ class TestSeriesUploader(TestCase):
         )
 
         self.update = MagicMock(
-            effective_message=MagicMock(reply_to_message=MagicMock(message_id=2))
+            effective_message=MagicMock(
+                reply_to_message=MagicMock(message_id=2))
         )
 
         with patch(

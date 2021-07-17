@@ -3,11 +3,10 @@ from typing import Union
 
 from django.conf import settings
 from django.db import IntegrityError
-from telegram import Update
-from telegram.ext import CallbackContext
-
 from netflix_bot.models import Movie, Series
 from netflix_bot.telegram_bot.managers.managers import MovieManager, SeriesManager
+from telegram import Update
+from telegram.ext import CallbackContext
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +32,8 @@ class Uploader:
         return qs
 
     def add_poster(self, file_id: str):
-        manager = self.manager.from_caption(caption=self.update.channel_post.caption)
+        manager = self.manager.from_caption(
+            caption=self.update.channel_post.caption)
         models_qs = self.get_models_for_add_poster(
             title_ru=manager.title_ru, title_eng=manager.title_eng
         )
@@ -79,7 +79,8 @@ class Uploader:
         """
         logger.info(str(self.update))
 
-        manager = self.manager.from_caption(caption=self.update.channel_post.caption)
+        manager = self.manager.from_caption(
+            caption=self.update.channel_post.caption)
         message = self.bot.send_video(
             chat_id=self.update.effective_chat.id,
             video=self.update.channel_post.video.file_id,

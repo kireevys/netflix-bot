@@ -3,10 +3,7 @@ import traceback
 from random import shuffle
 
 from django.conf import settings
-from telegram import (
-    Chat,
-    Update,
-)
+from telegram import Chat, Update
 from telegram.error import TelegramError
 from telegram.ext import (
     BaseFilter,
@@ -14,10 +11,11 @@ from telegram.ext import (
     CallbackQueryHandler,
     CommandHandler,
     Dispatcher,
+    Filters,
     InlineQueryHandler,
+    MessageHandler,
+    Updater,
 )
-from telegram.ext import Filters, MessageHandler
-from telegram.ext import Updater
 
 from .commands import Commands, movie, series, start
 from .managers.movie import MovieCallback
@@ -90,7 +88,8 @@ def up_bot() -> Dispatcher:
     # Uploaders
     # Series
     SERIES_GROUP = 1
-    series_filter = (~Filters.command) & (Filters.chat(int(settings.UPLOADER_ID)))
+    series_filter = (~Filters.command) & (
+        Filters.chat(int(settings.UPLOADER_ID)))
 
     upload_series_h = MessageHandler(
         Filters.video & series_filter,
@@ -111,7 +110,8 @@ def up_bot() -> Dispatcher:
     # Movies
     MOVIES_GROUP = 2
     movie_filter = (
-        Filters.chat(chat_id=int(settings.MOVIE_UPLOADER_ID)) & ~Filters.command
+        Filters.chat(chat_id=int(settings.MOVIE_UPLOADER_ID)
+                     ) & ~Filters.command
     )
     movie_upload_h = MessageHandler(
         Filters.video & movie_filter,
