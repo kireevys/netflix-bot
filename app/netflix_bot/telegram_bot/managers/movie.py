@@ -66,11 +66,7 @@ class MovieCallback(CallbackManager):
     @router.add_method(r"movie/pagination\?p=(\d+)")
     def all(self, current: int = 1):
         current = int(current)
-        movies = (
-            models.Movie.objects.values("title_ru", "title_eng")
-                .annotate(Count("lang"))
-                .order_by("title_ru")
-        )
+        movies = models.Movie.objects.values("title_ru", "title_eng").annotate(Count("lang")).order_by("title_ru")
 
         buttons = []
         for movie in movies:
@@ -106,7 +102,7 @@ class MovieCallback(CallbackManager):
             title_ru=movie.title_ru, title_eng=movie.title_eng
         )
         description = ''
-        for d in langs: # type: Movie
+        for d in langs:  # type: Movie
             if d.desc:
                 description = d.desc
                 break
