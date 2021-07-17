@@ -1,17 +1,33 @@
 import logging
 import traceback
+from random import shuffle
 
 from django.conf import settings
-from telegram import Chat
+from telegram import (
+    Chat,
+    Update,
+)
 from telegram.error import TelegramError
-from telegram.ext import BaseFilter, CallbackQueryHandler, CommandHandler, Dispatcher
+from telegram.ext import (
+    BaseFilter,
+    CallbackContext,
+    CallbackQueryHandler,
+    CommandHandler,
+    Dispatcher,
+    InlineQueryHandler,
+)
 from telegram.ext import Filters, MessageHandler
 from telegram.ext import Updater
 
-from .commands import START_COMMAND, search, start
+from .commands import Commands, movie, series, start
+from .managers.movie import MovieCallback
+from .managers.series import SeriesCallback
 from .messages import MovieUploadHandler, SeriesUploadHandler, callbacks
+from .senders import InlineSender
+from .user_interface.router import router
 
 logger = logging.getLogger(__name__)
+error_logger = logging.getLogger("error")
 
 
 def error_callback(update, context):
@@ -28,15 +44,36 @@ def error_callback(update, context):
     # except ChatMigrated as e:
     #     # the chat_id of a group has changed, use e.new_chat_id instead
     except TelegramError:
-        logger.error(traceback.format_exc())
+        error_logger.error(traceback.format_exc())
     except Exception:
-        logger.error(traceback.format_exc())
+        error_logger.error(traceback.format_exc())
 
 
 class Channel(BaseFilter):
     """Фильтр по чат - это канал"""
+
     def filter(self, message):
         return message.chat.type in [Chat.CHANNEL]
+
+
+def inline_query(update: Update, context: CallbackContext) -> None:
+    if not update.inline_query:
+        handler, args = router.get_handler(update.effective_message.text)
+        m = MovieCallback(update, context, InlineSender(update, context))
+        handler(m, *args)
+        return
+    query = update.inline_query.query
+
+    sender = InlineSender(update, context)
+    result = []
+
+    movies = MovieCallback(update, context, sender=sender).search(query)
+    series = SeriesCallback(update, context, sender=sender).search(query)
+
+    result.extend(movies)
+    result.extend(series)
+    shuffle(result)
+    update.inline_query.answer(result[:50])
 
 
 def up_bot() -> Dispatcher:
@@ -46,16 +83,9 @@ def up_bot() -> Dispatcher:
     updater = Updater(token=settings.BOT_TOKEN, use_context=True)
     dispatcher: Dispatcher = updater.dispatcher
 
-    # commands
-    start_handler = CommandHandler(START_COMMAND, start)
-
-    movie_search_handler = MessageHandler(
-        Filters.text & ~Filters.command & ~Channel(), search
-    )
-
-    dispatcher.add_handler(start_handler)
-
-    dispatcher.add_handler(movie_search_handler)
+    dispatcher.add_handler(CommandHandler(Commands.START.value, start))
+    dispatcher.add_handler(CommandHandler(Commands.MOVIE.value, movie))
+    dispatcher.add_handler(CommandHandler(Commands.SERIES.value, series))
 
     # Uploaders
     # Series
@@ -81,7 +111,7 @@ def up_bot() -> Dispatcher:
     # Movies
     MOVIES_GROUP = 2
     movie_filter = (
-            Filters.chat(chat_id=int(settings.MOVIE_UPLOADER_ID)) & ~Filters.command
+        Filters.chat(chat_id=int(settings.MOVIE_UPLOADER_ID)) & ~Filters.command
     )
     movie_upload_h = MessageHandler(
         Filters.video & movie_filter,
@@ -98,6 +128,7 @@ def up_bot() -> Dispatcher:
     dispatcher.add_handler(movie_upload_h, group=MOVIES_GROUP)
     dispatcher.add_handler(movie_add_poster_handler, group=MOVIES_GROUP)
     dispatcher.add_handler(movie_add_description_h, group=MOVIES_GROUP)
+    dispatcher.add_handler(InlineQueryHandler(inline_query))
 
     # Callbacks
     dispatcher.add_handler(CallbackQueryHandler(callbacks))

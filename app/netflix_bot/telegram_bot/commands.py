@@ -1,17 +1,14 @@
+import binascii
 import logging
+from enum import Enum
 
-from django.conf import settings
-from telegram import InlineKeyboardMarkup
 from telegram import Update
 from telegram.ext import CallbackContext
 
-from .user_interface.buttons import (
-    MovieMainButton,
-    SearchMovies,
-    SearchSeries,
-    SeriesMainButton,
-)
-from ..common import safe_encode
+from .managers.movie import MovieCallback
+from .managers.series import SeriesCallback
+from .senders import InlineSender
+from .user_interface.router import Route, router
 from ..models import Referral, User
 
 logger = logging.getLogger(__name__)
@@ -19,56 +16,34 @@ logger = logging.getLogger(__name__)
 START_COMMAND = "start"
 
 
-def build_keyboard(search_string):
-    return InlineKeyboardMarkup(
-        [
-            [SearchSeries(search_string)],
-            [SearchMovies(search_string)],
-        ]
-    )
+class Commands(Enum):
+    START = "start"
+    MOVIE = "movie"
+    SERIES = "series"
 
 
-def search(update: Update, context: CallbackContext):
-    search_string, text = safe_encode(update.effective_message.text[:28])
-    keyboard = build_keyboard(search_string)
+def movie(update: Update, context: CallbackContext):
+    MovieCallback(update, context, InlineSender(update, context)).main()
 
-    context.bot.send_photo(
-        photo=settings.MAIN_PHOTO,
-        chat_id=update.effective_chat.id,
-        caption=f"{text}\nВыбери - в какой категории искать:",
-        reply_markup=keyboard,
-    )
+
+def series(update: Update, context: CallbackContext):
+    SeriesCallback(update, context, InlineSender(update, context)).main()
 
 
 def start(update: Update, context: CallbackContext):
-    keyboard = InlineKeyboardMarkup(
-        [
-            [MovieMainButton()],
-            [SeriesMainButton()],
-        ]
-    )
+    if context.args:
+        try:
+            query = Route.b64decode(context.args[0])
+            handler, args = router.get_handler(query)
+            m = MovieCallback(update, context, InlineSender(update, context))
+            handler(m, *args)
+            return
+        except (binascii.Error, UnicodeDecodeError):
+            pass
+    else:
+        MovieCallback(update, context, InlineSender(update, context)).root()
 
     user, created = User.get_or_create(update.effective_user)
-
-    if created:
-        logger.info(f"new user {user} created")
-
-    logger.info(f"{user} say /start")
-
-    about_search = (
-        "Смотри весь список фильмов и сериалов, "
-        "используя кнопки ниже или воспользуйся поиском,"
-        "просто напиши мне часть названия фильма или сериала."
-    )
-
-    name = user.user_name or user.first_name or "Странник"
-    context.bot.send_photo(
-        parse_mode="HTML",
-        photo=settings.MAIN_PHOTO,
-        chat_id=update.effective_chat.id,
-        caption=f"Привет, {name}.\nТы находишься в главном меню\n\n{about_search}",
-        reply_markup=keyboard,
-    )
-
     if context.args and created:
+        logger.info(f"new user {user} created")
         Referral.add(context.args[0], user)

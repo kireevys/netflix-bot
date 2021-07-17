@@ -193,9 +193,14 @@ LOGGING = {
             "filename": "temp.log",
             "formatter": LOG_FORMATTER_FILE,
         },
+        "c": {
+            "level": "INFO",
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        }
     },
     "loggers": {
-        "django": {"handlers": handlers, "level": LOG_LEVEL, "pis not subscribedropagate": True},
+        "django": {"handlers": handlers, "level": LOG_LEVEL, "propagate": True},
         "project": {"handlers": handlers, "level": LOG_LEVEL, "propagate": True},
         "telegram": {"handlers": handlers, "level": DEBUG, "propagate": True},
         "netflix_bot": {"handlers": handlers, "level": LOG_LEVEL, "propagate": True},
@@ -205,5 +210,6 @@ LOGGING = {
             "level": LOG_LEVEL,
             "propagate": True,
         },
+        "error": {"handlers": ['c']}
     },
 }

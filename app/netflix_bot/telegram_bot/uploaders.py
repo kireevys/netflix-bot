@@ -6,9 +6,8 @@ from django.db import IntegrityError
 from telegram import Update
 from telegram.ext import CallbackContext
 
-from netflix_bot.models import Series, Movie
-from netflix_bot.telegram_bot.managers.movies_manager import MovieManager
-from netflix_bot.telegram_bot.managers.series_manager import SeriesManager
+from netflix_bot.models import Movie, Series
+from netflix_bot.telegram_bot.managers.managers import MovieManager, SeriesManager
 
 logger = logging.getLogger(__name__)
 

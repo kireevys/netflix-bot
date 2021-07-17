@@ -1,4 +1,6 @@
 # Create your models here.
+from typing import List
+
 import django
 from django.db import models
 from django.db.models import Min, QuerySet
@@ -173,7 +175,7 @@ class Series(models.Model):
             for episode in qs
         ]
 
-    def get_languages(self):
+    def get_languages(self) -> List[str]:
         qs = Episode.objects.filter(series=self).values("lang").annotate(mn=Min("pk"))
         return [Episode.objects.get(pk=dk.get("mn")) for dk in qs]
 
