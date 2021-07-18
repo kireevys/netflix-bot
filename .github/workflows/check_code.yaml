@@ -23,6 +23,8 @@ jobs:
         uses: actions/setup-python@v1
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Eenviron
+        run: export GET_INVITE_LINK='link'
       - name: Install requirements
         # Устанавливаем зависимости
         run: pip install -r app/requirements.txt
