@@ -33,6 +33,9 @@ jobs:
   run_tests:
 
     runs-on: ubuntu-latest
+    env:
+      GET_INVITE_LINK: link
+
     strategy:
       max-parallel: 4
       matrix:
@@ -50,8 +53,6 @@ jobs:
       - name: Install requirements
         # Устанавливаем зависимости
         run: pip install -r app/requirements.txt
-      - name: Environ
-        run: export GET_INVITE_LINK='link' && echo $GET_INVITE_LINK
       - name: Run tests
         run: |
           cd app
