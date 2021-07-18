@@ -51,7 +51,7 @@ jobs:
         # Устанавливаем зависимости
         run: pip install -r app/requirements.txt
       - name: Environ
-        run: export GET_INVITE_LINK='link'
+        run: export GET_INVITE_LINK='link' && echo $GET_INVITE_LINK
       - name: Run tests
         run: |
           cd app
