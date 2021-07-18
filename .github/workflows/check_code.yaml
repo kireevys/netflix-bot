@@ -33,6 +33,9 @@ jobs:
   run_tests:
 
     runs-on: ubuntu-latest
+    env:
+      GET_INVITE_LINK: link
+
     strategy:
       max-parallel: 4
       matrix:

@@ -130,7 +130,7 @@ MAIN_CHANNEL_ID = [
     -1001357329839,
 ]
 # MAIN_CHANNEL_ID = UPLOADER_ID
-CHAT_INVITE_LINK = "https://t.me/joinchat/UOc1rzOVBufiy1UB"
+CHAT_INVITE_LINK = os.environ["GET_INVITE_LINK"]
 
 SITE_DOMAIN = os.environ.setdefault(
     "DOMAIN", "127.0.0.1:88")  # "it_garage.fun"
