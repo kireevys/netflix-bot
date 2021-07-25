@@ -262,7 +262,7 @@ class SeriesCallback(CallbackManager):
         keyboard = InlineKeyboardMarkup.from_button(
             InlineKeyboardButton(
                 "СМОТРЕТЬ 🎥",
-                url=f"{ME.link}?start={path}"
+                url=f"{ME.get.link}?start={path}"
             )
         )
         return InlineQueryResultArticle(
@@ -275,7 +275,7 @@ class SeriesCallback(CallbackManager):
             reply_markup=keyboard,
             input_message_content=InputTextMessageContent(
                 f"Сериал\n\n<strong>{series.title}</strong> \n\n"
-                f"<em>Желаем приятного просмотра, команда {ME.name}</em>",
+                f"<em>Желаем приятного просмотра, команда {ME.get.name}</em>",
                 parse_mode="HTML",
             ),
         )

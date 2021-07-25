@@ -40,7 +40,7 @@ class MovieCallback(CallbackManager):
         about_search = (
             "Смотри весь список фильмов и сериалов, "
             "используя кнопки ниже или воспользуйся поиском,"
-            f"напиши {ME.name} и начни искать."
+            f"напиши {ME.get.name} и начни искать."
         )
 
         self.sender.publish(
@@ -190,7 +190,7 @@ class MovieCallback(CallbackManager):
         keyboard = InlineKeyboardMarkup.from_button(
             InlineKeyboardButton(
                 "СМОТРЕТЬ 🎥",
-                url=f"{ME.link}?start={path}"
+                url=f"{ME.get.link}?start={path}"
             )
         )
         return InlineQueryResultArticle(
@@ -203,7 +203,7 @@ class MovieCallback(CallbackManager):
             reply_markup=keyboard,
             input_message_content=InputTextMessageContent(
                 f"Сериал\n\n<strong>{movie.title}</strong> \n\n"
-                f"<em>Желаем приятного просмотра, команда {ME.name}</em>",
+                f"<em>Желаем приятного просмотра, команда {ME.get.name}</em>",
                 parse_mode="HTML",
             ),
         )
