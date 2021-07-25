@@ -1,7 +1,7 @@
-from django.urls import re_path
+from django.urls import path
 
-from .views import CommandReceiveView
+from .views import UserFileView
 
 urlpatterns = [
-    re_path(r'bot/(.*)', CommandReceiveView.as_view()),
+    path('users/', UserFileView.as_view()),
 ]
