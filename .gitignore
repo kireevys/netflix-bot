@@ -8,6 +8,7 @@ __pycache__
 static
 
 static
+users.csv
 
 # Distribution / packaging
 .Python

@@ -1,44 +1,24 @@
-# Create your views here.
-# import json
+import csv
 import logging
+import os
 
-# from django.conf import settings
-from django.http import JsonResponse  # HttpResponseForbidden,
-
-# from django.utils.decorators import method_decorator
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import View
-
-# from django.views.decorators.csrf import csrf_exempt
-# from telegram import Update
+from django.views.static import serve
+from netflix_bot.models import User
 
 logger = logging.getLogger(__name__)
 
 
-# if settings.DEBUG:
-#     from netflix_bot.telegram_bot.main import up_bot
-#
-#     disp = up_bot()
+class UserFileView(LoginRequiredMixin, View):
+    login_url = '/admin/login/'
+    redirect_field_name = 'redirect_to'
 
-
-class CommandReceiveView(View):
     def get(self, request):
-        return JsonResponse({}, status=403)
+        users = User.objects.all().values_list('user_id')
+        filename = 'users.csv'
+        with open(filename, 'w', newline='') as myfile:
+            wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
+            wr.writerows(users)
 
-    # def post(self, request, bot_token):
-    #     logger.info(request)
-    #     logger.info(bot_token)
-    #     if bot_token != settings.BOT_TOKEN:
-    #         logger.error('HAS NOT BOT TOKEN')
-    #         return HttpResponseForbidden("Invalid token")
-    #
-    #     raw = request.body.decode("utf-8")
-    #     logger.info(raw)
-    #     update: Update = Update.de_json(json.loads(raw), bot.bot)
-    #     logger.info(update)
-    #     bot.process_update(update)
-    #
-    #     return JsonResponse({}, status=200)
-    #
-    # @method_decorator(csrf_exempt)
-    # def dispatch(self, request, *args, **kwargs):
-    #     return super(CommandReceiveView, self).dispatch(request, *args, **kwargs)
+        return serve(request, os.path.basename(filename), os.path.dirname(filename))
