@@ -42,7 +42,7 @@ def start(update: Update, context: CallbackContext):
     if not handle_path(context.args[0], manager):
         # Если это не путь, значит рефералка.
         # Рефералов считает только для новых юзеров
-        if not created:
+        if created:
             Referral.add(context.args[0], user)
 
         return manager.root()
