@@ -36,7 +36,7 @@ def start(update: Update, context: CallbackContext):
     user, created = User.get_or_create(update.effective_user)
 
     if not context.args:
-        manager.root()
+        return manager.root()
 
     # Если есть аргументы, то это либо путь, либо рефералка.
     if not handle_path(context.args[0], manager):
@@ -45,7 +45,7 @@ def start(update: Update, context: CallbackContext):
         if not created:
             Referral.add(context.args[0], user)
 
-        manager.root()
+        return manager.root()
 
 
 def handle_path(args: str, manager: CallbackManager) -> bool:
