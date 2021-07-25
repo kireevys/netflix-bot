@@ -1,6 +1,7 @@
 import logging
 import traceback
 from random import shuffle
+from time import time
 
 from django.conf import settings
 from telegram import Chat, Update
@@ -22,7 +23,6 @@ from .managers.movie import MovieCallback
 from .managers.series import SeriesCallback
 from .messages import MovieUploadHandler, SeriesUploadHandler, callbacks
 from .senders import InlineSender
-from .user_interface.router import router
 
 logger = logging.getLogger(__name__)
 error_logger = logging.getLogger("error")
@@ -55,12 +55,8 @@ class Channel(BaseFilter):
 
 
 def inline_query(update: Update, context: CallbackContext) -> None:
-    if not update.inline_query:
-        handler, args = router.get_handler(update.effective_message.text)
-        m = MovieCallback(update, context, InlineSender(update, context))
-        handler(m, *args)
-        return
     query = update.inline_query.query
+    start = time()
 
     sender = InlineSender(update, context)
     result = []
@@ -71,6 +67,8 @@ def inline_query(update: Update, context: CallbackContext) -> None:
     result.extend(movies)
     result.extend(series)
     shuffle(result)
+    logger.info(f"Query: {query}, time: {time() - start}")
+
     update.inline_query.answer(result[:50])
 
 
