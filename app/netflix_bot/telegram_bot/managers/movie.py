@@ -1,12 +1,14 @@
 import functools
 import logging
 import uuid
+from time import time
 from typing import List
 
 from django.conf import settings
 from django.db.models import Count, Q
 from netflix_bot import models
 from netflix_bot.models import Movie
+from netflix_bot.telegram_bot import ME
 from netflix_bot.telegram_bot.user_interface.callbacks import CallbackManager, VideoRule
 from netflix_bot.telegram_bot.user_interface.keyboards import (
     PaginationKeyboard,
@@ -38,7 +40,7 @@ class MovieCallback(CallbackManager):
         about_search = (
             "Смотри весь список фильмов и сериалов, "
             "используя кнопки ниже или воспользуйся поиском,"
-            f"напиши {self.context.bot.get_me().name} и начни искать."
+            f"напиши {ME.name} и начни искать."
         )
 
         self.sender.publish(
@@ -172,36 +174,36 @@ class MovieCallback(CallbackManager):
 
     @functools.lru_cache
     def search(self, query: str) -> List[InlineQueryResultArticle]:
-        """Метод поиска."""
+        start = time()
         qs = Movie.objects.filter(
             Q(title_eng__icontains=query) | Q(
                 title_ru_upper__contains=query.upper())
-        )
+        ).order_by('-pk')
 
-        result = []
-        for movie in qs[:49]:
-            path = Route("movie", movie.id, p=1).b64encode()
+        result = [self.build_articles(i) for i in qs[:49]]
 
-            keyboard = InlineKeyboardMarkup.from_button(
-                InlineKeyboardButton(
-                    "СМОТРЕТЬ 🎥",
-                    url=f"{self.context.bot.get_me().link}?start={path}",
-                )
-            )
-
-            article = InlineQueryResultArticle(
-                id=str(uuid.uuid4()),
-                title=f"{movie.title} {movie.lang}",
-                thumb_url=settings.MAIN_PHOTO,
-                photo_url=settings.MAIN_PHOTO,
-                description="Киношка",
-                reply_markup=keyboard,
-                input_message_content=InputTextMessageContent(
-                    f"Фильм\n\n<strong>{movie.title}</strong>\n\n"
-                    f"<em>Желаем приятного просмотра, команда {self.context.bot.get_me().name}</em>",
-                    parse_mode="HTML"
-                )
-            )
-            result.append(article)
-
+        logger.info(f"Movies search {query}: {time() - start}")
         return result
+
+    def build_articles(self, movie: models.Movie) -> InlineQueryResultArticle:
+        path = Route("movie", movie.id, p=1).b64encode()
+        keyboard = InlineKeyboardMarkup.from_button(
+            InlineKeyboardButton(
+                "СМОТРЕТЬ 🎥",
+                url=f"{ME.link}?start={path}"
+            )
+        )
+        return InlineQueryResultArticle(
+            id=str(uuid.uuid4()),
+            caption=movie.title,
+            title=movie.title,
+            thumb_url=settings.MAIN_PHOTO,
+            photo_url=settings.MAIN_PHOTO,
+            description="Сериальчик",
+            reply_markup=keyboard,
+            input_message_content=InputTextMessageContent(
+                f"Сериал\n\n<strong>{movie.title}</strong> \n\n"
+                f"<em>Желаем приятного просмотра, команда {ME.name}</em>",
+                parse_mode="HTML",
+            ),
+        )
