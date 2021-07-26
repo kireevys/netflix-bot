@@ -199,7 +199,7 @@ class MovieCallback(CallbackManager):
             title=movie.title,
             thumb_url=settings.MAIN_PHOTO,
             photo_url=settings.MAIN_PHOTO,
-            description="Сериальчик",
+            description="Киношка",
             reply_markup=keyboard,
             input_message_content=InputTextMessageContent(
                 f"Сериал\n\n<strong>{movie.title}</strong> \n\n"
