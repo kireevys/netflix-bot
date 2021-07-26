@@ -202,7 +202,7 @@ class MovieCallback(CallbackManager):
             description="Киношка",
             reply_markup=keyboard,
             input_message_content=InputTextMessageContent(
-                f"Сериал\n\n<strong>{movie.title}</strong> \n\n"
+                f"Фильм\n\n<strong>{movie.title}</strong> \n\n"
                 f"<em>Желаем приятного просмотра, команда {ME.get.name}</em>",
                 parse_mode="HTML",
             ),
