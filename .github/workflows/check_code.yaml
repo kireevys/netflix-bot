@@ -35,12 +35,12 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GET_INVITE_LINK: link
+      MAIN_CHANNEL: Channel
 
     strategy:
       max-parallel: 4
       matrix:
         python-version: [3.8]
-
 
     steps:
       # Чекаутим код

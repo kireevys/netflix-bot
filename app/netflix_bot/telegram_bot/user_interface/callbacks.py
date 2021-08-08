@@ -33,7 +33,7 @@ class VideoRule:
 
     def need_subscribe(self, sender: Sender):
         buttons = [
-            InlineKeyboardButton("RUSFLIX_BOT", url=settings.CHAT_INVITE_LINK),
+            InlineKeyboardButton(settings.MAIN_CHANNEL_ID, url=settings.CHAT_INVITE_LINK),
             InlineKeyboardButton("Я сделяль!", callback_data="delete/"),
         ]
         sender.send(
@@ -46,7 +46,7 @@ class VideoRule:
         """Проверка подписки на канал."""
         try:
             chat_member: ChatMember = self.bot.get_chat_member(
-                channel, self.user_id)
+                f"@{channel}", self.user_id)
         except BadRequest:
             logger.warning(f"user {self.user_id} is not subscribed")
             return False

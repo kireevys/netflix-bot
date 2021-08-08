@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "netflix_bot.apps.ProjectConfig",
+    "master.apps.MasterConfig",
 ]
 
 MIDDLEWARE = [
@@ -83,7 +84,7 @@ WSGI_APPLICATION = "project.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
+        "NAME": os.path.join(BASE_DIR, "local.sqlite3"),
     }
 }
 
@@ -124,11 +125,13 @@ ELEMENTS_PER_PAGE = 5
 UPLOADER_ID = os.getenv("UPLOADER")
 MOVIE_UPLOADER_ID = os.getenv("MOVIE_UPLOADER")
 
-UPLOADER_INVITE = "https://t.me/joinchat/AAAAAEr4GjWrNeNVda-3MA"
 
-MAIN_CHANNEL_ID = [
-    -1001357329839,
-]
+def parse_list(value: str) -> list:
+    return value.split(',')
+
+
+MAIN_CHANNEL_ID = parse_list(os.environ['MAIN_CHANNEL'])
+
 # MAIN_CHANNEL_ID = UPLOADER_ID
 CHAT_INVITE_LINK = os.environ["GET_INVITE_LINK"]
 
@@ -211,6 +214,7 @@ LOGGING = {
             "level": LOG_LEVEL,
             "propagate": True,
         },
-        "error": {"handlers": ['c']}
+        "error": {"handlers": ['c']},
+        "master": {"handlers": ['c']},
     },
 }
