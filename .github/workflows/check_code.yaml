@@ -14,8 +14,6 @@ jobs:
       max-parallel: 4
       matrix:
         python-version: [3.8]
-    env:
-      MAIN_CHANNEL: Channel
 
     steps:
       # Чекаутим код
@@ -43,6 +41,8 @@ jobs:
       matrix:
         python-version: [3.8]
 
+    env:
+      MAIN_CHANNEL: Channel
 
     steps:
       # Чекаутим код
