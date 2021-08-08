@@ -1,13 +1,39 @@
+import logging
+import traceback
+
 from django.conf import settings
-from netflix_bot.telegram_bot.messages import MovieUploadHandler, SeriesUploadHandler
+from master.handlers import MovieUploadHandler, SeriesUploadHandler
+from telegram import TelegramError
 from telegram.ext import Dispatcher, Filters, MessageHandler, Updater
+
+logger = logging.getLogger('master')
+error_logger = logging.getLogger("error")
+
+
+def error_callback(update, context):
+    try:
+        raise context.error
+    # except Unauthorized:
+    #     # remove update.message.chat_id from conversation list
+    # except BadRequest:
+    #     # handle malformed requests - read more below!
+    # except TimedOut:
+    #     # handle slow connection problems
+    # except NetworkError:
+    #     # handle other connection problems
+    # except ChatMigrated as e:
+    #     # the chat_id of a group has changed, use e.new_chat_id instead
+    except TelegramError:
+        error_logger.error(traceback.format_exc())
+    except Exception:
+        error_logger.error(traceback.format_exc())
 
 
 def run():
-    if not settings.BOT_TOKEN:
+    if not settings.MASTER_TOKEN:
         raise EnvironmentError("Empty bot token")
 
-    updater = Updater(token=settings.BOT_TOKEN, use_context=True)
+    updater = Updater(token=settings.MASTER_TOKEN, use_context=True)
     dispatcher: Dispatcher = updater.dispatcher
     # Uploaders
     # Series
@@ -51,3 +77,10 @@ def run():
     dispatcher.add_handler(movie_upload_h, group=MOVIES_GROUP)
     dispatcher.add_handler(movie_add_poster_handler, group=MOVIES_GROUP)
     dispatcher.add_handler(movie_add_description_h, group=MOVIES_GROUP)
+
+    dispatcher.add_error_handler(error_callback)
+
+    logger.info("START POOLING")
+    updater.start_polling(poll_interval=0.2)
+
+    return dispatcher

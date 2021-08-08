@@ -1,14 +1,17 @@
 import logging
-from typing import Union
+from abc import abstractmethod
+from typing import Any, Union
 
 from django.conf import settings
 from django.db import IntegrityError
+from master.models import Slave
+from master.share import MovieSharer, SeriesShare
 from netflix_bot.models import Movie, Series
 from netflix_bot.telegram_bot.managers.managers import MovieManager, SeriesManager
 from telegram import Update
 from telegram.ext import CallbackContext
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('master')
 
 
 class Uploader:
@@ -23,6 +26,10 @@ class Uploader:
         if not self.is_upload_channel(self.update.channel_post.chat.id):
             logger.warning("Incorrect chat id for upload video")
             raise ConnectionAbortedError("Access denied")
+
+    @abstractmethod
+    def after_upload(self, video: Any):
+        ...
 
     def get_models_for_add_poster(self, title_ru, title_eng):
         qs = self.model.objects.filter(title_ru=title_ru, title_eng=title_eng)
@@ -93,6 +100,7 @@ class Uploader:
                 message.message_id,
             )
             logger.info(f"<{video}> successful loaded")
+            self.after_upload(video)
         except IntegrityError:
             logger.info(f"Loaded exists video <{manager}>. Message delete")
             self.bot.delete_message(
@@ -114,8 +122,20 @@ class SeriesUploader(Uploader):
     manager = SeriesManager
     model = Series
 
+    def after_upload(self, video: Any):
+        sharer = SeriesShare(settings.MASTER_TOKEN)
+        slaves = Slave.objects.filter(enabled=True)
+        for d in slaves:
+            sharer.share(video, d.series)
+
 
 class MovieUploader(Uploader):
     uploader = settings.MOVIE_UPLOADER_ID
     manager = MovieManager
     model = Movie
+
+    def after_upload(self, video: Any):
+        sharer = MovieSharer(settings.MASTER_TOKEN)
+        slaves = Slave.objects.filter(enabled=True)
+        for d in slaves:
+            sharer.share(video, d.movies)
