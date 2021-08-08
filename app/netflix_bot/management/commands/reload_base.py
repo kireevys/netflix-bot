@@ -8,7 +8,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 from netflix_bot import models
 from netflix_bot.management.commands.bulkmail import Mail
-from netflix_bot.telegram_bot.managers.series_manager import MovieManager, SeriesManager
+from netflix_bot.telegram_bot.managers.managers import MovieManager, SeriesManager
 from telegram.error import RetryAfter
 from telegram.ext import Dispatcher, Updater
 
@@ -16,8 +16,7 @@ logger = logging.getLogger("bulkmail")
 
 
 class Command(BaseCommand):
-    help = """Usage
-           ./manage.py bulkmail -m=test -f=message.json"""
+    help = """"""
 
     def create_parser(self, *args, **kwargs):
         parser = super(Command, self).create_parser(*args, **kwargs)
@@ -27,10 +26,10 @@ class Command(BaseCommand):
     @staticmethod
     def check_env():
         if None in (
-            settings.BOT_TOKEN,
-            settings.MAIN_PHOTO,
-            settings.UPLOADER_ID,
-            settings.MOVIE_UPLOADER_ID,
+                settings.BOT_TOKEN,
+                settings.MAIN_PHOTO,
+                settings.UPLOADER_ID,
+                settings.MOVIE_UPLOADER_ID,
         ):
             raise EnvironmentError("Check your ENV")
 
