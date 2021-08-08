@@ -29,7 +29,7 @@ class VideoRule:
     def user_is_subscribed(self):
         if settings.DEBUG:
             return True
-        return all(map(self._check_subscribe, settings.MAIN_CHANNEL_ID))
+        return self._check_subscribe(settings.MAIN_CHANNEL_ID)
 
     def need_subscribe(self, sender: Sender):
         buttons = [
@@ -52,7 +52,7 @@ class VideoRule:
             return False
 
         status = chat_member.status
-        if status in ("restricted", "left", "kicked"):
+        if status in (ChatMember.RESTRICTED, ChatMember.LEFT, ChatMember.KICKED):
             logger.warning(f"user {self.user_id} has {status}")
             return False
 
