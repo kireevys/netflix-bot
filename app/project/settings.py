@@ -130,7 +130,7 @@ def parse_list(value: str) -> list:
     return value.split(',')
 
 
-MAIN_CHANNEL_ID = parse_list(os.environ['MAIN_CHANNEL'])
+MAIN_CHANNEL_ID = os.environ['MAIN_CHANNEL']
 
 # MAIN_CHANNEL_ID = UPLOADER_ID
 CHAT_INVITE_LINK = os.environ["GET_INVITE_LINK"]
