@@ -125,6 +125,8 @@ ELEMENTS_PER_PAGE = 5
 UPLOADER_ID = os.getenv("UPLOADER")
 MOVIE_UPLOADER_ID = os.getenv("MOVIE_UPLOADER")
 
+MASTER_TOKEN = os.getenv("MASTER_TOKEN")
+
 
 def parse_list(value: str) -> list:
     return value.split(',')
@@ -215,6 +217,6 @@ LOGGING = {
             "propagate": True,
         },
         "error": {"handlers": ['c']},
-        "master": {"handlers": ['c']},
+        "master": {"handlers": ['temp']},
     },
 }

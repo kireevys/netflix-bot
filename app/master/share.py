@@ -28,7 +28,7 @@ class MovieSharer(Share):
 
 
 class SeriesShare(Share):
-    def share(self, video: Any, destination: int) -> bool:
+    def share(self, video: models.Episode, destination: int) -> bool:
         manager = SeriesManager(
             title_ru=video.series.title_ru,
             title_eng=video.series.title_eng,
