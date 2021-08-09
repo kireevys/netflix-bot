@@ -54,7 +54,7 @@ class TestSeriesUploader(TestCase):
 
     def test_add_poster(self):
         self.update.channel_post.caption = (
-            f"{self.title_ru}/{self.title_eng}\n1 сезон/1 серия\nENG"
+            f"{self.title_ru}/{self.title_eng}"
         )
 
         with patch(
@@ -71,7 +71,7 @@ class TestSeriesUploader(TestCase):
 
     def test_add_poster_to_not_exists_series(self):
         self.update.channel_post.caption = (
-            f"not exists/{self.title_eng}\n1 сезон/1 серия\nENG"
+            f"not exists/{self.title_eng}"
         )
         self.update.effective_message.reply_to_message.message_id = (
             self.episode.message_id
@@ -83,14 +83,12 @@ class TestSeriesUploader(TestCase):
         ):
             uploader = SeriesUploader(self.update, self.context)
 
-        file_id = "some"
-        with self.assertRaises(Series.DoesNotExist):
-            uploader.add_poster(file_id)
+        with self.assertRaises(Series.DoesNotExist):  # noqa
+            uploader.add_poster("file_id")
 
     def test_add_description(self):
-        self.update.channel_post.caption = (
-            f"not exists/{self.title_eng}\n1 сезон/1 серия\nENG"
-        )
+        desc = "some"
+        caption = f"{self.title_ru}/{self.title_eng} | {desc}"
 
         self.update = MagicMock(
             effective_message=MagicMock(
@@ -103,16 +101,14 @@ class TestSeriesUploader(TestCase):
         ):
             uploader = SeriesUploader(self.update, self.context)
 
-        desc = "some"
-        uploader.add_description(desc)
+        uploader.add_description(caption)
 
         self.series.refresh_from_db()
         self.assertEqual(self.series.desc, desc)
 
     def test_add_description_to_not_exists_series(self):
-        self.update.channel_post.caption = (
-            f"not exists/{self.title_eng}\n1 сезон/1 серия\nENG"
-        )
+        desc = "some"
+        caption = f"not_exists/{self.title_eng} | {desc}"
 
         self.update = MagicMock(
             effective_message=MagicMock(
@@ -125,6 +121,5 @@ class TestSeriesUploader(TestCase):
         ):
             uploader = SeriesUploader(self.update, self.context)
 
-        desc = "some"
-        with self.assertRaises(Series.DoesNotExist):
-            uploader.add_description(desc)
+        with self.assertRaises(ValueError):
+            uploader.add_description(caption)

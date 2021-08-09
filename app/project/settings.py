@@ -180,7 +180,7 @@ LOGGING = {
         "upload_file": {
             "class": "logging.handlers.TimedRotatingFileHandler",
             "formatter": "json",
-            "filename": "UPLOAD_LOG_FILE",
+            "filename": UPLOAD_LOG_FILE,
             "utc": True,
             "when": "midnight",
         },
