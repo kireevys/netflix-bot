@@ -28,6 +28,7 @@ class VideoRule:
 
     def user_is_subscribed(self):
         if settings.DEBUG:
+            logger.info('Skip check subscription')
             return True
         return self._check_subscribe(settings.MAIN_CHANNEL_ID)
 

@@ -95,7 +95,7 @@ def up_bot() -> Dispatcher:
     )
 
     series_add_description_h = MessageHandler(
-        Filters.reply & series_filter, SeriesUploadHandler.add_description
+        Filters.text & series_filter, SeriesUploadHandler.add_description
     )
     series_add_poster_handler = MessageHandler(
         Filters.photo & series_filter, SeriesUploadHandler.add_poster
@@ -117,7 +117,7 @@ def up_bot() -> Dispatcher:
     )
 
     movie_add_description_h = MessageHandler(
-        Filters.reply & movie_filter, MovieUploadHandler.add_description
+        Filters.text & movie_filter, MovieUploadHandler.add_description
     )
     movie_add_poster_handler = MessageHandler(
         Filters.photo & movie_filter, MovieUploadHandler.add_poster

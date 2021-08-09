@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from telegram import InlineKeyboardMarkup, InputMedia, InputMediaPhoto, Message, Update
 from telegram.ext import CallbackContext
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 
 class Sender(ABC):

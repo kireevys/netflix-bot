@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/3.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.0/ref/settings/
 """
-
+import logging
 import os
 
 from dotenv import load_dotenv
@@ -129,16 +129,15 @@ MASTER_TOKEN = os.getenv("MASTER_TOKEN")
 
 
 def parse_list(value: str) -> list:
-    return value.split(',')
+    return value.split(",")
 
 
-MAIN_CHANNEL_ID = os.environ['MAIN_CHANNEL']
+MAIN_CHANNEL_ID = os.environ["MAIN_CHANNEL"]
 
 # MAIN_CHANNEL_ID = UPLOADER_ID
 CHAT_INVITE_LINK = os.environ["GET_INVITE_LINK"]
 
-SITE_DOMAIN = os.environ.setdefault(
-    "DOMAIN", "127.0.0.1:88")  # "it_garage.fun"
+SITE_DOMAIN = os.environ.setdefault("DOMAIN", "127.0.0.1:88")  # "it_garage.fun"
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
@@ -148,75 +147,64 @@ STATIC_URL = "/static/"
 # Logging
 LOG_INTO_FILE = os.environ.setdefault("LOG_INTO_FILE", "0") == "1"
 LOG_FILE = os.environ.setdefault("LOG_FILE", "netflix.log")
+UPLOAD_LOG_FILE = os.environ.setdefault("LOG_FILE", "upload.log")
 LOG_LEVEL = os.environ.setdefault("LOG_LEVEL", "DEBUG")
 LOG_FORMATTER_CONSOLE = os.environ.setdefault("LOG_FORMATTER_CONSOLE", "json")
 LOG_FORMATTER_FILE = os.environ.setdefault("LOG_FORMATTER_FILE", "json")
 
-handlers = ["console"]
+handlers = ["stream"]
 if LOG_INTO_FILE:  # pragma: no cover
     handlers.append("file")
 
 LOGGING = {
     "version": 1,
-    "disable_existing_loggers": False,
+    "disable_existing_loggers": True,
     "formatters": {
-        "json": {
-            "()": "pythonjsonlogger.jsonlogger.JsonFormatter",
-            "fmt": (
-                "%(levelname)s %(asctime)s %(message)s "
-                "%(funcName)s %(pathname)s %(lineno)s %(name)s"
-            ),
+        "simple": {
+            "format": "[%(asctime)s] | %(funcName)+25s:%(lineno)+3s | %(levelname)+8s | %(message)s"
         },
-        "ultra_verbose": {
-            "format": (
-                "[%(asctime)s][PID:%(process)d][%(levelname)s]"
-                "[%(pa-thname)s:%(lineno)s] %(message)s"
-            )
-        },
-        "verbose": {
-            "format": (
-                "[%(asctime)s][%(process)d][%(levelname)s]"
-                "[%(module)s/%(filename)s:%(lineno)s] %(message)s"
-            )
-        },
-        "simple": {"format": "[%(asctime)s] [%(levelname)s] %(message)s"},
+        "json": {"()": "pythonjsonlogger.jsonlogger.JsonFormatter"},
     },
     "handlers": {
-        "console": {
-            "level": LOG_LEVEL,
+        "stream": {
             "class": "logging.StreamHandler",
-            "formatter": LOG_FORMATTER_CONSOLE,
+            "formatter": "simple",
         },
         "file": {
-            "level": "INFO",
-            "class": "logging.FileHandler",
+            "class": "logging.handlers.TimedRotatingFileHandler",
+            "formatter": "json",
             "filename": LOG_FILE,
-            "formatter": LOG_FORMATTER_FILE,
+            "utc": True,
+            "when": "midnight",
         },
-        "temp": {
-            "level": "INFO",
-            "class": "logging.FileHandler",
-            "filename": "temp.log",
-            "formatter": LOG_FORMATTER_FILE,
+        "upload_file": {
+            "class": "logging.handlers.TimedRotatingFileHandler",
+            "formatter": "json",
+            "filename": UPLOAD_LOG_FILE,
+            "utc": True,
+            "when": "midnight",
         },
-        "c": {
-            "level": "INFO",
-            "class": "logging.StreamHandler",
-            "formatter": "verbose",
-        }
     },
     "loggers": {
-        "django": {"handlers": handlers, "level": LOG_LEVEL, "propagate": True},
-        "project": {"handlers": handlers, "level": LOG_LEVEL, "propagate": True},
-        "telegram": {"handlers": handlers, "level": DEBUG, "propagate": True},
-        "netflix_bot": {"handlers": handlers, "level": LOG_LEVEL, "propagate": True},
-        "telegram_bot": {"handlers": handlers, "level": LOG_LEVEL, "propagate": True},
-        "bulkmail": {
-            "handlers": ["console", "temp"],
-            "level": LOG_LEVEL,
-            "propagate": True,
+        "netflix_bot": {
+            "handlers": handlers,
+            "level": logging.INFO,
         },
-        "error": {"handlers": ['c']},
-        "master": {"handlers": ['temp']},
+        "bulkmail": {
+            "handlers": ["stream"],
+            "level": logging.INFO,
+        },
+        "master": {
+            "handlers": handlers,
+            "level": logging.INFO,
+        },
+        "error": {
+            "handlers": ["stream"],
+            "level": logging.INFO,
+        },
+        "uploader": {
+            "handlers": ["upload_file", "stream"],
+            "level": logging.INFO,
+        },
     },
 }

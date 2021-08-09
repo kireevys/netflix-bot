@@ -1,6 +1,10 @@
+import logging
+
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from master.main import run
+
+logger = logging.getLogger('master')
 
 
 class Command(BaseCommand):

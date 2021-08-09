@@ -15,6 +15,14 @@ class Share(ABC):
     def share(self, video: Any, destination: int) -> bool:
         ...
 
+    @abstractmethod
+    def share_description(self, description: str, destination: int) -> bool:
+        ...
+
+    @abstractmethod
+    def share_poster(self, video: Any, poster: str, destination: int) -> bool:
+        ...
+
 
 class MovieSharer(Share):
     def share(self, video: models.Movie, destination: int) -> bool:
@@ -24,6 +32,14 @@ class MovieSharer(Share):
             lang=video.lang,
         )
         self.sender.send_video(destination, video.file_id, caption=manager.get_loader_format_caption())
+        return True
+
+    def share_description(self, description: str, destination: int) -> bool:
+        self.sender.send_message(destination, description)
+        return True
+
+    def share_poster(self, title: str, poster: str, destination: int) -> bool:
+        self.sender.send_photo(destination, poster, title)
         return True
 
 
@@ -37,4 +53,12 @@ class SeriesShare(Share):
             lang=video.lang,
         )
         self.sender.send_video(destination, video.file_id, caption=manager.get_loader_format_caption())
+        return True
+
+    def share_description(self, description: str, destination: int) -> bool:
+        self.sender.send_message(destination, description)
+        return True
+
+    def share_poster(self, title: str, poster: str, destination: int) -> bool:
+        self.sender.send_photo(destination, poster, title)
         return True

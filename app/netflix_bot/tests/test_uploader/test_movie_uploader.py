@@ -39,7 +39,7 @@ class TestSeriesUploader(TestCase):
 
     def test_add_multiple_poster(self):
         self.update.channel_post.caption = (
-            f"{self.title_ru}/{self.title_eng}\nENG"
+            f"{self.title_ru}/{self.title_eng}"
         )
 
         with patch(
@@ -85,9 +85,8 @@ class TestSeriesUploader(TestCase):
             uploader.add_poster(file_id)
 
     def test_add_description(self):
-        self.update.channel_post.caption = (
-            f"{self.title_ru}/{self.title_eng}\nENG"
-        )
+        caption = f"{self.title_ru}/{self.title_eng} | some"
+        expected = "some"
 
         self.update = MagicMock(
             effective_message=MagicMock(
@@ -100,23 +99,18 @@ class TestSeriesUploader(TestCase):
         ):
             uploader = MovieUploader(self.update, self.context)
 
-        desc = "some"
-        uploader.add_description(desc)
+        uploader.add_description(caption)
 
         self.movie_ru.refresh_from_db()
-        self.assertEqual(self.movie_ru.desc, desc)
+        self.assertEqual(self.movie_ru.desc, expected)
 
         self.movie_eng.refresh_from_db()
-        self.assertEqual(self.movie_eng.desc, desc)
+        self.assertEqual(self.movie_eng.desc, expected)
 
         self.movie_sub.refresh_from_db()
-        self.assertEqual(self.movie_sub.desc, desc)
+        self.assertEqual(self.movie_sub.desc, expected)
 
     def test_add_description_to_not_exists_movie(self):
-        self.update.channel_post.caption = (
-            f"not exists/{self.title_eng}\nENG"
-        )
-
         self.update = MagicMock(
             effective_message=MagicMock(
                 reply_to_message=MagicMock(message_id=5))
@@ -128,6 +122,5 @@ class TestSeriesUploader(TestCase):
         ):
             uploader = MovieUploader(self.update, self.context)
 
-        desc = "some"
-        with self.assertRaises(Movie.DoesNotExist):
-            uploader.add_description(desc)
+        with self.assertRaises(ValueError):
+            uploader.add_description(f"not exists/{self.title_eng} | ENG")
