@@ -1,5 +1,6 @@
 import logging
-from typing import Union
+from abc import ABC
+from typing import Any, Union
 
 from django.conf import settings
 from django.db import IntegrityError
@@ -8,10 +9,10 @@ from netflix_bot.telegram_bot.managers.managers import MovieManager, SeriesManag
 from telegram import Update
 from telegram.ext import CallbackContext
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("uploader")
 
 
-class Uploader:
+class Uploader(ABC):
     uploader: int = None
     manager = None
     model: Union[Movie, Series] = None
@@ -24,6 +25,15 @@ class Uploader:
             logger.warning("Incorrect chat id for upload video")
             raise ConnectionAbortedError("Access denied")
 
+    def after_upload(self, video: Any):
+        ...
+
+    def after_description(self, desc_text: str):
+        ...
+
+    def after_poster(self, file_id: str):
+        ...
+
     def get_models_for_add_poster(self, title_ru, title_eng):
         qs = self.model.objects.filter(title_ru=title_ru, title_eng=title_eng)
         if not qs:
@@ -32,34 +42,40 @@ class Uploader:
         return qs
 
     def add_poster(self, file_id: str):
-        manager = self.manager.from_caption(
-            caption=self.update.channel_post.caption)
-        models_qs = self.get_models_for_add_poster(
-            title_ru=manager.title_ru, title_eng=manager.title_eng
-        )
+        title = self.manager._strip_ok_emoji(self.update.channel_post.caption)
+        ru, en = [i.strip() for i in title.split("/")]
+        models_qs = self.get_models_for_add_poster(title_ru=ru, title_eng=en)
 
         models_qs.update(poster=file_id)
 
         self.bot.edit_message_caption(
             chat_id=self.update.effective_chat.id,
             message_id=self.update.effective_message.message_id,
-            caption=f"{settings.EMOJI.get('ok')} {self.update.channel_post.caption}",
+            caption=f"{settings.EMOJI.get('ok')} {title}",
         )
         logger.info(f"{models_qs} get new poster")
+        self.after_poster(file_id)
 
     def add_description(self, desc_text) -> model:
-        models = self.model.get_by_message_id(
-            self.update.effective_message.reply_to_message.message_id
-        )
+        try:
+            title, body = desc_text.split("|")
+            ru, en = title.split("/")
+            models = self.model.objects.filter(
+                title_ru=ru.strip(), title_eng=en.strip()
+            )
+            if not models:
+                logger.warning("Cant find %s for description", title)
+                raise ValueError
 
-        models.update(desc=desc_text)
+            models.update(desc=body.strip())
 
-        logger.info(f"Edited description {models.first()}")
-
-        self.bot.delete_message(
-            chat_id=self.update.effective_chat.id,
-            message_id=self.update.effective_message.message_id,
-        )
+            logger.info(f"Edited description {models.first()}")
+            self.after_description(desc_text)
+        finally:
+            self.bot.delete_message(
+                chat_id=self.update.effective_chat.id,
+                message_id=self.update.effective_message.message_id,
+            )
 
         return models.first()
 
@@ -79,8 +95,7 @@ class Uploader:
         """
         logger.info(str(self.update))
 
-        manager = self.manager.from_caption(
-            caption=self.update.channel_post.caption)
+        manager = self.manager.from_caption(caption=self.update.channel_post.caption)
         message = self.bot.send_video(
             chat_id=self.update.effective_chat.id,
             video=self.update.channel_post.video.file_id,
@@ -93,6 +108,7 @@ class Uploader:
                 message.message_id,
             )
             logger.info(f"<{video}> successful loaded")
+            self.after_upload(video)
         except IntegrityError:
             logger.info(f"Loaded exists video <{manager}>. Message delete")
             self.bot.delete_message(

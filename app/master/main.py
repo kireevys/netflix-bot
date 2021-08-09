@@ -6,7 +6,7 @@ from master.handlers import MovieUploadHandler, SeriesUploadHandler
 from telegram import TelegramError
 from telegram.ext import Dispatcher, Filters, MessageHandler, Updater
 
-logger = logging.getLogger('master')
+logger = logging.getLogger(__name__)
 error_logger = logging.getLogger("error")
 
 
@@ -47,7 +47,7 @@ def run():
     )
 
     series_add_description_h = MessageHandler(
-        Filters.reply & series_filter, SeriesUploadHandler.add_description
+        Filters.text & series_filter, SeriesUploadHandler.add_description
     )
     series_add_poster_handler = MessageHandler(
         Filters.photo & series_filter, SeriesUploadHandler.add_poster
@@ -68,7 +68,7 @@ def run():
     )
 
     movie_add_description_h = MessageHandler(
-        Filters.reply & movie_filter, MovieUploadHandler.add_description
+        Filters.text & movie_filter, MovieUploadHandler.add_description
     )
     movie_add_poster_handler = MessageHandler(
         Filters.photo & movie_filter, MovieUploadHandler.add_poster
