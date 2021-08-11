@@ -160,7 +160,7 @@ LOGGING = {
     "version": 1,
     "disable_existing_loggers": True,
     "formatters": {
-        "simple1": {
+        "simple": {
             "format": "[%(asctime)s] | %(funcName)+25s:%(lineno)+3s | %(levelname)+8s | %(message)s"
         },
         "json": {"()": "pythonjsonlogger.jsonlogger.JsonFormatter",
