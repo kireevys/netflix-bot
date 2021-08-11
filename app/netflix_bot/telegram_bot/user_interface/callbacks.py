@@ -1,5 +1,6 @@
 import logging
 from abc import ABC
+from time import time
 
 from django.conf import settings
 from netflix_bot.telegram_bot.senders import Sender
@@ -69,8 +70,12 @@ class CallbackManager(ABC):
 
     def send_reaction_on_callback(self, router: Router) -> Message:
         handler, args = router.get_handler(self.update.callback_query.data)
+        query = self.update.callback_query.data
+        _start = time()
         try:
-            return handler(self, *args)
+            result = handler(self, *args)
+            logger.info(f'handle {query} {handler.__name__}: {time() - _start}')
+            return result
         finally:
             self.update.callback_query.answer()
 

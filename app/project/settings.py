@@ -163,7 +163,8 @@ LOGGING = {
         "simple": {
             "format": "[%(asctime)s] | %(funcName)+25s:%(lineno)+3s | %(levelname)+8s | %(message)s"
         },
-        "json": {"()": "pythonjsonlogger.jsonlogger.JsonFormatter"},
+        "json": {"()": "pythonjsonlogger.jsonlogger.JsonFormatter",
+                 "format": "%(asctime)s %(funcName)s %(lineno)s %(levelname)s %(message)s"},
     },
     "handlers": {
         "stream": {

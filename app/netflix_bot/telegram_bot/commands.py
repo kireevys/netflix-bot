@@ -1,6 +1,7 @@
 import binascii
 import logging
 from enum import Enum
+from time import time
 
 from telegram import Update
 from telegram.ext import CallbackContext
@@ -55,5 +56,7 @@ def handle_path(args: str, manager: CallbackManager) -> bool:
         return False
 
     handler, args = router.get_handler(query)
+    _start = time()
     handler(manager, *args)
+    logger.info(f'handle {query} {handler}: {time() - _start}')
     return True
