@@ -9,6 +9,7 @@ from django.db.models import Count, Q
 from netflix_bot import models
 from netflix_bot.models import Movie
 from netflix_bot.telegram_bot import ME
+from netflix_bot.telegram_bot.contants import START_MESSAGE
 from netflix_bot.telegram_bot.user_interface.callbacks import CallbackManager, VideoRule
 from netflix_bot.telegram_bot.user_interface.keyboards import (
     PaginationKeyboard,
@@ -37,15 +38,9 @@ class MovieCallback(CallbackManager):
             ]
         )
 
-        about_search = (
-            "Смотри весь список фильмов и сериалов, "
-            "используя кнопки ниже или воспользуйся поиском,"
-            f"напиши {ME.get.name} и начни искать."
-        )
-
         self.sender.publish(
             media=InputMediaPhoto(
-                media=settings.MAIN_PHOTO, caption=about_search),
+                media=settings.MAIN_PHOTO, caption=START_MESSAGE),
             keyboard=keyboard,
         )
 
@@ -172,20 +167,22 @@ class MovieCallback(CallbackManager):
     def _del(self):
         self.sender.delete()
 
+    @classmethod
     @functools.lru_cache
-    def search(self, query: str) -> List[InlineQueryResultArticle]:
+    def search(cls, query: str) -> List[InlineQueryResultArticle]:
         start = time()
         qs = Movie.objects.filter(
             Q(title_eng__icontains=query) | Q(
                 title_ru_upper__contains=query.upper())
         ).order_by('-pk')
 
-        result = [self.build_articles(i) for i in qs[:49]]
+        result = [cls.build_articles(i) for i in qs[:49]]
 
         logger.info(f"Movies search {query}: {time() - start}")
         return result
 
-    def build_articles(self, movie: models.Movie) -> InlineQueryResultArticle:
+    @staticmethod
+    def build_articles(movie: models.Movie) -> InlineQueryResultArticle:
         path = Route("movie", movie.id, p=1).b64encode()
         keyboard = InlineKeyboardMarkup.from_button(
             InlineKeyboardButton(

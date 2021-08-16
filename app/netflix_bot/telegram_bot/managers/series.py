@@ -246,18 +246,20 @@ class SeriesCallback(CallbackManager):
             keyboard=keyboard,
         )
 
+    @classmethod
     @functools.lru_cache
-    def search(self, query: str) -> List[InlineQueryResultArticle]:
+    def search(cls, query: str) -> List[InlineQueryResultArticle]:
         start = time()
         qs = models.Series.objects.filter(
             Q(title_eng__icontains=query) | Q(
                 title_ru_upper__contains=query.upper())
         ).order_by('-pk')
-        result = [self.build_articles(i) for i in qs[:49]]
+        result = [cls.build_articles(i) for i in qs[:49]]
         logger.info(f"Series search {query}: {time() - start}")
         return result
 
-    def build_articles(self, series: models.Series) -> InlineQueryResultArticle:
+    @staticmethod
+    def build_articles(series: models.Series) -> InlineQueryResultArticle:
         path = Route("series", series.id, p=1).b64encode()
         keyboard = InlineKeyboardMarkup.from_button(
             InlineKeyboardButton(
