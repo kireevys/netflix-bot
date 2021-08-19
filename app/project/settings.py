@@ -163,8 +163,10 @@ LOGGING = {
         "simple": {
             "format": "[%(asctime)s] | %(funcName)+25s:%(lineno)+3s | %(levelname)+8s | %(message)s"
         },
-        "json": {"()": "pythonjsonlogger.jsonlogger.JsonFormatter",
-                 "format": "%(asctime)s %(funcName)s %(lineno)s %(levelname)s %(message)s"},
+        "json": {
+            "()": "pythonjsonlogger.jsonlogger.JsonFormatter",
+            "format": "%(asctime)s %(funcName)s %(lineno)s %(levelname)s %(message)s",
+        },
     },
     "handlers": {
         "stream": {
@@ -209,7 +211,7 @@ LOGGING = {
         },
         "telegram": {
             "handlers": ["stream"],
-            "level": logging.DEBUG if not DEBUG else logging.WARNING,
+            "level": logging.DEBUG if DEBUG else logging.WARNING,
         },
     },
 }
