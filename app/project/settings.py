@@ -207,5 +207,9 @@ LOGGING = {
             "handlers": ["upload_file", "stream"],
             "level": logging.INFO,
         },
+        "telegram": {
+            "handlers": ["stream"],
+            "level": logging.DEBUG if not DEBUG else logging.WARNING,
+        },
     },
 }
