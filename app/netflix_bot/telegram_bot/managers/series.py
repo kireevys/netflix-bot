@@ -33,19 +33,13 @@ class SeriesCallback(CallbackManager):
     def main(self, *_):
         keyboard = InlineKeyboardMarkup(
             [
-                [InlineKeyboardButton(
-                    "Список сериалов", callback_data="series/all/")],
-                # [
-                #     InlineKeyboardButton(
-                #         "Сериалы по жанрам", callback_data="series/genre/"
-                #     )
-                # ],
-                [InlineKeyboardButton("Главная", callback_data="/"), ],
+                [InlineKeyboardButton("Список сериалов", callback_data="series/all/")],
+                [InlineKeyboardButton("Поиск", switch_inline_query_current_chat="")],
+                [InlineKeyboardButton("Главная", callback_data="/")],
             ]
         )
         return self.publish_message(
-            media=InputMediaPhoto(
-                media=settings.MAIN_PHOTO, caption="СЕРИАЛЫ"),
+            media=InputMediaPhoto(media=settings.MAIN_PHOTO, caption="СЕРИАЛЫ"),
             keyboard=keyboard,
         )
 
@@ -70,8 +64,7 @@ class SeriesCallback(CallbackManager):
             buttons, page=page, path="series/pagination?p="
         )
         keyboard = append_button(
-            keyboard, [InlineKeyboardButton(
-                "Меню сериалов", callback_data="series/")]
+            keyboard, [InlineKeyboardButton("Меню сериалов", callback_data="series/")]
         )
 
         return self.publish_message(
@@ -126,8 +119,7 @@ class SeriesCallback(CallbackManager):
         buttons = [
             InlineKeyboardButton(
                 f"{models.Langs.repr(episode.lang)}",
-                callback_data=str(
-                    Route("series", series_id, l=episode.lang, p=page)),
+                callback_data=str(Route("series", series_id, l=episode.lang, p=page)),
             )
             for episode in langs
         ]
@@ -179,15 +171,12 @@ class SeriesCallback(CallbackManager):
             [
                 InlineKeyboardButton(
                     "Список сезонов",
-                    callback_data=str(
-                        Route("series", series_id, l=lang, p=page)),
+                    callback_data=str(Route("series", series_id, l=lang, p=page)),
                 )
             ],
         )
 
-        caption = (
-            f"Список серий\n\n{series.title}\n\nСезон {season_id}\n\n{models.Langs.repr(lang)}"
-        )
+        caption = f"Список серий\n\n{series.title}\n\nСезон {season_id}\n\n{models.Langs.repr(lang)}"
 
         return self.publish_message(
             media=InputMediaPhoto(
@@ -204,14 +193,15 @@ class SeriesCallback(CallbackManager):
 
         episode_index = f"Сезон {episode.season} Эпизод {episode.episode}"
         series_title = markdown.escape(episode.series.title)
-        caption = f"{series_title}\n\n{episode_index}\n\n{models.Langs.repr(episode.lang)}"
+        caption = (
+            f"{series_title}\n\n{episode_index}\n\n{models.Langs.repr(episode.lang)}"
+        )
 
         buttons = [
             InlineKeyboardButton(
                 side,
                 callback_data=str(
-                    Route("series", series_id, season_id,
-                          ep.episode, l=lang, p=page)
+                    Route("series", series_id, season_id, ep.episode, l=lang, p=page)
                 ),
             )
             for ep, side in (
@@ -246,15 +236,46 @@ class SeriesCallback(CallbackManager):
             keyboard=keyboard,
         )
 
+    @router.add_method(r"series/search\?query=(.+)&p=(\d+)")
+    def founded(self, query: str, p: int):
+        current = int(p)
+
+        def builder(s):
+            return InlineKeyboardButton(
+                s.title, callback_data=str(Route("series", s.id, p=current))
+            )
+
+        series: List[InlineKeyboardButton] = self.search(query, builder)
+
+        if not series:
+            return self.publish_message(
+                media=InputMediaPhoto(
+                    media=settings.MAIN_PHOTO,
+                    caption=f"По запросу {query} сериалы не найдены",
+                ),
+                keyboard=InlineKeyboardMarkup([[]]),
+            )
+
+        keyboard = PaginationKeyboard.from_pagination(
+            series, page=current, path=f"series/search?query={query}&p="
+        )
+
+        return self.publish_message(
+            media=InputMediaPhoto(
+                media=settings.MAIN_PHOTO,
+                caption=f"Сериалы по запросу {query}, страница {current}",
+            ),
+            keyboard=keyboard,
+        )
+
     @classmethod
     @functools.lru_cache
-    def search(cls, query: str) -> List[InlineQueryResultArticle]:
+    def search(cls, query: str, builder: callable) -> list:
         start = time()
         qs = models.Series.objects.filter(
-            Q(title_eng__icontains=query) | Q(
-                title_ru_upper__contains=query.upper())
-        ).order_by('-pk')
-        result = [cls.build_articles(i) for i in qs[:49]]
+            Q(title_eng__icontains=query) | Q(title_ru_upper__contains=query.upper())
+        ).order_by("-pk")
+        result = [builder(i) for i in qs[:49]]
         logger.info(f"Series search {query}: {time() - start}")
         return result
 
@@ -262,10 +283,7 @@ class SeriesCallback(CallbackManager):
     def build_articles(series: models.Series) -> InlineQueryResultArticle:
         path = Route("series", series.id, p=1).b64encode()
         keyboard = InlineKeyboardMarkup.from_button(
-            InlineKeyboardButton(
-                "СМОТРЕТЬ 🎥",
-                url=f"{ME.get.link}?start={path}"
-            )
+            InlineKeyboardButton("СМОТРЕТЬ 🎥", url=f"{ME.get.link}?start={path}")
         )
         return InlineQueryResultArticle(
             id=str(uuid.uuid4()),

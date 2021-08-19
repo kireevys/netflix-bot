@@ -6,6 +6,7 @@ from telegram.ext import CallbackContext
 
 # https://github.com/python-telegram-bot/python-telegram-bot/wiki/InlineKeyboard-Example
 from .managers.movie import MovieCallback
+from .managers.series import SeriesCallback
 from .senders import InlineSender, MessageSender
 from .user_interface.router import router
 
@@ -18,8 +19,18 @@ def callbacks(update: Update, context: CallbackContext):
     else:
         sender = InlineSender(update, context)
 
-    manager = MovieCallback(update, context, sender)
-    manager.send_reaction_on_callback(router)
+    handler, args = router.get_handler(update.callback_query.data)
+
+    module = handler.__module__.split('.')[-1]
+
+    if module == 'movie':
+        manager = MovieCallback(update, context, sender)
+    elif module == 'series':
+        manager = SeriesCallback(update, context, sender)
+    else:
+        raise ValueError
+
+    manager.send_reaction_on_callback(handler, args)
 
 
 class UploadHandler:

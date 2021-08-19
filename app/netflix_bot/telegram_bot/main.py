@@ -6,14 +6,7 @@ from random import shuffle
 from time import time
 
 from django.conf import settings
-from telegram import (
-    Chat,
-    InlineKeyboardButton,
-    InlineKeyboardMarkup,
-    InlineQueryResultArticle,
-    InputTextMessageContent,
-    Update,
-)
+from telegram import Chat, InlineQueryResultArticle, InputTextMessageContent, Update
 from telegram.error import TelegramError
 from telegram.ext import (
     BaseFilter,
@@ -28,10 +21,11 @@ from telegram.ext import (
 )
 
 from .commands import Commands, movie, series, start
-from .contants import START_MESSAGE
+from .constants import MAIN_KEYBOARD, START_MESSAGE
 from .managers.movie import MovieCallback
 from .managers.series import SeriesCallback
 from .messages import MovieUploadHandler, SeriesUploadHandler, callbacks
+from .senders import InlineSender
 
 logger = logging.getLogger(__name__)
 error_logger = logging.getLogger("error")
@@ -67,14 +61,14 @@ def inline_query(update: Update, _: CallbackContext) -> None:
     query = update.inline_query.query
 
     if len(query) < 3:
-        update.inline_query.answer([_get_inline_empty_answer()])
+        update.inline_query.answer([_get_inline_empty_answer()], cache_time=2000)
         return
 
     start = time()
 
     result = []
-    movies = MovieCallback.search(query)
-    series = SeriesCallback.search(query)
+    movies = MovieCallback.search(query, MovieCallback.build_articles)
+    series = SeriesCallback.search(query, SeriesCallback.build_articles)
 
     logger.info(f"Movie cache: {MovieCallback.search.cache_info()}")
     logger.info(f"Series cache: {SeriesCallback.search.cache_info()}")
@@ -82,35 +76,52 @@ def inline_query(update: Update, _: CallbackContext) -> None:
     result.extend(movies)
     result.extend(series)
 
+    if not result:
+        update.inline_query.answer([_get_not_found_answer()], cache_time=2000)
+        return
+
     shuffle(result)
 
     logger.info(f"Query: {query}, time: {time() - start}")
 
-    update.inline_query.answer(result[:50], cache_time=0)
+    update.inline_query.answer(result[:50], cache_time=300)
 
 
 @lru_cache
 def _get_inline_empty_answer() -> InlineQueryResultArticle:
-    keyboard = InlineKeyboardMarkup(
-        [
-            [InlineKeyboardButton("Все фильмы", callback_data="movie/")],
-            [InlineKeyboardButton("Все сериалы", callback_data="series/")],
-        ]
-    )
     return InlineQueryResultArticle(
         id=str(uuid.uuid4()),
-        title="Для начала поиска введите 3 символа",
+        title="Начните вводить название фильма",
         description="И я начну поиск)",
         photo_url=settings.MAIN_PHOTO,
         thumb_url=settings.MAIN_PHOTO,
-        reply_markup=keyboard,
+        reply_markup=MAIN_KEYBOARD,
+        input_message_content=InputTextMessageContent(START_MESSAGE),
+    )
+
+
+@lru_cache
+def _get_not_found_answer() -> InlineQueryResultArticle:
+    return InlineQueryResultArticle(
+        id=str(uuid.uuid4()),
+        title="К сожалению, по вашему запросу ничего не найдено...",
+        photo_url=settings.MAIN_PHOTO,
+        thumb_url=settings.MAIN_PHOTO,
+        reply_markup=MAIN_KEYBOARD,
         input_message_content=InputTextMessageContent(START_MESSAGE),
     )
 
 
 def search(update: Update, context: CallbackContext) -> None:
     """Поиск с клавиатуры."""
-    update.message()
+    query = update.effective_message.text
+    sender = InlineSender(update, context)
+
+    movies = MovieCallback(update, context, sender=sender)
+    series = SeriesCallback(update, context, sender=sender)
+
+    movies.founded(query, 1)
+    series.founded(query, 1)
 
 
 def up_bot() -> Dispatcher:
@@ -161,6 +172,7 @@ def up_bot() -> Dispatcher:
     # Common
     inline_handler = InlineQueryHandler(inline_query)
     callback_handler = CallbackQueryHandler(callbacks)
+    # text_handler = MessageHandler(Filters.text, search)
 
     # Attach handlers
     dispatcher.add_handler(movie_upload_h, group=MOVIES_GROUP)
@@ -172,6 +184,7 @@ def up_bot() -> Dispatcher:
     dispatcher.add_handler(series_add_description_h, group=SERIES_GROUP)
 
     dispatcher.add_handler(inline_handler)
+    # dispatcher.add_handler(text_handler)
 
     dispatcher.add_handler(callback_handler)
     dispatcher.add_error_handler(error_callback)
