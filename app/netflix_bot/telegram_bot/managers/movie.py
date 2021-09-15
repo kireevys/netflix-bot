@@ -164,7 +164,7 @@ class MovieCallback(CallbackManager):
     @router.add_method(r"subscribed/$")
     def subscribed(self):
         rule = VideoRule(self.context.bot, self.update.effective_user.id)
-        if not rule.user_is_subscribed():
+        if rule.user_is_subscribed():
             self.sender.delete()
             self.update.callback_query.answer(text="😇 Красавчик, приятного просмотра 😇")
         else:
