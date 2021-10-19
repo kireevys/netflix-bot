@@ -7,6 +7,4 @@ def escape(text: str) -> str:
         .replace("-", r"\-")
         .replace(".", r"\.")
         .replace("/", r"\/")
-        .replace("(", r"\(")
-        .replace(")", r"\)")
     )

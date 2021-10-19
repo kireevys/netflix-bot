@@ -1,15 +1,9 @@
 from functools import cached_property
-from typing import TypedDict
 
 from django.db import models
 from django.db.models import QuerySet
 from netflix_bot.models import User
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-
-
-class Button(TypedDict):
-    text: str
-    link: str
 
 
 class Message(models.Model):
@@ -20,7 +14,7 @@ class Message(models.Model):
         EMPTY = "EMPTY"
 
     text = models.TextField()
-    buttons = models.JSONField()
+    buttons = models.ManyToOneRel("buttons", "message", "Button")
     content = models.URLField()
     content_type = models.CharField(
         max_length=5,
@@ -33,11 +27,17 @@ class Message(models.Model):
     def get_keyboard(self):
         keyboard = InlineKeyboardMarkup([])
 
-        for button in self.buttons:  # type: Button
-            btn = InlineKeyboardButton(text=button.get("text"), url=button.get("link"))
+        for button in self.buttons.all():  # type: Button
+            btn = InlineKeyboardButton(text=button.text, url=button.link)
             keyboard.inline_keyboard.append([btn])
 
         return keyboard
+
+
+class Button(models.Model):
+    text = models.CharField(max_length=32)
+    link = models.URLField()
+    message = models.ForeignKey(Message, on_delete=models.CASCADE)
 
 
 class Bulkmail(models.Model):

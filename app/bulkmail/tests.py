@@ -1,4 +1,4 @@
-from bulkmail.models import Bulkmail, Message, SendList
+from bulkmail.models import Bulkmail, Button, Message, SendList
 from django.test import TestCase
 from netflix_bot.models import User
 
@@ -10,9 +10,14 @@ class TestSendBulkmail(TestCase):
 
         message = Message.objects.create(
             text="Some text",
-            buttons=[{"first": "some"}, {"second": "some"}],
             content="http://google.com",
             content_type=Message.ContentTypes.PHOTO,
+        )
+        message.buttons.bulk_create(
+            (
+                Button(text="first", link="http://some.com"),
+                Button(text="second", link="http://some.ru"),
+            )
         )
         bulkmail = Bulkmail.objects.create(message=message)
 
