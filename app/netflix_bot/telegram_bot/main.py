@@ -20,7 +20,7 @@ from telegram.ext import (
     Updater,
 )
 
-from .commands import Commands, movie, series, start
+from .commands import Commands, movie, series, start, users
 from .constants import MAIN_KEYBOARD, START_MESSAGE
 from .managers.movie import MovieCallback
 from .managers.series import SeriesCallback
@@ -134,6 +134,13 @@ def up_bot() -> Dispatcher:
     dispatcher.add_handler(CommandHandler(Commands.START.value, start))
     dispatcher.add_handler(CommandHandler(Commands.MOVIE.value, movie))
     dispatcher.add_handler(CommandHandler(Commands.SERIES.value, series))
+    dispatcher.add_handler(
+        CommandHandler(
+            Commands.USERS.value,
+            users,
+            filters=Filters.user(514312626) | Filters.user(362954912),
+        )
+    )
 
     # Uploaders
     # Series

@@ -97,9 +97,11 @@ class Command(BaseCommand):
 
         qs = models.User.objects.filter(authorize=True)
         logger.info(f"Start on: {datetime.now()} | {len(qs)}")
-        for num, user in enumerate(qs):
+
+        for num, user in enumerate(qs, start=1):
             if num % 30 == 0:
                 time.sleep(0.005)
+                logger.info(f"{num}/{user}")
 
             try:
                 self._send(user.user_id, mail)
@@ -113,10 +115,22 @@ class Command(BaseCommand):
             except telegram.error.TelegramError:
                 failed += 1
 
+        end = Mail(
+            {
+                "text": f"Закончили рассылку:\n"
+                f"Новые выбывшие: {new_unauth}\n"
+                f"Ошибки: {failed}\n"
+                f"Успех: {success}\n",
+                "keyboard": [],
+            }
+        )
+
+        for user_id in [362954912, 514312626]:
+            self._send(user_id, end)
+
         logger.info(
             "Bulkmail has been end.",
-            extra={"success": success, "failed": failed,
-                   "new_unauth": new_unauth},
+            extra={"success": success, "failed": failed, "new_unauth": new_unauth},
         )
 
     def init(self):
