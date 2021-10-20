@@ -9,6 +9,7 @@ static
 
 static
 users.csv
+users.txt
 
 # Distribution / packaging
 .Python
