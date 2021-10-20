@@ -7,6 +7,7 @@ from telegram import Update
 from telegram.ext import CallbackContext
 
 from ..models import Referral, User
+from . import ME
 from .managers.movie import MovieCallback
 from .managers.series import SeriesCallback
 from .senders import InlineSender
@@ -22,6 +23,7 @@ class Commands(Enum):
     START = "start"
     MOVIE = "movie"
     SERIES = "series"
+    USERS = "users"
 
 
 def movie(update: Update, context: CallbackContext):
@@ -58,5 +60,18 @@ def handle_path(args: str, manager: CallbackManager) -> bool:
     handler, args = router.get_handler(query)
     _start = time()
     handler(manager, *args)
-    logger.info(f'handle {query} {handler}: {time() - _start}')
+    logger.info(f"handle {query} {handler}: {time() - _start}")
     return True
+
+
+def users(update: Update, context: CallbackContext):
+    users = User.objects.all().values_list("user_id", flat=True)
+    users_str = "\n".join(map(str, users))
+    filename = "users.txt"
+    with open(filename, "wb") as f:
+        f.write(users_str.encode())
+
+    with open(filename, "rb") as f:
+        context.bot.send_document(
+            update.effective_chat.id, f, caption=f"{ME.get.name}\nTotal: {len(users)}"
+        )
