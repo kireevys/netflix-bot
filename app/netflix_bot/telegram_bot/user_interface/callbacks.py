@@ -25,39 +25,46 @@ class VideoRule:
     def __init__(self, bot: Bot, user_id: int):
         self.bot = bot
         self.user_id = user_id
+        self.channels = {
+            "RUSFLIX": "https://t.me/joinchat/82WxFbKuEO0zNjRi",
+            "KinoMax_RF": "https://t.me/joinchat/VRNvE4i4BmNlNzYy",
+        }
 
     def user_is_subscribed(self):
         if settings.DEBUG:
             logger.info("Skip check subscription")
             return True
-        return self.check_subscribe(settings.MAIN_CHANNEL_ID)
+
+        return all(map(self.check_subscribe, self.channels.keys()))
 
     def need_subscribe(self, sender: Sender):
+
         buttons = [
-            InlineKeyboardButton(
-                settings.MAIN_CHANNEL_ID, url=settings.CHAT_INVITE_LINK
-            ),
-            InlineKeyboardButton("Я сделяль!", callback_data="subscribed/"),
+            InlineKeyboardButton(channel, url=link)
+            for channel, link in self.channels.items()
         ]
+        done_button = InlineKeyboardButton("Я сделяль!", callback_data="subscribed/")
+        buttons.append(done_button)
+
         sender.send(
             settings.MAIN_PHOTO,
-            "Подпишитесь на основной канал для продолжения.",
+            "Подпишитесь на наши каналы для продолжения.",
             InlineKeyboardMarkup.from_column(buttons),
         )
 
-    def check_subscribe(self, channel: int) -> bool:
+    def check_subscribe(self, channel: str) -> bool:
         """Проверка подписки на канал."""
         try:
             chat_member: ChatMember = self.bot.get_chat_member(
                 f"@{channel}", self.user_id
             )
         except BadRequest:
-            logger.warning(f"user {self.user_id} is not subscribed")
+            logger.warning(f"user {self.user_id} is not subscribed to {channel}")
             return False
 
         status = chat_member.status
         if status in (ChatMember.RESTRICTED, ChatMember.LEFT, ChatMember.KICKED):
-            logger.warning(f"user {self.user_id} has {status}")
+            logger.warning(f"user {self.user_id} has {status} in {channel}")
             return False
 
         return True
