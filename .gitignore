@@ -30,7 +30,7 @@ wheels/
 *.egg
 MANIFEST
 
-test.py
+sandbox.py
 logs
 
 # PyInstaller

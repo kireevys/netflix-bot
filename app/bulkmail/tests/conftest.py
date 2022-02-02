@@ -10,8 +10,10 @@ def message() -> Message:
     media_caption = "Message Media"
     media = Media(link=media_link, caption=media_caption)
 
-    button_text = "button text"
-    button_link = "http://example.com"
-    buttons = [Button(text=button_text, link=button_link)]
+    buttons_d = [
+        {"link": "http://example.com/", "text": "caption_1"},
+        {"link": "http://example.com/", "text": "caption_2"},
+    ]
+    buttons = [Button(**i) for i in buttons_d]
 
     return Message(text=message_text, media=media, buttons=buttons)
