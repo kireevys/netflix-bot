@@ -5,9 +5,8 @@ __pycache__
 
 # C extensions
 *.so
-static
+app/static
 
-static
 users.csv
 users.txt
 
