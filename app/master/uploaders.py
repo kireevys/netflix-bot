@@ -8,7 +8,7 @@ from netflix_bot.models import Movie, Series
 from netflix_bot.telegram_bot.managers.managers import MovieManager, SeriesManager
 from netflix_bot.telegram_bot.uploaders import Uploader
 
-logger = logging.getLogger('master')
+logger = logging.getLogger("master")
 
 
 class SeriesUploader(Uploader):
@@ -20,21 +20,21 @@ class SeriesUploader(Uploader):
         sharer = SeriesShare(settings.MASTER_TOKEN)
         slaves = Slave.objects.filter(enabled=True)
         for d in slaves:
-            logger.info(f'Share video {d} series')
+            logger.info(f"Share video {d} series")
             sharer.share(video, d.series)
 
     def after_description(self, desc_text: str):
         sharer = SeriesShare(settings.MASTER_TOKEN)
         slaves = Slave.objects.filter(enabled=True)
         for d in slaves:
-            logger.info(f'Share description {d} series')
+            logger.info(f"Share description {d} series")
             sharer.share_description(desc_text, d.series)
 
     def after_poster(self, file_id: str):
         sharer = SeriesShare(settings.MASTER_TOKEN)
         slaves = Slave.objects.filter(enabled=True)
         for d in slaves:
-            logger.info(f'Share poster {d} series')
+            logger.info(f"Share poster {d} series")
             sharer.share_poster(self.update.channel_post.caption, file_id, d.series)
 
 
@@ -47,19 +47,19 @@ class MovieUploader(Uploader):
         sharer = MovieSharer(settings.MASTER_TOKEN)
         slaves = Slave.objects.filter(enabled=True)
         for d in slaves:
-            logger.info(f'Share video {d} movies')
+            logger.info(f"Share video {d} movies")
             sharer.share(video, d.movies)
 
     def after_description(self, desc_text: str):
         sharer = MovieSharer(settings.MASTER_TOKEN)
         slaves = Slave.objects.filter(enabled=True)
         for d in slaves:
-            logger.info(f'Share description {d} movies')
+            logger.info(f"Share description {d} movies")
             sharer.share_description(desc_text, d.movies)
 
     def after_poster(self, file_id: str):
         sharer = MovieSharer(settings.MASTER_TOKEN)
         slaves = Slave.objects.filter(enabled=True)
         for d in slaves:
-            logger.info(f'Share poster {d} series')
+            logger.info(f"Share poster {d} series")
             sharer.share_poster(self.update.channel_post.caption, file_id, d.series)

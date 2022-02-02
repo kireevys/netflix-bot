@@ -11,13 +11,13 @@ logger = logging.getLogger(__name__)
 
 
 class UserFileView(LoginRequiredMixin, View):
-    login_url = '/admin/login/'
-    redirect_field_name = 'redirect_to'
+    login_url = "/admin/login/"
+    redirect_field_name = "redirect_to"
 
     def get(self, request):
-        users = User.objects.all().values_list('user_id')
-        filename = 'users.csv'
-        with open(filename, 'w', newline='') as myfile:
+        users = User.objects.all().values_list("user_id")
+        filename = "users.csv"
+        with open(filename, "w", newline="") as myfile:
             wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
             wr.writerows(users)
 

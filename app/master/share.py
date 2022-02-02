@@ -7,7 +7,6 @@ from telegram import Bot
 
 
 class Share(ABC):
-
     def __init__(self, credentials: str):
         self.sender = Bot(credentials)
 
@@ -31,7 +30,9 @@ class MovieSharer(Share):
             title_eng=video.title_eng,
             lang=video.lang,
         )
-        self.sender.send_video(destination, video.file_id, caption=manager.get_loader_format_caption())
+        self.sender.send_video(
+            destination, video.file_id, caption=manager.get_loader_format_caption()
+        )
         return True
 
     def share_description(self, description: str, destination: int) -> bool:
@@ -52,7 +53,9 @@ class SeriesShare(Share):
             episode=int(video.episode),
             lang=video.lang,
         )
-        self.sender.send_video(destination, video.file_id, caption=manager.get_loader_format_caption())
+        self.sender.send_video(
+            destination, video.file_id, caption=manager.get_loader_format_caption()
+        )
         return True
 
     def share_description(self, description: str, destination: int) -> bool:

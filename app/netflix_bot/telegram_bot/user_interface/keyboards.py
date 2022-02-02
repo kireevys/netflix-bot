@@ -53,14 +53,12 @@ class PaginationKeyboard(InlineKeyboardMarkup):
 
         if current_page > 1:
             navigator.append(
-                InlineKeyboardButton(
-                    "<<", callback_data=f"{path}{current_page - 1}")
+                InlineKeyboardButton("<<", callback_data=f"{path}{current_page - 1}")
             )
 
         if current_page < len(p.page_range):
             navigator.append(
-                InlineKeyboardButton(
-                    ">>", callback_data=f"{path}{current_page + 1}")
+                InlineKeyboardButton(">>", callback_data=f"{path}{current_page + 1}")
             )
 
         return navigator
