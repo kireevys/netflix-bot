@@ -22,7 +22,6 @@ def fill_title_ru_upper_movie(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("netflix_bot", "0007_user_authorize"),
     ]
@@ -31,14 +30,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="movie",
             name="title_ru_upper",
-            field=models.TextField(
-                default="<DJANGO.DB.MODELS.FIELDS.CHARFIELD>"),
+            field=models.TextField(default="<DJANGO.DB.MODELS.FIELDS.CHARFIELD>"),
         ),
         migrations.AddField(
             model_name="series",
             name="title_ru_upper",
-            field=models.TextField(
-                default="<DJANGO.DB.MODELS.FIELDS.TEXTFIELD>"),
+            field=models.TextField(default="<DJANGO.DB.MODELS.FIELDS.TEXTFIELD>"),
         ),
         migrations.RunPython(fill_title_ru_upper_movie),
         migrations.RunPython(fill_title_ru_upper_series),

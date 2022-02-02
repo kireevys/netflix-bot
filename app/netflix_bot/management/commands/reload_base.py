@@ -26,10 +26,10 @@ class Command(BaseCommand):
     @staticmethod
     def check_env():
         if None in (
-                settings.BOT_TOKEN,
-                settings.MAIN_PHOTO,
-                settings.UPLOADER_ID,
-                settings.MOVIE_UPLOADER_ID,
+            settings.BOT_TOKEN,
+            settings.MAIN_PHOTO,
+            settings.UPLOADER_ID,
+            settings.MOVIE_UPLOADER_ID,
         ):
             raise EnvironmentError("Check your ENV")
 

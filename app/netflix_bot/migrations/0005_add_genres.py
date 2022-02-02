@@ -43,27 +43,33 @@ def add_genres(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('netflix_bot', '0004_split_ru_eng_title'),
+        ("netflix_bot", "0004_split_ru_eng_title"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Genre',
+            name="Genre",
             fields=[
-                ('id', models.AutoField(auto_created=True,
-                 primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=20, unique=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=20, unique=True)),
             ],
             options={
-                'db_table': 'genres',
+                "db_table": "genres",
             },
         ),
         migrations.AddField(
-            model_name='series',
-            name='genre',
-            field=models.ManyToManyField(to='netflix_bot.Genre'),
+            model_name="series",
+            name="genre",
+            field=models.ManyToManyField(to="netflix_bot.Genre"),
         ),
-        migrations.RunPython(add_genres)
+        migrations.RunPython(add_genres),
     ]

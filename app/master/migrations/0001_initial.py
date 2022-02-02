@@ -4,23 +4,29 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Slave',
+            name="Slave",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created', models.DateTimeField(auto_created=True)),
-                ('name', models.CharField(max_length=126)),
-                ('series', models.IntegerField()),
-                ('movies', models.IntegerField()),
-                ('enabled', models.BooleanField(default=True)),
-                ('updated', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("created", models.DateTimeField(auto_created=True)),
+                ("name", models.CharField(max_length=126)),
+                ("series", models.IntegerField()),
+                ("movies", models.IntegerField()),
+                ("enabled", models.BooleanField(default=True)),
+                ("updated", models.DateTimeField(auto_now=True)),
             ],
         ),
     ]

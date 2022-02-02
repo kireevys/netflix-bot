@@ -38,8 +38,7 @@ def run():
     # Uploaders
     # Series
     SERIES_GROUP = 1
-    series_filter = (~Filters.command) & (
-        Filters.chat(int(settings.UPLOADER_ID)))
+    series_filter = (~Filters.command) & (Filters.chat(int(settings.UPLOADER_ID)))
 
     upload_series_h = MessageHandler(
         Filters.video & series_filter,
@@ -59,8 +58,7 @@ def run():
     # Movies
     MOVIES_GROUP = 2
     movie_filter = (
-        Filters.chat(chat_id=int(settings.MOVIE_UPLOADER_ID)
-                     ) & ~Filters.command
+        Filters.chat(chat_id=int(settings.MOVIE_UPLOADER_ID)) & ~Filters.command
     )
     movie_upload_h = MessageHandler(
         Filters.video & movie_filter,

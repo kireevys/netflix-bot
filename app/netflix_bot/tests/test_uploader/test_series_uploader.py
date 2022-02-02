@@ -47,15 +47,12 @@ class TestSeriesUploader(TestCase):
         )
 
         self.update = MagicMock(
-            effective_message=MagicMock(
-                reply_to_message=MagicMock(message_id=1))
+            effective_message=MagicMock(reply_to_message=MagicMock(message_id=1))
         )
         self.context = MagicMock()
 
     def test_add_poster(self):
-        self.update.channel_post.caption = (
-            f"{self.title_ru}/{self.title_eng}"
-        )
+        self.update.channel_post.caption = f"{self.title_ru}/{self.title_eng}"
 
         with patch(
             f"{self.uploaders_path}.SeriesUploader.is_upload_channel",
@@ -70,9 +67,7 @@ class TestSeriesUploader(TestCase):
         self.assertEqual(self.series.poster, file_id)
 
     def test_add_poster_to_not_exists_series(self):
-        self.update.channel_post.caption = (
-            f"not exists/{self.title_eng}"
-        )
+        self.update.channel_post.caption = f"not exists/{self.title_eng}"
         self.update.effective_message.reply_to_message.message_id = (
             self.episode.message_id
         )
@@ -91,8 +86,7 @@ class TestSeriesUploader(TestCase):
         caption = f"{self.title_ru}/{self.title_eng} | {desc}"
 
         self.update = MagicMock(
-            effective_message=MagicMock(
-                reply_to_message=MagicMock(message_id=1))
+            effective_message=MagicMock(reply_to_message=MagicMock(message_id=1))
         )
 
         with patch(
@@ -111,8 +105,7 @@ class TestSeriesUploader(TestCase):
         caption = f"not_exists/{self.title_eng} | {desc}"
 
         self.update = MagicMock(
-            effective_message=MagicMock(
-                reply_to_message=MagicMock(message_id=2))
+            effective_message=MagicMock(reply_to_message=MagicMock(message_id=2))
         )
 
         with patch(
