@@ -1,13 +1,13 @@
 import json
 from typing import List
 
-from bulkmail.adapters import (
+from bulkmail.internal.adapters import (
     ButtonDict,
     MediaDict,
     create_message_from_dict,
     create_message_from_json,
 )
-from bulkmail.core.message import Button, Media, Message
+from bulkmail.internal.core.message import Button, Media, Message
 
 
 def test_create_message_from_dict():

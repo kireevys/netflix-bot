@@ -1,4 +1,4 @@
-from bulkmail.core.message import Message
+from bulkmail.internal.core.message import Message
 
 
 class MessageRepository:

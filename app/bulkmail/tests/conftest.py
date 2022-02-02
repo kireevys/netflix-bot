@@ -1,5 +1,5 @@
 import pytest
-from bulkmail.core.message import Button, Media, Message
+from bulkmail.internal.core.message import Button, Media, Message
 
 
 @pytest.fixture

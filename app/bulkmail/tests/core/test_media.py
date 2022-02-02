@@ -1,5 +1,5 @@
 import pytest
-from bulkmail.core.message import Media
+from bulkmail.internal.core.message import Media
 
 
 def test_create_media():

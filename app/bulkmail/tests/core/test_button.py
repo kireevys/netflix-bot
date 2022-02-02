@@ -1,5 +1,5 @@
 import pytest
-from bulkmail.core.message import Button
+from bulkmail.internal.core.message import Button
 
 
 def test_create_button():
