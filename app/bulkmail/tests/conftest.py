@@ -7,8 +7,7 @@ def message() -> Message:
     message_text = "Some text"
 
     media_link = "https://example.com/static/pic.jpg"
-    media_caption = "Message Media"
-    media = Media(link=media_link, caption=media_caption)
+    media = Media(link=media_link)
 
     buttons_d = [
         {"link": "http://example.com/", "text": "caption_1"},

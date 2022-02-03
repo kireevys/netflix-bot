@@ -2,15 +2,14 @@ from typing import List
 
 
 class Media:
-    def __init__(self, link: str, caption: str):
+    def __init__(self, link: str):
         self.link = link
-        self.caption = caption
 
     def __eq__(self, other: "Media"):
-        return self.link == other.link and self.caption == other.caption
+        return self.link == other.link
 
     def __repr__(self):
-        return str(hash(f"{self.link}-{self.caption}"))
+        return str(hash(self.link))
 
 
 class Button:
@@ -40,3 +39,9 @@ class Message:
             and self.media == other.media
             and set(self.buttons) == set(other.buttons)
         )
+
+    def __str__(self):
+        return f"Message {self.media}-{self.buttons}"
+
+    def __repr__(self):
+        return str(self)

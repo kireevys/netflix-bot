@@ -14,7 +14,6 @@ def test_create_message_from_dict():
     message_text = "Some text"
     dict_media = {
         "link": "http://example.com/static/pic_1.jpg",
-        "caption": "caption",
     }
     dict_buttons: List[dict] = [
         {"link": "http://example.com/", "text": "caption_1"},
@@ -40,7 +39,6 @@ def test_create_message_from_json():
     message_text = "Some text"
     dict_media = MediaDict(
         link="http://example.com/static/pic_1.jpg",
-        caption="caption",
     )
     dict_buttons: List[dict] = [
         ButtonDict(link="http://example.com/", text="caption_1"),

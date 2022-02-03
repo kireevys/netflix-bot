@@ -5,7 +5,6 @@ from bulkmail.internal.core.message import Button, Media, Message
 
 
 class MediaDict(TypedDict):
-    caption: str
     link: str
 
 
