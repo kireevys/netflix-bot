@@ -1,3 +1,13 @@
-from django.contrib import admin  # noqa
+from bulkmail import models
+from django.contrib import admin
 
-# Register your models here.
+
+@admin.register(models.DjangoMessage)
+class DjangoMessageAdmin(admin.ModelAdmin):
+    ordering = ("-created", "-updated")
+    filter_horizontal = ("buttons",)
+
+
+@admin.register(models.DjangoButton)
+class DjangoButtonAdmin(admin.ModelAdmin):
+    ordering = ("-created", "-updated")

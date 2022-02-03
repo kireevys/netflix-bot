@@ -11,6 +11,18 @@ class DjangoMessage(models.Model):
     class Meta:
         db_table = "message"
 
+        verbose_name = "Сообщение"
+        verbose_name_plural = "Сообщения"
+
+    def __str__(self):
+        crop_len = 15
+        ending = ""
+
+        if len(self.text) > crop_len:
+            ending = "..."
+
+        return f"{self.text[:crop_len]}{ending} {self.created}"
+
 
 class DjangoButton(models.Model):
     text = models.CharField(max_length=64)
@@ -20,3 +32,9 @@ class DjangoButton(models.Model):
 
     class Meta:
         db_table = "button"
+
+        verbose_name = "Кнопка"
+        verbose_name_plural = "Кнопки"
+
+    def __str__(self):
+        return f"{self.text}"
