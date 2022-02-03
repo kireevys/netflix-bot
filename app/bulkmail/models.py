@@ -38,3 +38,17 @@ class DjangoButton(models.Model):
 
     def __str__(self):
         return f"{self.text}"
+
+
+class DjangoRecipient(models.Model):
+    user = models.ForeignKey("netflix_bot.User", on_delete=models.SET_NULL, null=True)
+    address = models.IntegerField()
+
+
+class UserTag(models.Model):
+    class Tags(models.TextChoices):
+        TEST = "TEST", "test user"
+        ANY = "ANY", "Any user"
+
+    user = models.ForeignKey("netflix_bot.User", on_delete=models.CASCADE)
+    tag = models.CharField(max_length=5, choices=Tags.choices, default=Tags.ANY)

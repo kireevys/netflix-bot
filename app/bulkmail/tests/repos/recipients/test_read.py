@@ -1,0 +1,63 @@
+from bulkmail.internal.core.recipient import Recipient, User
+from bulkmail.models import DjangoRecipient, UserTag
+from bulkmail.repos import ORMRecipientRepository
+from netflix_bot import models as netflix_models
+
+
+def test_read(db):
+    user_id = 1
+    address = 123
+    netflix_models.User.objects.create(user_id=address)
+    DjangoRecipient.objects.create(user_id=user_id, address=address)
+
+    repos = ORMRecipientRepository()
+    query = ORMRecipientRepository.Filters.ANY
+
+    result = repos.read(query)
+
+    assert len(result) == 1
+    assert isinstance(result[0], Recipient)
+
+    assert result[0].get_address() == address
+    assert result[0].user.user_id == user_id
+
+
+def test_read_with_filter_test(db):
+    address = 123
+    user_test = netflix_models.User.objects.create(user_id=address)
+    user_any = netflix_models.User.objects.create(user_id=432)
+
+    UserTag.objects.create(user=user_test, tag=UserTag.Tags.TEST)
+    DjangoRecipient.objects.create(user=user_test, address=address)
+    DjangoRecipient.objects.create(user=user_any, address=user_any.user_id)
+
+    core_test_user = Recipient(
+        address=user_test.user_id, user=User(user_id=user_test.pk)
+    )
+
+    repos = ORMRecipientRepository()
+    query = ORMRecipientRepository.Filters.TEST
+
+    result = repos.read(query)
+
+    assert len(result) == 1
+    assert result[0] == core_test_user
+
+
+def test_orm_to_core(db):
+    address = 123
+
+    d_user = netflix_models.User.objects.create(user_id=address)
+    d_recipient = DjangoRecipient.objects.create(user=d_user, address=d_user.user_id)
+
+    core_recipient = Recipient(address=d_user.user_id, user=User(d_user.pk))
+
+    repos = ORMRecipientRepository()
+
+    result = repos._orm_to_core(d_recipient)
+
+    print()
+    print(core_recipient.address, core_recipient.user.user_id)
+    print(result.address, result.user.user_id)
+
+    assert result == core_recipient
