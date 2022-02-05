@@ -1,6 +1,6 @@
 import logging
 from enum import Enum
-from typing import Any, List
+from typing import List
 
 from bulkmail.internal.core.bulkmail import Bulkmail
 from bulkmail.internal.core.message import Button, Media, Message
@@ -86,5 +86,24 @@ class ORMBulkmailRepository(BulkmailRepository):
             for r in bulkmail.recipients_list
         ]
 
-    def read(self, query: Any) -> List[Bulkmail]:
-        ...
+    def read(self, query: Q) -> List[Bulkmail]:
+        result = DjangoBulkmail.objects.filter(query)
+        answer = []
+        for b in result:
+            envelope: Envelope = b.envelope_set.first()
+            recipients = [
+                Recipient(address=r.user.user_id) for r in b.envelope_set.all()
+            ]
+            message = Message(
+                text=envelope.text,
+                media=Media(envelope.media),
+                buttons=envelope.buttons,
+            )
+            bm = Bulkmail(
+                message=message,
+                recipients_list=recipients,
+                info=b.bulkmail_info,
+            )
+            answer.append(bm)
+
+        return answer

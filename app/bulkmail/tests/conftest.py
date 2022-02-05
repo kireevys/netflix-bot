@@ -40,7 +40,7 @@ def recipients_list() -> List[Recipient]:
 
 
 @pytest.fixture
-def user() -> User:
+def user(db) -> User:
     return User.objects.create(user_id=123)
 
 

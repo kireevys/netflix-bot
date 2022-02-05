@@ -115,3 +115,26 @@ def test_create_bulkmail_without_recipients(message, bulkmail_info):
     with pytest.raises(EmptyBulkmailError):
         recipients_list = []
         Bulkmail(message=message, recipients_list=recipients_list, info=bulkmail_info)
+
+
+def test_bulkmail_equals(message, recipients_list, bulkmail_info):
+    assert Bulkmail(
+        message=message, recipients_list=recipients_list, info=bulkmail_info
+    ) == Bulkmail(message=message, recipients_list=recipients_list, info=bulkmail_info)
+
+
+def test_bulkmail_not_equals(message, recipients_list, bulkmail_info):
+    # TODO: Parametrize it
+    other_info = BulkmailInfo(
+        title="Title_1",
+        created=datetime.datetime.now(),
+        customer="Customer_name",
+        price=10.5,
+    )
+    other_recipients_list = [Recipient(address=321)]
+
+    assert Bulkmail(
+        message=message, recipients_list=recipients_list, info=bulkmail_info
+    ) != Bulkmail(
+        message=message, recipients_list=other_recipients_list, info=other_info
+    )

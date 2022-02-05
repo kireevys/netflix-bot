@@ -36,7 +36,9 @@ class Bulkmail:
     def get_price_by_recipient(self) -> float:
         return round(self.info.price / len(self.recipients_list), 2)
 
-
-class BulkmailPlan:
-    def __init__(self, bulkmail: Bulkmail):
-        self.bulkmail = bulkmail
+    def __eq__(self, other: "Bulkmail"):
+        return (
+            self.info == other.info
+            and self.message == other.message
+            and self.recipients_list == other.recipients_list
+        )

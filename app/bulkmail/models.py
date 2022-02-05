@@ -2,8 +2,8 @@ from typing import List
 
 from bulkmail.internal.core.bulkmail import BulkmailInfo
 from bulkmail.internal.core.message import Button
-from django.db import models  # noqa
-from netflix_bot import models as n_models
+from django.db import models
+from netflix_bot.models import User
 
 
 class DjangoMessage(models.Model):
@@ -42,7 +42,7 @@ class DjangoButton(models.Model):
         verbose_name_plural = "Кнопки"
 
     def __str__(self):
-        return f"{self.text}"
+        return self.text
 
 
 class UserTag(models.Model):
@@ -79,7 +79,7 @@ class Envelope(models.Model):
     status = models.CharField(max_length=6, choices=Status.choices, default=Status.NEW)
     media = models.URLField()
     keyboard = models.JSONField(default=[])
-    user = models.ForeignKey(n_models.User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     @property
     def buttons(self) -> List[Button]:
