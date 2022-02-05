@@ -1,10 +1,10 @@
 import logging
 from enum import Enum
-from typing import List
+from typing import Any, List
 
 from bulkmail.internal.core.bulkmail import Bulkmail
 from bulkmail.internal.core.message import Button, Media, Message
-from bulkmail.internal.core.recipient import Recipient, User
+from bulkmail.internal.core.recipient import Recipient
 from bulkmail.internal.repositories import (
     BulkmailRepository,
     MessageRepository,
@@ -12,7 +12,7 @@ from bulkmail.internal.repositories import (
 )
 from bulkmail.models import DjangoBulkmail, DjangoButton, DjangoMessage, Envelope
 from django.db.models import Q
-from netflix_bot import models as n_models
+from netflix_bot.models import User
 
 logger = logging.getLogger("bulkmail")
 
@@ -52,17 +52,18 @@ class Filters(Enum):
 class ORMRecipientRepository(RecipientRepository):
     Filters = Filters
 
-    def _orm_to_core(self, d_recipient: n_models.User) -> Recipient:
-        return Recipient(address=d_recipient.user_id, user=User(d_recipient.pk))
+    @staticmethod
+    def _orm_to_core(d_recipient: User) -> Recipient:
+        return Recipient(address=d_recipient.user_id)
 
     def read(self, query: Filters) -> List[Recipient]:
         if query != Filters.ANY:
             return [
                 self._orm_to_core(i)
-                for i in n_models.User.objects.filter(usertag__tag=query.value)
+                for i in User.objects.filter(usertag__tag=query.value)
             ]
         else:
-            return [self._orm_to_core(i) for i in n_models.User.objects.all()]
+            return [self._orm_to_core(i) for i in User.objects.all()]
 
 
 class ORMBulkmailRepository(BulkmailRepository):
@@ -80,7 +81,10 @@ class ORMBulkmailRepository(BulkmailRepository):
                 keyboard=[
                     {"link": i.link, "text": i.text} for i in bulkmail.message.buttons
                 ],
-                user=n_models.User.objects.get(user_id=r.address),
+                user=User.objects.get(user_id=r.address),
             )
             for r in bulkmail.recipients_list
         ]
+
+    def read(self, query: Any) -> List[Bulkmail]:
+        ...

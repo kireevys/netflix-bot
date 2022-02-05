@@ -2,7 +2,7 @@ import datetime
 
 import pytest
 from bulkmail.internal.core.bulkmail import Bulkmail, BulkmailInfo
-from bulkmail.internal.core.recipient import Recipient, User
+from bulkmail.internal.core.recipient import Recipient
 from bulkmail.internal.exceptions import EmptyBulkmailError
 
 
@@ -90,9 +90,7 @@ def test_bulkmail_info_not_equal(f: BulkmailInfo, s: BulkmailInfo, freezer):
 
 @pytest.mark.parametrize("count", [1, 2, 3, 10, 123])
 def test_get_price_by_recipient(message, bulkmail_info, count):
-    recipients_list = [
-        Recipient(address=123, user=User(user_id=count)) for _ in range(count)
-    ]
+    recipients_list = [Recipient(address=123) for _ in range(count)]
     bulkmail = Bulkmail(
         message=message, recipients_list=recipients_list, info=bulkmail_info
     )

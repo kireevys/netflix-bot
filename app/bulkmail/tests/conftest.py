@@ -4,7 +4,8 @@ from typing import List
 import pytest
 from bulkmail.internal.core.bulkmail import Bulkmail, BulkmailInfo
 from bulkmail.internal.core.message import Button, Media, Message
-from bulkmail.internal.core.recipient import Recipient, User
+from bulkmail.internal.core.recipient import Recipient
+from netflix_bot.models import User
 
 
 @pytest.fixture
@@ -35,7 +36,12 @@ def bulkmail_info() -> BulkmailInfo:
 
 @pytest.fixture
 def recipients_list() -> List[Recipient]:
-    return [Recipient(address=123, user=User(user_id=321))]
+    return [Recipient(address=123)]
+
+
+@pytest.fixture
+def user() -> User:
+    return User.objects.create(user_id=123)
 
 
 @pytest.fixture

@@ -1,25 +1,17 @@
 import pytest
-from bulkmail.internal.core.recipient import Recipient, User
+from bulkmail.internal.core.recipient import Recipient
 
 
 def test_create_recipient():
     address = 1
-    user = User(user_id=1)
-    result = Recipient(address, user)
+    result = Recipient(address)
 
     assert result.get_address() == address
 
 
-def test_create_user():
-    user_id = 123
-    user = User(user_id)
-    assert user.user_id == user_id
-
-
 def test_recipients_equals():
     address = 1
-    user = User(user_id=1)
-    result = Recipient(address, user)
+    result = Recipient(address)
 
     assert result == result
 
@@ -27,10 +19,9 @@ def test_recipients_equals():
 @pytest.mark.parametrize(
     "recipient_1, recipient_2",
     [
-        (Recipient(1, User(user_id=1)), Recipient(2, User(user_id=1))),
-        (Recipient(1, User(user_id=1)), Recipient(1, User(user_id=2))),
+        (Recipient(1), Recipient(2)),
     ],
-    ids=["By address", "By user"],
+    ids=["By address"],
 )
 def test_recipients_not_equals(recipient_1, recipient_2):
     assert recipient_1 != recipient_2
