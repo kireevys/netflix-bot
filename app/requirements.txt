@@ -6,6 +6,8 @@ gunicorn>=20.0.4
 
 pytest>=6.2.5
 pytest-django==4.5.2
+pytest-freezegun==0.4.2
+
 
 python-dotenv>=0.13.0
 python-json-logger>=2.0.2

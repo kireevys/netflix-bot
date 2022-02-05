@@ -19,3 +19,9 @@ class RecipientRepository(ABC):
     @abstractmethod
     def read(self, query: Any) -> List[Recipient]:
         ...
+
+
+class BulkmailRepository(ABC):
+    @abstractmethod
+    def save(self, message: Message):
+        ...

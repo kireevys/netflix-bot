@@ -1,4 +1,9 @@
+from typing import List
+
+from bulkmail.internal.core.bulkmail import BulkmailInfo
+from bulkmail.internal.core.message import Button
 from django.db import models  # noqa
+from netflix_bot import models as n_models
 
 
 class DjangoMessage(models.Model):
@@ -40,11 +45,6 @@ class DjangoButton(models.Model):
         return f"{self.text}"
 
 
-class DjangoRecipient(models.Model):
-    user = models.ForeignKey("netflix_bot.User", on_delete=models.SET_NULL, null=True)
-    address = models.IntegerField()
-
-
 class UserTag(models.Model):
     class Tags(models.TextChoices):
         TEST = "TEST", "test user"
@@ -52,3 +52,35 @@ class UserTag(models.Model):
 
     user = models.ForeignKey("netflix_bot.User", on_delete=models.CASCADE)
     tag = models.CharField(max_length=5, choices=Tags.choices, default=Tags.ANY)
+
+
+class DjangoBulkmail(models.Model):
+    title = models.CharField(max_length=256)
+    created = models.DateTimeField(auto_now_add=True)
+    customer = models.CharField(max_length=128)
+    price = models.DecimalField(decimal_places=2, max_digits=9)
+
+    @property
+    def bulkmail_info(self) -> BulkmailInfo:
+        return BulkmailInfo(
+            title=self.title,
+            created=self.created,
+            customer=self.customer,
+            price=float(self.price),
+        )
+
+
+class Envelope(models.Model):
+    class Status(models.TextChoices):
+        NEW = "NEW", "NEW"
+
+    bulkmail = models.ForeignKey(DjangoBulkmail, on_delete=models.CASCADE)
+    text = models.TextField()
+    status = models.CharField(max_length=6, choices=Status.choices, default=Status.NEW)
+    media = models.URLField()
+    keyboard = models.JSONField(default=[])
+    user = models.ForeignKey(n_models.User, on_delete=models.CASCADE)
+
+    @property
+    def buttons(self) -> List[Button]:
+        return [Button(**i) for i in self.keyboard]

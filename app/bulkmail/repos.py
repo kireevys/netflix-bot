@@ -1,12 +1,18 @@
 import logging
 from enum import Enum
-from typing import Iterable, List
+from typing import List
 
+from bulkmail.internal.core.bulkmail import Bulkmail
 from bulkmail.internal.core.message import Button, Media, Message
 from bulkmail.internal.core.recipient import Recipient, User
-from bulkmail.internal.repositories import MessageRepository, RecipientRepository
-from bulkmail.models import DjangoButton, DjangoMessage, DjangoRecipient
+from bulkmail.internal.repositories import (
+    BulkmailRepository,
+    MessageRepository,
+    RecipientRepository,
+)
+from bulkmail.models import DjangoBulkmail, DjangoButton, DjangoMessage, Envelope
 from django.db.models import Q
+from netflix_bot import models as n_models
 
 logger = logging.getLogger("bulkmail")
 
@@ -34,7 +40,7 @@ class ORMMessageRepository(MessageRepository):
 
         logger.info(f"Saved Message {orm_message.id}")
 
-    def read(self, query: Q) -> Iterable[Message]:
+    def read(self, query: Q) -> List[Message]:
         return list(map(orm_to_core, DjangoMessage.objects.filter(query)))
 
 
@@ -46,14 +52,35 @@ class Filters(Enum):
 class ORMRecipientRepository(RecipientRepository):
     Filters = Filters
 
-    def _orm_to_core(self, d_recipient: DjangoRecipient) -> Recipient:
-        return Recipient(address=d_recipient.user.user_id, user=User(d_recipient.pk))
+    def _orm_to_core(self, d_recipient: n_models.User) -> Recipient:
+        return Recipient(address=d_recipient.user_id, user=User(d_recipient.pk))
 
     def read(self, query: Filters) -> List[Recipient]:
         if query != Filters.ANY:
             return [
                 self._orm_to_core(i)
-                for i in DjangoRecipient.objects.filter(user__usertag__tag=query.value)
+                for i in n_models.User.objects.filter(usertag__tag=query.value)
             ]
         else:
-            return [self._orm_to_core(i) for i in DjangoRecipient.objects.all()]
+            return [self._orm_to_core(i) for i in n_models.User.objects.all()]
+
+
+class ORMBulkmailRepository(BulkmailRepository):
+    def save(self, bulkmail: Bulkmail):
+        d_bulkmail = DjangoBulkmail.objects.create(
+            title=bulkmail.info.title,
+            customer=bulkmail.info.customer,
+            price=bulkmail.info.price,
+        )
+        [
+            Envelope.objects.create(
+                bulkmail=d_bulkmail,
+                text=bulkmail.message.text,
+                media=bulkmail.message.media.link,
+                keyboard=[
+                    {"link": i.link, "text": i.text} for i in bulkmail.message.buttons
+                ],
+                user=n_models.User.objects.get(user_id=r.address),
+            )
+            for r in bulkmail.recipients_list
+        ]
