@@ -8,10 +8,6 @@ from bulkmail.internal.core.recipient import Recipient
 
 class MessageRepository(ABC):
     @abstractmethod
-    def save(self, message: Message):
-        ...
-
-    @abstractmethod
     def read(self, query: Any) -> Iterable[Message]:
         ...
 

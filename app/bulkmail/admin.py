@@ -2,12 +2,24 @@ from bulkmail import models
 from django.contrib import admin
 
 
+class ButtonInline(admin.StackedInline):
+    model = models.DjangoButton
+
+
 @admin.register(models.DjangoMessage)
-class DjangoMessageAdmin(admin.ModelAdmin):
-    ordering = ("-created", "-updated")
-    filter_horizontal = ("buttons",)
+class MessageAdmin(admin.ModelAdmin):
+    model = models.DjangoMessage
+
+    inlines = [
+        ButtonInline,
+    ]
 
 
-@admin.register(models.DjangoButton)
-class DjangoButtonAdmin(admin.ModelAdmin):
-    ordering = ("-created", "-updated")
+@admin.register(models.DjangoBulkmail)
+class BulkmailAdmin(admin.ModelAdmin):
+    ...
+
+
+@admin.register(models.Envelope)
+class EnvelopeAdmin(admin.ModelAdmin):
+    ordering = ["status"]

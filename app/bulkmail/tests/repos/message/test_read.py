@@ -5,11 +5,13 @@ from bulkmail.repos import ORMMessageRepository, orm_to_core
 from django.db.models import Q
 
 
-def test_read(db, message: Message):
+def test_read(db, django_bulkmail, message: Message):
     repository = ORMMessageRepository()
     assert isinstance(repository, MessageRepository)
 
-    DjangoMessage.objects.create(text=message.text, media_link=message.media.link)
+    DjangoMessage.objects.create(
+        text=message.text, media_link=message.media.link, bulkmail=django_bulkmail
+    )
 
     query = Q(pk=1)
     actual = repository.read(query)
@@ -18,12 +20,14 @@ def test_read(db, message: Message):
     assert isinstance(actual[0], Message)
 
 
-def test_orm_to_core(db, message: Message):
-    buttons = [
-        DjangoButton.objects.create(link=i.link, text=i.text) for i in message.buttons
+def test_orm_to_core(db, django_bulkmail, bulkmail, message: Message):
+    dm = DjangoMessage.objects.create(
+        text=message.text, media_link=message.media.link, bulkmail=django_bulkmail
+    )
+    [
+        DjangoButton.objects.create(link=i.link, text=i.text, message=dm)
+        for i in message.buttons
     ]
-    dm = DjangoMessage.objects.create(text=message.text, media_link=message.media.link)
-    list(map(dm.buttons.add, buttons))
 
     dm.refresh_from_db()
 

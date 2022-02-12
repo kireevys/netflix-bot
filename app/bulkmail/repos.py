@@ -10,7 +10,7 @@ from bulkmail.internal.repositories import (
     MessageRepository,
     RecipientRepository,
 )
-from bulkmail.models import DjangoBulkmail, DjangoButton, DjangoMessage, Envelope
+from bulkmail.models import DjangoBulkmail, DjangoMessage, Envelope
 from django.db.models import Q
 from netflix_bot.models import User
 
@@ -18,7 +18,9 @@ logger = logging.getLogger("bulkmail")
 
 
 def orm_to_core(orm_message: DjangoMessage) -> Message:
-    buttons = [Button(link=i.link, text=i.text) for i in orm_message.buttons.all()]
+    buttons = [
+        Button(link=i.link, text=i.text) for i in orm_message.djangobutton_set.all()
+    ]
     return Message(
         text=orm_message.text,
         media=Media(link=orm_message.media_link),
@@ -27,19 +29,6 @@ def orm_to_core(orm_message: DjangoMessage) -> Message:
 
 
 class ORMMessageRepository(MessageRepository):
-    def save(self, message: Message):
-        buttons = [
-            DjangoButton.objects.create(link=i.link, text=i.text)
-            for i in message.buttons
-        ]
-        orm_message = DjangoMessage.objects.create(
-            text=message.text, media_link=message.media.link
-        )
-        for b in buttons:
-            orm_message.buttons.add(b)
-
-        logger.info(f"Saved Message {orm_message.id}")
-
     def read(self, query: Q) -> List[Message]:
         return list(map(orm_to_core, DjangoMessage.objects.filter(query)))
 
